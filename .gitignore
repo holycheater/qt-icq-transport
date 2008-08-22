@@ -1,0 +1,10 @@
+/qt-icq-transport
+/Makefile
+src/Makefile*
+src/debug
+src/release
+*.o
+moc_*
+*.moc
+*~
+.*~

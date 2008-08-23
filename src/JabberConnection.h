@@ -1,5 +1,5 @@
 /**
- * main.cpp - application entry point
+ * JabberConnection.h - Jabber connection handler class
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,23 +18,31 @@
  *
  **/
 
-#include "JabberConnection.h"
+#ifndef JABBERCONNECTION_H_
+#define JABBERCONNECTION_H_
 
-#include <QCoreApplication>
-#include <QtCrypto>
-#include <QtDebug>
+#include <QObject>
 
-int main(int argc, char **argv)
+class JabberConnection : public QObject
 {
-	QCA::Initializer init;
+	Q_OBJECT
 
-	QCoreApplication app(argc, argv);
+	public:
+		JabberConnection(QObject *parent = 0);
+		~JabberConnection();
 
-	JabberConnection conn;
-	conn.setUsername("icq.dragonfly");
-	conn.setServer("192.168.10.10", 5555);
-	conn.setPassword("jaba");
-	conn.login();
+		void login();
 
-	return app.exec();
-}
+		void setUsername(const QString& username);
+		void setServer(const QString& host, quint16 port = 5222);
+		void setPassword(const QString& password);
+	private slots:
+		void stream_error(int err);
+		void stream_authenticated();
+		void stream_needAuthParams(bool user, bool passwd, bool);
+	private:
+		class Private;
+		Private *d;
+};
+
+#endif /* JABBERCONNECTION_H_ */

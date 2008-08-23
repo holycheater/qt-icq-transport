@@ -26,108 +26,110 @@
 #include "im.h"
 #include "xmpp.h"
 
-class IrisExample : public QObject
+class IrisExample: public QObject
 {
 	Q_OBJECT
 
-public:
+	public:
+		IrisExample(QObject *parent = 0);
+		~IrisExample();
 
-	IrisExample( QObject* pParent = 0 )
-	: QObject( pParent)
-	{
-		m_jid = "yourjid@jabber.yourhost.com/XMPPNotify";
-		m_pass = "yourpass";
+		void goAuthenticate();
 
-		// Connector
-		m_pConn = new XMPP::AdvancedConnector;
-
-		// Stream
-		m_pStream = new XMPP::ClientStream( m_pConn );
-
-		// Use XMPP .9
-		m_pStream->setOldOnly( true );
-
-		connect( m_pStream, SIGNAL( warning( int ) ), SLOT( stream_warning( int ) ) );
-
-		connect( m_pStream, SIGNAL( error( int ) ), SLOT( stream_error( int ) ) );
-
-		connect( m_pStream, SIGNAL( needAuthParams( bool, bool, bool ) ),
-          		SLOT( stream_needAuthParams( bool, bool, bool ) ) );
-
-		connect( m_pStream, SIGNAL( authenticated() ), SLOT( stream_authenticated() ) );
-
-		// Client
-		m_pClient = new XMPP::Client( m_pStream );
-	}
-
-	~IrisExample()
-	{
-		delete m_pClient;
-		delete m_pStream;
-		delete m_pConn;
-	}
-
-	void goAuthenticate( void )
-	{
-		m_pClient->connectToServer( m_pStream, m_jid );
-	}
-
-
-private:
-
-	XMPP::Jid m_jid;
-	XMPP::AdvancedConnector* m_pConn;
-	XMPP::ClientStream* m_pStream;
-	XMPP::Client* m_pClient;
-	QString m_pass;
-
-private slots:
-
-	void stream_warning( int warn )
-	{
-		// We will get two warnings ... no TLS and pre-1.0 XMPP stream
-		// neither of which we care about...
-		m_pStream->continueAfterWarning();
-	}
-
-	void stream_error( int err )
-	{
-		qDebug() << "D'oh - a stream error occurred! Code: " << err;
-
-		QCoreApplication::instance()->quit();
-	}
-
-	void stream_authenticated()
-	{
-		m_pClient->start( m_jid.host(), m_jid.user(), m_pass, m_jid.resource() );
-
-		qDebug() << "Authenticated on server - sweet!";
-
-		// our work here is done...
-		QCoreApplication::instance()->quit();
-	}
-
-	void stream_needAuthParams( bool user, bool passwd, bool )
-	{
-
-		if(user)
-		{
-			m_pStream->setUsername( m_jid.node() );
-		}
-
-		if(passwd)
-		{
-			m_pStream->setPassword( m_pass );
-		}
-
-		qDebug() << "Sending auth params ...";
-		m_pStream->continueAfterParams();
-
-	}
-
+	private:
+		XMPP::Jid m_jid;
+		XMPP::AdvancedConnector* m_pConn;
+		XMPP::ClientStream* m_pStream;
+		XMPP::Client* m_pClient;
+		QString m_pass;
+	private slots:
+		void stream_warning(int warn);
+		void stream_error(int err);
+		void stream_authenticated();
+		void stream_needAuthParams(bool user, bool passwd, bool);
 };
 
-int main( int argc, char **argv )
+IrisExample::IrisExample(QObject *parent)
+	: QObject(parent)
+{
+	m_jid = "icq.dragonfly/dragon";
+	m_pass = "jaba";
+
+	// Connector
+	m_pConn = new XMPP::AdvancedConnector;
+
+	// Stream
+	m_pStream = new XMPP::ClientStream(m_pConn);
+
+	// Use XMPP .9
+	//m_pStream->setOldOnly( true );
+
+	QObject::connect( m_pStream, SIGNAL( warning( int ) ), SLOT( stream_warning( int ) ) );
+
+	QObject::connect( m_pStream, SIGNAL( error( int ) ), SLOT( stream_error( int ) ) );
+
+	QObject::connect( m_pStream, SIGNAL( needAuthParams( bool, bool, bool ) ), SLOT( stream_needAuthParams( bool, bool, bool ) ) );
+
+	QObject::connect( m_pStream, SIGNAL( authenticated() ), SLOT( stream_authenticated() ) );
+
+	// Client
+	m_pClient = new XMPP::Client( m_pStream );
+}
+
+IrisExample::~IrisExample()
+{
+	delete m_pClient;
+	delete m_pStream;
+	delete m_pConn;
+}
+
+void IrisExample::goAuthenticate()
+{
+	m_pClient->connectToServer( m_pStream, m_jid );
+}
+
+void IrisExample::stream_warning(int warn)
+{
+	Q_UNUSED(warn)
+	// We will get two warnings ... no TLS and pre-1.0 XMPP stream
+	// neither of which we care about...
+	m_pStream->continueAfterWarning();
+}
+
+void IrisExample::stream_error( int err )
+{
+	qDebug() << "D'oh - a stream error occurred! Code: " << err;
+
+	QCoreApplication::instance()->quit();
+}
+
+void IrisExample::stream_authenticated()
+{
+	m_pClient->start( m_jid.host(), m_jid.user(), m_pass, m_jid.resource() );
+
+	qDebug() << "Authenticated on server - sweet!";
+
+	// our work here is done...
+	QCoreApplication::instance()->quit();
+}
+
+void IrisExample::stream_needAuthParams( bool user, bool passwd, bool )
+{
+
+	if (user) {
+		m_pStream->setUsername( m_jid.node() );
+	}
+
+	if (passwd) {
+		m_pStream->setPassword( m_pass );
+	}
+
+	qDebug() << "Sending auth params ...";
+	m_pStream->continueAfterParams();
+
+}
+
+int main(int argc, char **argv)
 {
 	QCA::Initializer init;
 

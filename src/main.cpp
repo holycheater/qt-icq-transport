@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 
 	QCoreApplication app(argc, argv);
 
+	// TODO: Read username/secret/server from config-file
 	JabberConnection conn;
 	conn.setUsername("icq.dragonfly");
 	conn.setServer("192.168.10.10", 5555);

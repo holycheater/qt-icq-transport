@@ -2,9 +2,13 @@
 <projectDescription>
 	<name>qt-icq-transport</name>
 	<comment>Copyright (c) 2008  Alexander Saltykov</comment>
+	<projects>
+	</projects>
 	<buildSpec>
 		<buildCommand>
 			<name>com.trolltech.qtcppproject.QtMakefileGenerator</name>
+			<arguments>
+			</arguments>
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.cdt.make.core.makeBuilder</name>
@@ -20,11 +24,15 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.arguments</key>
-					<value></value>
+					<value>-j3</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.command</key>
 					<value>make</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.location</key>
+					<value></value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.target.auto</key>

@@ -27,3 +27,38 @@ GatewayTask::GatewayTask()
 GatewayTask::~GatewayTask()
 {
 }
+
+void GatewayTask::processRegister()
+{
+
+}
+
+void GatewayTask::processUnregister()
+{
+
+}
+
+void GatewayTask::processLogin()
+{
+
+}
+
+void GatewayTask::processLogout()
+{
+
+}
+
+void GatewayTask::processContactAdd()
+{
+
+}
+
+void GatewayTask::processContactDel()
+{
+
+}
+
+void GatewayTask::processSendMessage()
+{
+
+}

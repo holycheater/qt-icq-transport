@@ -1,5 +1,5 @@
 /**
- * GatewayTask.cpp - Handles tasks from jabber clients (register/status/message/etc)
+ * GatewayTask.h - Handles tasks from jabber clients (register/status/message/etc)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,11 +21,23 @@
 #ifndef GATEWAYTASK_H_
 #define GATEWAYTASK_H_
 
-class GatewayTask
+#include <QObject>
+
+class GatewayTask : public QObject
 {
+	Q_OBJECT
+
 	public:
 		GatewayTask();
 		~GatewayTask();
+	public slots:
+		void processRegister();
+		void processUnregister();
+		void processLogin();
+		void processLogout();
+		void processContactAdd();
+		void processContactDel();
+		void processSendMessage();
 };
 
 #endif /* GATEWAYTASK_H_ */

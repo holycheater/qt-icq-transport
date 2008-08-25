@@ -24,15 +24,19 @@
 #include <xmpp.h>
 #include <QCoreApplication>
 
+#include "ComponentStream.h"
+
 class JabberConnection::Private {
 
 	public:
 		XMPP::AdvancedConnector* connector;
-		XMPP::ClientStream* stream;
+		XMPP::ComponentStream* stream;
 		XMPP::Client* client;
 		XMPP::Jid jid;
 		QString password;
 };
+
+
 
 JabberConnection::JabberConnection(QObject *parent)
 	: QObject(parent)
@@ -40,24 +44,26 @@ JabberConnection::JabberConnection(QObject *parent)
 	d = new Private;
 
 	d->connector = new XMPP::AdvancedConnector;
-	d->stream = new XMPP::ClientStream(d->connector);
-	d->client = new XMPP::Client(d->stream);
+	d->stream = new XMPP::ComponentStream(d->connector);
 
-	QObject::connect( d->stream, SIGNAL( error( int ) ), SLOT( stream_error( int ) ) );
+	d->stream->connectToServer("icq.dragonfly", 5555, "jaba");
+
+	/*QObject::connect( d->stream, SIGNAL( error( int ) ), SLOT( stream_error( int ) ) );
 	QObject::connect( d->stream, SIGNAL( needAuthParams( bool, bool, bool ) ), SLOT( stream_needAuthParams( bool, bool, bool ) ) );
-	QObject::connect( d->stream, SIGNAL( authenticated() ), SLOT( stream_authenticated() ) );
+	QObject::connect( d->stream, SIGNAL( authenticated() ), SLOT( stream_authenticated() ) );*/
 }
 
 JabberConnection::~JabberConnection()
 {
-	delete d->client;
+	//delete d->client;
 	delete d->stream;
 	delete d->connector;
 }
 
 void JabberConnection::login()
 {
-	d->client->connectToServer(d->stream, d->jid);
+	//qDebug() << "[JC]" << "start login";
+	//d->client->connectToServer(d->stream, d->jid);
 }
 
 void JabberConnection::setUsername(const QString& username)
@@ -94,7 +100,7 @@ void JabberConnection::stream_authenticated()
 
 void JabberConnection::stream_needAuthParams(bool user, bool passwd, bool)
 {
-
+/*
 	if (user) {
 		d->stream->setUsername( d->jid.node() );
 	}
@@ -105,5 +111,5 @@ void JabberConnection::stream_needAuthParams(bool user, bool passwd, bool)
 
 	qDebug() << "Sending auth params ...";
 	d->stream->continueAfterParams();
-
+*/
 }

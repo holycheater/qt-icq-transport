@@ -53,10 +53,9 @@ class ComponentStream : public QObject
 		void disconnected();
 	private:
 		void processEvent(const Parser::Event& event);
-		void processNext();
 		void processStanza(const Parser::Event& event);
-		void recv_stream_open();
-		void recv_handshake_reply();
+		void recv_stream_open(const Parser::Event& event);
+		void recv_handshake_reply(const Parser::Event& event);
 		void send_stream_open();
 		void send_handshake();
 		void write(const QByteArray& data);

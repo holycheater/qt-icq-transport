@@ -22,7 +22,6 @@
 
 #include "xmpp.h"
 #include "bytestream.h"
-#include "parser.h"
 
 #include <QCryptographicHash>
 #include <QXmlStreamWriter>
@@ -117,48 +116,33 @@ void ComponentStream::close()
  */
 void ComponentStream::processEvent(const Parser::Event& event)
 {
-	qDebug() << "[CS]" << "processEvent()" << "type" << event.type();
+	qDebug() << "[CS]" << "processEvent()" << "type" << event.typeString();
 	switch ( event.type() ) {
+		case Parser::Event::DocumentOpen:
+			if (d->connectionStatus == InitIncomingStream) {
+				recv_stream_open(event);
+				return;
+			}
+			break;
+
 		case Parser::Event::DocumentClose:
 			qDebug() << "[CS] we are kicked off";
 			close();
 			break;
+
 		case Parser::Event::Element:
-			qDebug() << "[CS] we've got an element (stanza) here";
-			/* TODO: process stream:error */
+			qDebug() << "[CS] incoming element" << event.qualifiedName();
+			/* TODO: check for stream:error */
+			if (d->connectionStatus == RecvHandshakeReply) {
+				recv_handshake_reply(event);
+				return;
+			}
 			processStanza(event);
 			break;
+
 		case Parser::Event::Error:
 			qDebug() << "[CS] whoops.. error occured";
 			close();
-			break;
-	}
-}
-
-/**
- * Process next step for the server authentication process
- */
-void ComponentStream::processNext()
-{
-	switch ( d->connectionStatus ) {
-		case Disconnected:
-			qDebug() << "[CS]" << "processNext() in 'Disconnected' state. This should not happen";
-			break;
-		case InitIncomingStream: /* we need to process incoming stream initiation */
-			recv_stream_open();
-			break;
-		case RecvHandshakeReply: /* we need to receive handshake reply */
-			recv_handshake_reply();
-		case Connected: /* we need to process various events while we're connected. */
-		{
-			Parser::Event event = d->parser.readNext();
-			while ( !event.isNull() ) {
-				processEvent(event);
-				event = d->parser.readNext();
-			}
-			break;
-		}
-		default:
 			break;
 	}
 }
@@ -170,20 +154,19 @@ void ComponentStream::processNext()
 void ComponentStream::processStanza(const Parser::Event& event)
 {
 	if ( event.qualifiedName() == "message" ) {
-		qDebug() << "[CS]" << "incoming message";
+		qDebug() << "[CS]" << "-message-";
 	} else if ( event.qualifiedName() == "iq" ) {
-		qDebug() << "[CS]" << "incoming info/query";
+		qDebug() << "[CS]" << "-iq-";
 	} else if ( event.qualifiedName() == "presence" ) {
-		qDebug() << "[CS]" << "presence info";
+		qDebug() << "[CS]" << "-presence-";
 	}
 }
 
 /**
- * Handle incoming stream initiation
+ * Handle incoming stream initiation event @a event
  */
-void ComponentStream::recv_stream_open()
+void ComponentStream::recv_stream_open(const Parser::Event& event)
 {
-	Parser::Event event = d->parser.readNext();
 	d->sessionId = event.attributes().value("id").toUtf8();
 
 	/* stream accepted, next step - send the handshake */
@@ -191,11 +174,10 @@ void ComponentStream::recv_stream_open()
 }
 
 /**
- * Handle handshake reply
+ * Handle handshake reply event @a event
  */
-void ComponentStream::recv_handshake_reply()
+void ComponentStream::recv_handshake_reply(const Parser::Event& event)
 {
-	Parser::Event event = d->parser.readNext();
 	if ( event.qualifiedName()=="handshake" && !event.attributes().count() ) {
 		qDebug() << "[CS]" << "Handshaking success";
 	} else {
@@ -206,7 +188,6 @@ void ComponentStream::recv_handshake_reply()
 	/* We have no errors */
 	d->connectionStatus = Connected;
 	emit connected();
-	processNext();
 }
 
 /**
@@ -275,8 +256,11 @@ void ComponentStream::bs_readyRead()
 	qDebug() << "[CS]" << "-recv-" << data;
 
 	d->parser.appendData(data);
-	while ( d->parser.unprocessed().size() > 0 ) {
-		processNext();
+
+	Parser::Event event = d->parser.readNext();
+	while ( !event.isNull() ) {
+		processEvent(event);
+		event = d->parser.readNext();
 	}
 }
 

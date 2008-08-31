@@ -1,4 +1,4 @@
-/**
+/*
  * JabberConnection.h - Jabber connection handler class
  * Copyright (C) 2008  Alexander Saltykov
  *
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- **/
+ */
 
 #ifndef JABBERCONNECTION_H_
 #define JABBERCONNECTION_H_
@@ -38,8 +38,6 @@ class JabberConnection : public QObject
 		void setPassword(const QString& password);
 	private slots:
 		void stream_error(int err);
-		void stream_authenticated();
-		void stream_needAuthParams(bool user, bool passwd, bool);
 	private:
 		class Private;
 		Private *d;

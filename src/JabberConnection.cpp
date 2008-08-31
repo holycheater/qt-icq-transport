@@ -1,4 +1,4 @@
-/**
+/*
  * JabberConnection.cpp - Jabber connection handler class
  * Copyright (C) 2008  Alexander Saltykov
  *
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- **/
+ */
 
 #include "JabberConnection.h"
 
@@ -86,30 +86,4 @@ void JabberConnection::stream_error(int err)
 	qDebug() << "D'oh - a stream error occurred! Code: " << err;
 
 	qApp->quit();
-}
-
-void JabberConnection::stream_authenticated()
-{
-	d->client->start( d->jid.host(), d->jid.user(), d->password, d->jid.resource() );
-
-	qDebug() << "Authenticated on server - sweet!";
-
-	// our work here is done...
-	qApp->quit();
-}
-
-void JabberConnection::stream_needAuthParams(bool user, bool passwd, bool)
-{
-/*
-	if (user) {
-		d->stream->setUsername( d->jid.node() );
-	}
-
-	if (passwd) {
-		d->stream->setPassword(d->password);
-	}
-
-	qDebug() << "Sending auth params ...";
-	d->stream->continueAfterParams();
-*/
 }

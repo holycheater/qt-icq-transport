@@ -34,7 +34,7 @@
 
 			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 			
-			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+			
 
 			<storageModule moduleId="org.eclipse.cdt.core.pathentry">
 				<pathentry base-path="/usr/include/qt4" include="" kind="inc" path="" system="true"/>
@@ -139,6 +139,11 @@
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
+</storageModule>
+<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+<path value=""/>
+</doc-comment-owner>
 </storageModule>
 </cconfiguration>
 	</storageModule>

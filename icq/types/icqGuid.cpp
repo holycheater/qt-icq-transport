@@ -1,4 +1,4 @@
-/**
+/*
  * icqGuid.cpp - 16-byte UUID generator for ICQ capabilities.
  * Copyright (C) 2002-2005  Kopete developers <kopete-devel@kde.org>
  * Copyright (C) 2008  Alexander Saltykov
@@ -17,11 +17,9 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- **/
+ */
 
 #include "icqGuid.h"
-
-#include <QtDebug>
 
 ICQ::Guid::Guid()
 {

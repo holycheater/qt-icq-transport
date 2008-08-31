@@ -54,6 +54,10 @@ class ComponentStream::Private
 		int connectionStatus;
 };
 
+/**
+ * Constructs stream object with @a connector to be used for initating
+ * connection to the server. @a parent will be passed to the QObject constructor
+ */
 ComponentStream::ComponentStream(AdvancedConnector *connector, QObject *parent)
 	: QObject(parent)
 {
@@ -65,6 +69,9 @@ ComponentStream::ComponentStream(AdvancedConnector *connector, QObject *parent)
 	QObject::connect( d->connector, SIGNAL( error() ), SLOT( cr_error() ) );
 }
 
+/**
+ * Destroys the stream
+ */
 ComponentStream::~ComponentStream()
 {
 	delete d;
@@ -180,7 +187,6 @@ void ComponentStream::recv_stream_open()
 	d->sessionId = event.attributes().value("id").toUtf8();
 
 	/* stream accepted, next step - send the handshake */
-	d->connectionStatus = SendHandshake;
 	send_handshake();
 }
 
@@ -284,7 +290,6 @@ void ComponentStream::cr_connected()
 	QObject::connect( d->bs, SIGNAL( readyRead() ), SLOT( bs_readyRead() ) );
 
 	/* we've connected to the server, so we need to initiate communications */
-	d->connectionStatus = InitOutgoingStream;
 	send_stream_open();
 }
 
@@ -301,5 +306,27 @@ void ComponentStream::send_keepalive()
 	write(" ");
 }
 
+/**
+ * @fn void ComponentStream::connected()
+ *
+ * This signal is emitted when the authentication process is finished
+ *
+ * @sa disconnected()
+ */
+
+/**
+ * @fn void ComponentStream::disconnected()
+ *
+ * This signal is emmited when the stream is closed
+ *
+ * @sa connected()
+ */
+
+
+/**
+ * @enum ComponentStream::ConnectionStatus
+ *
+ * This enum describes the next incoming step we are waiting for.
+ */
 
 } /* end of namespace XMPP */

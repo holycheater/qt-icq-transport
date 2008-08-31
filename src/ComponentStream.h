@@ -38,7 +38,7 @@ class ComponentStream : public QObject
 {
 	Q_OBJECT
 
-	enum ConnectionStatus { Disconnected, InitOutgoingStream, InitIncomingStream, SendHandshake, RecvHandshakeReply, Connected };
+	enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
 
 	public:
 		ComponentStream(AdvancedConnector *connector, QObject *parent = 0);

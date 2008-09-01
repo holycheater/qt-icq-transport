@@ -1,5 +1,6 @@
 /qt-icq-transport
 /Makefile
+/doc
 src/Makefile*
 src/debug
 src/release

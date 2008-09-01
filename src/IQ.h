@@ -36,6 +36,7 @@ class IQ : public X::Stanza
 		IQ();
 		~IQ();
 
+		using X::Stanza::setType;
 		void setType(Type type);
 	private:
 		static QString typeToString(Type type);

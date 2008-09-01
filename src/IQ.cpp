@@ -46,7 +46,7 @@ IQ::~IQ()
  */
 void IQ::setType(Type type)
 {
-	Stanza::setType( typeToString(type) );
+	setType( typeToString(type) );
 }
 
 QString IQ::typeToString(Type type)

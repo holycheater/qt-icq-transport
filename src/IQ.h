@@ -21,43 +21,25 @@
 #ifndef XMPP_STANZA_IQ_H_
 #define XMPP_STANZA_IQ_H_
 
-#include <QSharedDataPointer>
+#include "Stanza.h"
 
 namespace XMPP {
 
 class Jid;
 
 
-class IQ
+class IQ : public X::Stanza
 {
 	public:
 		enum Type { Get, Set, Result, Error };
 
 		IQ();
-		IQ(const IQ& other);
 		~IQ();
 
-		IQ& operator=(const IQ& other);
-
-		bool isValid() const;
-
-		Jid to() const;
-		Jid from() const;
-		QString type() const;
-		QString id() const;
-
-		void setTo(const Jid& toJid);
-		void setFrom(const Jid& fromJid);
-		void setType(const QString& type);
 		void setType(Type type);
-		void setId(int id);
 	private:
-		static QString typeToString(int type);
+		static QString typeToString(Type type);
 		static int stringToType(const QString& type);
-
-		class Private;
-		QSharedDataPointer<Private> d;
-
 };
 
 

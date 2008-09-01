@@ -26,52 +26,11 @@
 namespace XMPP {
 
 
-class IQ::Private : public QSharedData
-{
-	public:
-		Private();
-		Private(const Private& other);
-
-		Jid from, to;
-		QString id;
-		int type;
-
-		static quint32 nextId;
-};
-
-quint32 IQ::Private::nextId = 0;
-
-IQ::Private::Private()
-	: QSharedData()
-{
-	type = -1;
-	id = QString::number(++nextId, 16);
-}
-
-IQ::Private::Private(const Private& other)
-	: QSharedData(other)
-{
-	from = other.from;
-	to = other.to;
-	id = QString::number(++nextId, 16);
-	type = other.type;
-}
-
 /**
  * Default constructor for info/query stanza
  */
 IQ::IQ()
-{
-	d = new Private;
-}
-
-/**
- * Copy constructor for info/query stanza
- *
- * @param other		IQ stanza to clone
- */
-IQ::IQ(const IQ& other)
-	: d(other.d)
+	: Stanza()
 {
 }
 
@@ -82,101 +41,15 @@ IQ::~IQ()
 {
 }
 
-IQ& IQ::operator=(const IQ& other)
-{
-	d = other.d;
-	return *this;
-}
-
-bool IQ::isValid() const
-{
-	/* TODO: probably IQ stanza also needs to have 'from' or 'to' field set*/
-	return d->type != 1;
-}
-
-/**
- * IQ stanza 'to' field
- *
- * @return			recepient jabber-id
- */
-Jid IQ::to() const
-{
-	return d->to;
-}
-
-/**
- * IQ stanza 'from' field
- *
- * @return			sender jabber-id
- */
-Jid IQ::from() const
-{
-	return d->from;
-}
-
-/**
- * IQ stanza 'type' field
- *
- * @return			type string
- *
- * @sa Type
- */
-QString IQ::type() const
-{
-	return typeToString(d->type);
-}
-
-/**
- * IQ stanza 'id' field.
- *
- * @return			unique stanza id string
- */
-QString IQ::id() const
-{
-	return d->id;
-}
-
-/**
- * Sets IQ stanza 'to' field to @a toJid jabber-id.
- */
-void IQ::setTo(const Jid& toJid)
-{
-	d->to = toJid;
-}
-
-/**
- * Sets IQ stanza 'from' field to @a fromJid jabber-id.
- */
-void IQ::setFrom(const Jid& fromJid)
-{
-	d->from = fromJid;
-}
-
-/**
- * Sets IQ stanza 'type' feld to @a type string.
- */
-void IQ::setType(const QString& type)
-{
-	d->type = stringToType(type);
-}
-
 /**
  * Sets IQ stanza 'type' field to @a type string.
  */
 void IQ::setType(Type type)
 {
-	d->type = (int)type;
+	Stanza::setType( typeToString(type) );
 }
 
-/**
- * Sets IQ stanza 'id' field to @a id number converted to hex.
- */
-void IQ::setId(int id)
-{
-	d->id = QString::number(id, 16);
-}
-
-QString IQ::typeToString(int type)
+QString IQ::typeToString(Type type)
 {
 	switch (type) {
 		case Get:

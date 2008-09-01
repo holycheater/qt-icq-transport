@@ -301,7 +301,7 @@ void ComponentStream::send_keepalive()
 /**
  * @fn void ComponentStream::disconnected()
  *
- * This signal is emmited when the stream is closed
+ * This signal is emitted when the stream is closed
  *
  * @sa connected()
  */

@@ -66,6 +66,11 @@ QString IQ::typeToString(Type type)
 	}
 }
 
+/**
+ * Converts string type representation of @a type to enum-type.
+ * @param type	string representation of IQ stanza type
+ * @return		Type enum value of the given type.
+ */
 int IQ::stringToType(const QString& type)
 {
 	if (type == "get") {
@@ -84,13 +89,13 @@ int IQ::stringToType(const QString& type)
 }
 
 /**
- * @enum Type
- * @brief This enum describes possible Info/Query stanza types (get,set,result, error).
+ * @enum IQ::Type
+ * @brief This enum describes possible Info/Query stanza types.
  *
- * @var get
- * @var set
- * @var result
- * @var error
+ * @var Get		IQ is an information request.
+ * @var Set		IQ provides required data, sets new values or replace existing ones.
+ * @var Result	IQ response to a successful get/set request
+ * @var Error	An error has occured during result delivery or get/set request.
  */
 
 

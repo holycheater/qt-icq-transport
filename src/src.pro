@@ -10,10 +10,12 @@ QMAKE_DISTCLEAN += $$PWD/debug \
     $$PWD/.obj
 QMAKE_DEL_FILE = rm \
     -rf
-HEADERS += ComponentStream.h \
+HEADERS += IQ.h \
+    ComponentStream.h \
     GatewayTask.h \
     JabberConnection.h
-SOURCES += ComponentStream.cpp \
+SOURCES += IQ.cpp \
+    ComponentStream.cpp \
     GatewayTask.cpp \
     JabberConnection.cpp \
     main.cpp

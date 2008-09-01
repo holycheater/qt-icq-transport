@@ -155,5 +155,22 @@ void Stanza::setId(const QString& id)
 	d->id = id;
 }
 
+/**
+ * Serializes internal XML data to string.
+ * @return string with xml data
+ */
+QString Stanza::toString() const
+{
+	/* TODO: Serialize XML data */
+}
+
+/**
+ * Returns pointer to DOM document containing stanza element.
+ */
+QDomDocument* Stanza::doc()
+{
+	return &(d->doc);
+}
+
 
 }

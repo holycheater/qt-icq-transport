@@ -23,6 +23,8 @@
 
 #include <QSharedDataPointer>
 
+class QDomDocument;
+
 namespace XMPP {
 	class Jid;
 }
@@ -51,6 +53,10 @@ class Stanza
 		void setFrom(const XMPP::Jid& fromJid);
 		void setType(const QString& type);
 		void setId(const QString& id);
+
+		QString toString() const;
+	protected:
+		QDomDocument* doc();
 	private:
 		class Private;
 		QSharedDataPointer<Private> d;

@@ -35,6 +35,9 @@ class Message : public Stanza
 		Message();
 		~Message();
 
+		QString body() const;
+		QString subject() const;
+
 		void setBody(const QString& body);
 		void setSubject(const QString& subject);
 

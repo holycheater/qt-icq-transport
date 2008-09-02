@@ -22,6 +22,7 @@
 #define X_STANZA_H_
 
 class QDomDocument;
+class QDomElement;
 class QString;
 
 namespace XMPP {
@@ -37,6 +38,8 @@ class Stanza
 	public:
 		Stanza();
 		Stanza(const Stanza& other);
+		Stanza(const QDomDocument& document);
+		Stanza(const QDomElement& element);
 		virtual ~Stanza();
 
 		Stanza& operator=(const Stanza& other);

@@ -33,6 +33,26 @@ Stanza::Stanza(const Stanza& other)
 }
 
 /**
+ * Constructs stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
+ *
+ * @param document	DOM document
+ */
+Stanza::Stanza(const QDomDocument& document)
+{
+	m_doc = document.cloneNode(true).toDocument();
+}
+
+/**
+ * Constructs a stanza from a DOM element setting @a element as root-element.
+ * Constructor makes a deep copy of QDomElement.
+ */
+Stanza::Stanza(const QDomElement& element)
+{
+	QDomNode root = m_doc.importNode(element, true);
+	m_doc.appendChild(root);
+}
+
+/**
  * Destroys stanza object.
  */
 Stanza::~Stanza()

@@ -161,7 +161,7 @@ void Stanza::setId(const QString& id)
  */
 QString Stanza::toString() const
 {
-	/* TODO: Serialize XML data */
+	return d->doc.toString();
 }
 
 /**
@@ -170,6 +170,16 @@ QString Stanza::toString() const
 QDomDocument* Stanza::doc()
 {
 	return &(d->doc);
+}
+
+/**
+ * Returns const pointer to DOM document containing stanza element.
+ *
+ * @overload
+ */
+QDomDocument* Stanza::doc() const
+{
+	return const_cast<QDomDocument*>(&d->doc);
 }
 
 

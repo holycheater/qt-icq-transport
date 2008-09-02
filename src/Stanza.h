@@ -57,6 +57,7 @@ class Stanza
 		QString toString() const;
 	protected:
 		QDomDocument* doc();
+		QDomDocument* doc() const;
 	private:
 		class Private;
 		QSharedDataPointer<Private> d;

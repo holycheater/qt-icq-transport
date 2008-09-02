@@ -34,6 +34,8 @@ class IQ : public X::Stanza
 		enum Type { Get, Set, Result, Error };
 
 		IQ();
+		IQ(const QDomDocument& document);
+		IQ(const QDomElement& element);
 		~IQ();
 
 		using X::Stanza::setType;

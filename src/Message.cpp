@@ -44,6 +44,25 @@ Message::Message()
 }
 
 /**
+ * Constructs message stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
+ *
+ * @param document	DOM document
+ */
+Message::Message(const QDomDocument& document)
+	: Stanza(document)
+{
+}
+
+/**
+ * Constructs message stanza from a DOM element setting @a element as root-element.
+ * Constructor makes a deep copy of QDomElement.
+ */
+Message::Message(const QDomElement& element)
+	: Stanza(element)
+{
+}
+
+/**
  * Destroys message stanza.
  */
 Message::~Message()

@@ -35,6 +35,25 @@ IQ::IQ()
 }
 
 /**
+ * Constructs info/query stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
+ *
+ * @param document	DOM document
+ */
+IQ::IQ(const QDomDocument& document)
+	: Stanza(document)
+{
+}
+
+/**
+ * Constructs info/query stanza from a DOM element setting @a element as root-element.
+ * Constructor makes a deep copy of QDomElement.
+ */
+IQ::IQ(const QDomElement& element)
+	: Stanza(element)
+{
+}
+
+/**
  * Destroys IQ stanza object
  */
 IQ::~IQ()

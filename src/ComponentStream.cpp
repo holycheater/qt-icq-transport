@@ -19,6 +19,7 @@
  */
 
 #include "ComponentStream.h"
+#include "Stanza.h"
 
 #include "xmpp.h"
 #include "bytestream.h"
@@ -77,6 +78,15 @@ ComponentStream::~ComponentStream()
 }
 
 /**
+ *
+ * @return base stream namespace
+ */
+QString ComponentStream::baseNS() const
+{
+	return NS_COMPONENT;
+}
+
+/**
  * Connects to the JID domain host to the specified port with secret
  *
  * @param jid		jabber-id
@@ -93,20 +103,19 @@ void ComponentStream::connectToServer(const Jid& jid, quint16 port, const QStrin
 }
 
 /**
- *
- * @return base stream namespace
- */
-QString ComponentStream::baseNS() const
-{
-	return NS_COMPONENT;
-}
-
-/**
  * Close the stream and connection
  */
 void ComponentStream::close()
 {
 	write("</stream:stream>");
+}
+
+/**
+ * Sends @a stanza to the outgoing stream
+ */
+void ComponentStream::sendStanza(const X::Stanza& stanza)
+{
+	write ( stanza.toString().toUtf8() );
 }
 
 /**

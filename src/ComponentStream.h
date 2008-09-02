@@ -29,6 +29,10 @@
 #endif
 #define NS_COMPONENT "jabber:component:accept"
 
+namespace X {
+	class Stanza;
+}
+
 namespace XMPP {
 
 class AdvancedConnector;
@@ -44,10 +48,12 @@ class ComponentStream : public QObject
 		ComponentStream(AdvancedConnector *connector, QObject *parent = 0);
 		~ComponentStream();
 
+		QString baseNS() const;
+
 		void connectToServer(const Jid& jid, quint16 port, const QString& secret);
 		void close();
 
-		QString baseNS() const;
+		void sendStanza(const X::Stanza& stanza);
 	signals:
 		void connected();
 		void disconnected();

@@ -5,11 +5,11 @@
  *      Author: holycheater
  */
 
+#include <QDomDocument>
+
 #include "Stanza.h"
 
 #include "jid/jid.h"
-#include <QSharedData>
-#include <QDomDocument>
 
 namespace X
 {
@@ -17,54 +17,19 @@ namespace X
 
 using namespace XMPP;
 
-class Stanza::Private : public QSharedData
-{
-	public:
-		Private();
-		Private(const Private& other);
-
-		Jid from, to;
-		QString id, type;
-
-		static quint32 nextId;
-
-		/* dom document containing stanza element */
-		QDomDocument doc;
-};
-
-quint32 Stanza::Private::nextId = 0;
-
-Stanza::Private::Private()
-	: QSharedData()
-{
-	type = -1;
-	id = QString::number(++nextId, 16);
-}
-
-Stanza::Private::Private(const Private& other)
-	: QSharedData(other)
-{
-	from = other.from;
-	to = other.to;
-	id = QString::number(++nextId, 16);
-	type = other.type;
-	doc = other.doc.cloneNode(true).toDocument();
-}
-
 /**
  * Default constructor for Stanza element.
  */
 Stanza::Stanza()
 {
-	d = new Private;
 }
 
 /**
  * Constructs a deep copy of @a other.
  */
 Stanza::Stanza(const Stanza& other)
-	: d(other.d)
 {
+	m_doc = other.m_doc.cloneNode(true).toDocument();
 }
 
 /**
@@ -75,20 +40,11 @@ Stanza::~Stanza()
 }
 
 /**
- * Assigns @a other to this stanza and returns a reference to this stanza.
- */
-Stanza& Stanza::operator=(const Stanza& other)
-{
-	d = other.d;
-	return *this;
-}
-
-/**
  * Returns true if this stanza is valid.
  */
 bool Stanza::isValid() const
 {
-	return !d->type.isEmpty();
+	return !m_doc.documentElement().attribute("type").isEmpty();
 }
 
 /**
@@ -96,7 +52,7 @@ bool Stanza::isValid() const
  */
 Jid Stanza::to() const
 {
-	return d->to;
+	return m_doc.documentElement().attribute("to");
 }
 
 /**
@@ -104,7 +60,7 @@ Jid Stanza::to() const
  */
 Jid Stanza::from() const
 {
-	return d->from;
+	return m_doc.documentElement().attribute("from");
 }
 
 /**
@@ -112,7 +68,7 @@ Jid Stanza::from() const
  */
 QString Stanza::type() const
 {
-	return d->type;
+	return m_doc.documentElement().attribute("type");
 }
 
 /**
@@ -120,7 +76,7 @@ QString Stanza::type() const
  */
 QString Stanza::id() const
 {
-	return d->id;
+	return m_doc.documentElement().attribute("id");
 }
 
 /**
@@ -128,7 +84,7 @@ QString Stanza::id() const
  */
 void Stanza::setTo(const XMPP::Jid& toJid)
 {
-	d->to = toJid;
+	m_doc.documentElement().setAttribute( "to", toJid.full() );
 }
 
 /**
@@ -136,7 +92,7 @@ void Stanza::setTo(const XMPP::Jid& toJid)
  */
 void Stanza::setFrom(const XMPP::Jid& fromJid)
 {
-	d->from = fromJid;
+	m_doc.documentElement().setAttribute( "from",fromJid.full() );
 }
 
 /**
@@ -144,7 +100,7 @@ void Stanza::setFrom(const XMPP::Jid& fromJid)
  */
 void Stanza::setType(const QString& type)
 {
-	d->type = type;
+	m_doc.documentElement().setAttribute("type", type);
 }
 
 /**
@@ -152,7 +108,7 @@ void Stanza::setType(const QString& type)
  */
 void Stanza::setId(const QString& id)
 {
-	d->id = id;
+	m_doc.documentElement().setAttribute("id", id);
 }
 
 /**
@@ -161,7 +117,7 @@ void Stanza::setId(const QString& id)
  */
 QString Stanza::toString() const
 {
-	return d->doc.toString();
+	return m_doc.toString();
 }
 
 /**
@@ -169,7 +125,7 @@ QString Stanza::toString() const
  */
 QDomDocument* Stanza::doc()
 {
-	return &(d->doc);
+	return &m_doc;
 }
 
 /**
@@ -179,7 +135,7 @@ QDomDocument* Stanza::doc()
  */
 QDomDocument* Stanza::doc() const
 {
-	return const_cast<QDomDocument*>(&d->doc);
+	return const_cast<QDomDocument*>(&m_doc);
 }
 
 

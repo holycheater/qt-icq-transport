@@ -18,9 +18,9 @@
  *
  */
 
-#include "Message.h"
-
 #include <QDomDocument>
+
+#include "Message.h"
 
 namespace X
 {

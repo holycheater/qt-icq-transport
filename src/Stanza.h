@@ -21,9 +21,8 @@
 #ifndef X_STANZA_H_
 #define X_STANZA_H_
 
-#include <QSharedDataPointer>
-
 class QDomDocument;
+class QString;
 
 namespace XMPP {
 	class Jid;
@@ -59,8 +58,7 @@ class Stanza
 		QDomDocument* doc();
 		QDomDocument* doc() const;
 	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+		QDomDocument m_doc;
 };
 
 

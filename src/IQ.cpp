@@ -18,10 +18,10 @@
  *
  */
 
+#include <QDomDocument>
+
 #include "IQ.h"
 #include "jid/jid.h"
-
-#include <QSharedData>
 
 namespace XMPP {
 

@@ -57,8 +57,8 @@ class LoginManager: public QObject
 		void login_final_actions();
 		QByteArray md5password(const QByteArray& AuthKey);
 	private slots:
-		void incomingFlap(ICQ::FlapBuffer& flap);
-		void incomingSnac(ICQ::SnacBuffer& snac);
+		void incomingFlap(FlapBuffer& flap);
+		void incomingSnac(SnacBuffer& snac);
 	private:
 		class Private;
 		Private *d;

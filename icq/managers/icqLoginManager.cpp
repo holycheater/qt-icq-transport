@@ -28,7 +28,10 @@
 
 #include <QtDebug>
 
-class ICQ::LoginManager::Private
+namespace ICQ {
+
+
+class LoginManager::Private
 {
 	public:
 		enum loginStage { stageAuth, stageProtocolNegotiation, stageServicesSetup, stageFinal };
@@ -36,27 +39,27 @@ class ICQ::LoginManager::Private
 		QString uin;
 		QString password;
 
-		ICQ::Connection *link;
+		Connection *link;
 		loginStage loginStage;
 };
 
-ICQ::LoginManager::LoginManager(Connection* parent)
+LoginManager::LoginManager(Connection* parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect( d->link, SIGNAL( incomingFlap(ICQ::FlapBuffer&) ), this, SLOT ( incomingFlap(ICQ::FlapBuffer&) ) );
-	QObject::connect( d->link, SIGNAL( incomingSnac(ICQ::SnacBuffer&) ), this, SLOT ( incomingSnac(ICQ::SnacBuffer&) ) );
+	QObject::connect( d->link, SIGNAL( incomingFlap(FlapBuffer&) ), this, SLOT ( incomingFlap(FlapBuffer&) ) );
+	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT ( incomingSnac(SnacBuffer&) ) );
 	QObject::connect( this, SIGNAL( loginFinished() ), d->link, SLOT( slot_signedOn() ) );
 }
 
-ICQ::LoginManager::~LoginManager()
+LoginManager::~LoginManager()
 {
 	delete d;
 }
 
-void ICQ::LoginManager::login(QString& uin, QString& password, QString& server)
+void LoginManager::login(QString& uin, QString& password, QString& server)
 {
 	quint16 port = 5190;
 	d->uin = uin;
@@ -66,7 +69,7 @@ void ICQ::LoginManager::login(QString& uin, QString& password, QString& server)
 	d->loginStage = Private::stageAuth;
 }
 
-void ICQ::LoginManager::recv_flap_version(FlapBuffer& reply)
+void LoginManager::recv_flap_version(FlapBuffer& reply)
 {
 	DWord flapVersion = reply.getDWord();
 	if ( flapVersion != 1 ) {
@@ -74,7 +77,7 @@ void ICQ::LoginManager::recv_flap_version(FlapBuffer& reply)
 	}
 }
 
-void ICQ::LoginManager::send_flap_version()
+void LoginManager::send_flap_version()
 {
 	FlapBuffer flap(FlapBuffer::AuthChannel);
 	flap.addDWord(0x1);
@@ -82,21 +85,21 @@ void ICQ::LoginManager::send_flap_version()
 }
 
 /* >> SNAC (17,06) - CLI_AUTH_KEY_REQUEST */
-void ICQ::LoginManager::send_cli_auth_request()
+void LoginManager::send_cli_auth_request()
 {
-	SnacBuffer snac(ICQ::sfAuth, 0x06);
+	SnacBuffer snac(sfAuth, 0x06);
 	snac.addTlv( (Tlv)Tlv(0x01).addData(d->uin) );
 	d->link->write(snac);
 }
 
 /* << SNAC (17,07) - SRV_AUTH_KEY_RESPONSE
  * >> SNAC (17,02) - CLI_MD5_LOGIN */
-void ICQ::LoginManager::recv_auth_key(SnacBuffer& reply)
+void LoginManager::recv_auth_key(SnacBuffer& reply)
 {
 	Word keylen = reply.getWord();
 	QByteArray authkey = reply.read(keylen);
 
-	SnacBuffer snac(ICQ::sfAuth, 0x02);
+	SnacBuffer snac(sfAuth, 0x02);
 
 	snac.addTlv(0x01, d->uin);
 	snac.addTlv( 0x03, QLatin1String("ICQBasic") );
@@ -107,9 +110,8 @@ void ICQ::LoginManager::recv_auth_key(SnacBuffer& reply)
 }
 
 /* << SNAC (17,03) - SRV_LOGIN_REPLY */
-void ICQ::LoginManager::recv_auth_reply(SnacBuffer& reply)
+void LoginManager::recv_auth_reply(SnacBuffer& reply)
 {
-	/* TODO: Check for errors (TLV 0x08) */
 	TlvChain list = reply;
 	reply.seekEnd();
 
@@ -133,7 +135,7 @@ void ICQ::LoginManager::recv_auth_reply(SnacBuffer& reply)
 	d->link->startConnectionTimer();
 }
 
-void ICQ::LoginManager::send_cli_auth_cookie()
+void LoginManager::send_cli_auth_cookie()
 {
 	FlapBuffer flap(FlapBuffer::AuthChannel);
 	flap.addDWord(0x1);
@@ -143,12 +145,12 @@ void ICQ::LoginManager::send_cli_auth_cookie()
 
 /* << SNAC(01,03) - SRV_FAMILIES
  * >> SNAC(01,17) - CLI_FAMILIES_VERSIONS */
-void ICQ::LoginManager::recv_snac_list(SnacBuffer& reply)
+void LoginManager::recv_snac_list(SnacBuffer& reply)
 {
 	reply.seekEnd();
 
 	/* send out snac(01,17) - CLI_FAMILIES_VERSIONS - client services and version */
-	SnacBuffer snac(ICQ::sfGeneric, 0x17);
+	SnacBuffer snac(sfGeneric, 0x17);
 
 	snac.addWord(0x0001).addWord(0x0004);
 	snac.addWord(0x0002).addWord(0x0001);
@@ -167,7 +169,7 @@ void ICQ::LoginManager::recv_snac_list(SnacBuffer& reply)
  * >> SNAC(03,02) - CLI_BUDDYLIST_RIGHTS_REQ
  * >> SNAC(04,04) - CLI_ICBM_PARAM_REQ
  * >> SNAC(09,02) - CLI_PRIVACY_RIGHTS_REQ */
-void ICQ::LoginManager::recv_snac_versions(SnacBuffer& reply)
+void LoginManager::recv_snac_versions(SnacBuffer& reply)
 {
 	reply.seekEnd(); // we've got it.
 
@@ -185,16 +187,16 @@ void ICQ::LoginManager::recv_snac_versions(SnacBuffer& reply)
 
 /* << SNAC(02,03) - SRV_LOCATION_RIGHTS_REPLY
  * >> SNAC(02,04) - CLI_SET_LOCATION_INFO */
-void ICQ::LoginManager::recv_location_services_limits(SnacBuffer& reply)
+void LoginManager::recv_location_services_limits(SnacBuffer& reply)
 {
 	reply.seekEnd();
 
-	SnacBuffer snac(ICQ::sfLocation, 0x04);
+	SnacBuffer snac(sfLocation, 0x04);
 	Tlv tlv(0x05);
-	tlv.addData( ICQ::Capabilities[ICQ::ccICQDirectConnect] );
-	tlv.addData( ICQ::Capabilities[ICQ::ccICQServerRelay] );
-	tlv.addData( ICQ::Capabilities[ICQ::ccUTF8Messages] );
-	tlv.addData( ICQ::Capabilities[ICQ::ccRTFMessages] );
+	tlv.addData( Capabilities[ccICQDirectConnect] );
+	tlv.addData( Capabilities[ccICQServerRelay] );
+	tlv.addData( Capabilities[ccUTF8Messages] );
+	tlv.addData( Capabilities[ccRTFMessages] );
 
 	snac.addTlv(tlv); // 0x05 - clsid values
 
@@ -205,14 +207,14 @@ void ICQ::LoginManager::recv_location_services_limits(SnacBuffer& reply)
 }
 
 /* << SNAC(03,03) - SRV_BUDDYLIST_RIGHTS_REPLY */
-void ICQ::LoginManager::recv_buddy_list_parameters(SnacBuffer& reply)
+void LoginManager::recv_buddy_list_parameters(SnacBuffer& reply)
 {
 	reply.seekEnd();
 }
 
 /* << SNAC(04,05) - SRV_ICBM_PARAMS
  * >> SNAC(04,02) - CLI_SET_ICBM_PARAMS */
-void ICQ::LoginManager::recv_icbm_parameters(SnacBuffer& reply)
+void LoginManager::recv_icbm_parameters(SnacBuffer& reply)
 {
 	// TODO: SNAC (04,01) - SRV_ICBM_ERROR handling
 	Word channel = reply.getWord();
@@ -233,7 +235,7 @@ void ICQ::LoginManager::recv_icbm_parameters(SnacBuffer& reply)
 	unknown = 0;
 
 	/* Send snac(04,02) */
-	SnacBuffer snac(ICQ::sfICBM, 0x02);
+	SnacBuffer snac(sfICBM, 0x02);
 	snac.addWord(channel);
 	snac.addDWord(msgFlags);
 	snac.addWord(maxMsgSnacSize);
@@ -246,7 +248,7 @@ void ICQ::LoginManager::recv_icbm_parameters(SnacBuffer& reply)
 }
 
 /* << SNAC(09,03) - SRV_PRIVACY_RIGHTS_REPLY */
-void ICQ::LoginManager::recv_privacy_parameters(SnacBuffer& reply)
+void LoginManager::recv_privacy_parameters(SnacBuffer& reply)
 {
 	TlvChain list = reply;
 	reply.seekEnd();
@@ -260,11 +262,11 @@ void ICQ::LoginManager::recv_privacy_parameters(SnacBuffer& reply)
 
 /* >> SNAC(01,1E) - CLI_SETxSTATUS
  * >> SNAC(01,02) - CLI_READY */
-void ICQ::LoginManager::login_final_actions()
+void LoginManager::login_final_actions()
 {
 	emit loginFinished();
 
-	SnacBuffer snac(ICQ::sfGeneric, 0x02);
+	SnacBuffer snac(sfGeneric, 0x02);
 
 	snac.addWord(0x0001).addWord(0x0004).addWord(0x0110).addWord(0x1246);
 	snac.addWord(0x0002).addWord(0x0001).addWord(0x0110).addWord(0x1246);
@@ -277,17 +279,17 @@ void ICQ::LoginManager::login_final_actions()
 	d->link->write(snac);
 }
 
-QByteArray ICQ::LoginManager::md5password(const QByteArray& AuthKey)
+QByteArray LoginManager::md5password(const QByteArray& AuthKey)
 {
 	QCryptographicHash md5hash(QCryptographicHash::Md5);
 
 	md5hash.addData(AuthKey);
 	md5hash.addData( d->password.toLocal8Bit() );
-	md5hash.addData( (char*)ICQ::AIM_MD5_STRING, qstrlen(ICQ::AIM_MD5_STRING) );
+	md5hash.addData( (char*)AIM_MD5_STRING, qstrlen(AIM_MD5_STRING) );
 	return md5hash.result();
 }
 
-void ICQ::LoginManager::incomingFlap(ICQ::FlapBuffer& flap)
+void LoginManager::incomingFlap(FlapBuffer& flap)
 {
 	if ( flap.channel() == FlapBuffer::AuthChannel ) {
 		recv_flap_version(flap);
@@ -301,38 +303,41 @@ void ICQ::LoginManager::incomingFlap(ICQ::FlapBuffer& flap)
 	}
 }
 
-void ICQ::LoginManager::incomingSnac(ICQ::SnacBuffer& snac)
+void LoginManager::incomingSnac(SnacBuffer& snac)
 {
-	if ( snac.family() == ICQ::sfAuth && snac.subtype() == 0x07 ) {
+	if ( snac.family() == sfAuth && snac.subtype() == 0x07 ) {
 		recv_auth_key(snac);
 		return;
 	}
-	if ( snac.family() == ICQ::sfAuth && snac.subtype() == 0x03 ) {
+	if ( snac.family() == sfAuth && snac.subtype() == 0x03 ) {
 		recv_auth_reply(snac);
 		return;
 	}
-	if ( snac.family() == ICQ::sfGeneric && snac.subtype() == 0x03 ) {
+	if ( snac.family() == sfGeneric && snac.subtype() == 0x03 ) {
 		recv_snac_list(snac);
 		return;
 	}
-	if ( snac.family() == ICQ::sfGeneric && snac.subtype() == 0x18 ) {
+	if ( snac.family() == sfGeneric && snac.subtype() == 0x18 ) {
 		recv_snac_versions(snac);
 		return;
 	}
-	if ( snac.family() == ICQ::sfLocation && snac.subtype() == 0x03 ) {
+	if ( snac.family() == sfLocation && snac.subtype() == 0x03 ) {
 		recv_location_services_limits(snac);
 		return;
 	}
-	if ( snac.family() == ICQ::sfBLM && snac.subtype() == 0x03 ) {
+	if ( snac.family() == sfBLM && snac.subtype() == 0x03 ) {
 		recv_buddy_list_parameters(snac);
 		return;
 	}
-	if ( snac.family() == ICQ::sfICBM && snac.subtype() == 0x05 ) {
+	if ( snac.family() == sfICBM && snac.subtype() == 0x05 ) {
 		recv_icbm_parameters(snac);
 		return;
 	}
-	if ( snac.family() == ICQ::sfPrivacyManagement && snac.subtype() == 0x03 ) {
+	if ( snac.family() == sfPrivacyManagement && snac.subtype() == 0x03 ) {
 		recv_privacy_parameters(snac);
 		return;
 	}
 }
+
+
+} /* end of namespace ICQ */

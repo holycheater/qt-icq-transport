@@ -108,16 +108,7 @@ QString Message::subject() const
  */
 void Message::setSubject(const QString& subject)
 {
-	QDomElement eSubject;
-	if ( !doc()->documentElement().elementsByTagName("subject").isEmpty() ) {
-		eSubject = doc()->documentElement().elementsByTagName("subject").item(0).toElement();
-		doc()->documentElement().removeChild(eSubject);
-	}
-	eSubject = doc()->createElement("subject");
-	doc()->documentElement().appendChild(eSubject);
-
-	QDomText text = doc()->createTextNode(subject);
-	eSubject.appendChild(text);
+	setProperty("subject", subject);
 }
 
 /**
@@ -127,16 +118,7 @@ void Message::setSubject(const QString& subject)
  */
 void Message::setBody(const QString& body)
 {
-	QDomElement eBody;
-	if ( !doc()->documentElement().elementsByTagName("body").isEmpty() ) {
-		eBody = doc()->documentElement().elementsByTagName("body").item(0).toElement();
-		doc()->documentElement().removeChild(eBody);
-	}
-	eBody = doc()->createElement("body");
-	doc()->documentElement().appendChild(eBody);
-
-	QDomText text = doc()->createTextNode(body);
-	eBody.appendChild(text);
+	setProperty("body", body);
 }
 
 /**

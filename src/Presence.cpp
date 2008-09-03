@@ -104,16 +104,7 @@ void Presence::setPriority(int priority)
 		priority = 128;
 	}
 
-	QDomElement ePriority;
-	if ( !doc()->documentElement().elementsByTagName("priority").isEmpty() ) {
-		ePriority = doc()->documentElement().elementsByTagName("priority").item(0).toElement();
-		doc()->documentElement().removeChild(ePriority);
-	}
-	ePriority = doc()->createElement("priority");
-	doc()->documentElement().appendChild(ePriority);
-
-	QDomText text = doc()->createTextNode( QString::number(priority) );
-	ePriority.appendChild(text);
+	setProperty( "priority", QString::number(priority) );
 }
 
 /**
@@ -121,16 +112,7 @@ void Presence::setPriority(int priority)
  */
 void Presence::setStatus(const QString& status)
 {
-	QDomElement eStatus;
-	if ( !doc()->documentElement().elementsByTagName("status").isEmpty() ) {
-		eStatus = doc()->documentElement().elementsByTagName("status").item(0).toElement();
-		doc()->documentElement().removeChild(eStatus);
-	}
-	eStatus = doc()->createElement("status");
-	doc()->documentElement().appendChild(eStatus);
-
-	QDomText text = doc()->createTextNode(status);
-	eStatus.appendChild(text);
+	setProperty("status", status);
 }
 
 /**

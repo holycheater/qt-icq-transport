@@ -48,6 +48,16 @@ class Connection: public QObject
 	static const int CONNECTION_TIMEOUT = 30000;
 	public:
 		enum ConnectionStatus { Disconnected, Connecting, Connected };
+		enum OnlineStatus {
+			Online			= 0x0000,
+			Away			= 0x0001,
+			DoNotDisturb	= 0x0002,
+			NotAvailable	= 0x0004,
+			FreeForChat		= 0x0020,
+			Invisible		= 0x0100,
+			Offline			= 0xFFFF
+			};
+
 		Connection(QObject *parent);
 		Connection(const QString& uin,
 				const QString& password,
@@ -93,20 +103,20 @@ class Connection: public QObject
 		void signOff();
 	signals:
 		void statusChanged(int status);
-		void incomingFlap(ICQ::FlapBuffer& flap);
-		void incomingSnac(ICQ::SnacBuffer& snac);
+		void incomingFlap(FlapBuffer& flap);
+		void incomingSnac(SnacBuffer& snac);
 		void readyRead();
 
-		void ssiNewGroup(ICQ::Contact *contact);
-		void ssiNewBuddy(ICQ::Contact *contact);
-		void ssiNewIgnore(ICQ::Contact *contact);
-		void ssiNewVisible(ICQ::Contact *contact);
-		void ssiNewInvisible(ICQ::Contact *contact);
+		void ssiNewGroup(Contact *contact);
+		void ssiNewBuddy(Contact *contact);
+		void ssiNewIgnore(Contact *contact);
+		void ssiNewVisible(Contact *contact);
+		void ssiNewInvisible(Contact *contact);
 
 		void userOnline(QString userId);
 		void userOffline(QString userId);
 
-		void incomingMessage(const ICQ::Message& msg);
+		void incomingMessage(const Message& msg);
 
 		void signedOff();
 	protected:

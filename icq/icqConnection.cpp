@@ -31,7 +31,16 @@
 #include <QTimer>
 #include <QtDebug>
 
-class ICQ::Connection::Private
+namespace ICQ {
+
+/**
+ * @class Connection
+ * @brief This class manages connection to the ICQ server.
+ * @details Details here.
+ */
+
+
+class Connection::Private
 {
 	public:
 		Private(Connection* parent);
@@ -71,7 +80,7 @@ class ICQ::Connection::Private
 		int m_connectionStatus;
 };
 
-ICQ::Connection::Private::Private(Connection* parent)
+Connection::Private::Private(Connection* parent)
 {
 	m_connectionStatus = Connection::Disconnected;
 
@@ -80,7 +89,7 @@ ICQ::Connection::Private::Private(Connection* parent)
 
 	socket = new QTcpSocket(parent);
 
-	onlineStatus = ICQ::stOnline;
+	onlineStatus = Online;
 
 	m_flapSequence = 0;
 	m_snacRequest = 0;
@@ -94,14 +103,14 @@ ICQ::Connection::Private::Private(Connection* parent)
 	QObject::connect( socket, SIGNAL( disconnected() ), q, SLOT( slot_disconnected() ) );
 }
 
-ICQ::Connection::Private::~Private()
+Connection::Private::~Private()
 {
 	delete rateManager;
 	delete ssiManager;
 	delete socket;
 }
 
-ICQ::Word ICQ::Connection::Private::flapSequence()
+Word Connection::Private::flapSequence()
 {
 	if ( m_flapSequence >= 0x8000 ) {
 		m_flapSequence = 0;
@@ -109,7 +118,7 @@ ICQ::Word ICQ::Connection::Private::flapSequence()
 	return ++m_flapSequence;
 }
 
-void ICQ::Connection::Private::setConnectionStatus(int status)
+void Connection::Private::setConnectionStatus(int status)
 {
 	if ( m_connectionStatus == status ) {
 		return;
@@ -122,13 +131,27 @@ void ICQ::Connection::Private::setConnectionStatus(int status)
 	m_connectionStatus = status;
 }
 
-ICQ::Connection::Connection(QObject *parent = 0)
+/**
+ * Constructs ICQ connection object.
+ *
+ * @param parent	when the parent will be deleted, connection object will be destroyed.
+ */
+Connection::Connection(QObject *parent = 0)
 	: QObject(parent)
 {
 	d = new Private(this);
 }
 
-ICQ::Connection::Connection(const QString& uin, const QString& password, const QString& server, quint16 port, QObject *parent)
+/**
+ * Constructs ICQ connection object with given parameters.
+ *
+ * @param uin			ICQ user uin
+ * @param password		ICQ user password
+ * @param server		Server to connect to
+ * @param port			Port to connect to
+ * @param parent		when the parent will be deleted, connection object will be destroyed
+ */
+Connection::Connection(const QString& uin, const QString& password, const QString& server, quint16 port, QObject *parent)
 	: QObject(parent)
 {
 	d = new Private(this);
@@ -139,17 +162,28 @@ ICQ::Connection::Connection(const QString& uin, const QString& password, const Q
 	d->port = port;
 }
 
-ICQ::Connection::~Connection()
+/**
+ * Destroys connection object.
+ */
+Connection::~Connection()
 {
 	delete d;
 }
 
-int ICQ::Connection::connectionStatus() const
+/**
+ * Returns current connection status.
+ *
+ * @sa ConnectionStatus
+ */
+int Connection::connectionStatus() const
 {
 	return d->connectionStatus();
 }
 
-bool ICQ::Connection::isSignedOn() const
+/**
+ * Returns true if connection managed to sign-on on the ICQ server.
+ */
+bool Connection::isSignedOn() const
 {
 	if ( connectionStatus() == Connected ) {
 		return true;
@@ -157,12 +191,21 @@ bool ICQ::Connection::isSignedOn() const
 	return false;
 }
 
-QString ICQ::Connection::userId() const
+/**
+ * Returns user ICQ UIN for current connection.
+ */
+QString Connection::userId() const
 {
 	return d->uin;
 }
 
-void ICQ::Connection::connectToHost(const QString& hostname, quint16 port)
+/**
+ * Starts connecting to @a host at given @a port by looking up hostname.
+ *
+ * @param hostname		ICQ login server hostname
+ * @param port			ICQ login server port
+ */
+void Connection::connectToHost(const QString& hostname, quint16 port)
 {
 	qDebug() << "[ICQ::Connection] Looking up hostname" << hostname;
 
@@ -176,17 +219,26 @@ void ICQ::Connection::connectToHost(const QString& hostname, quint16 port)
 	d->port = port;
 }
 
-void ICQ::Connection::connectToHost(const QHostAddress& host, quint16 port)
+/**
+ * Starts connecting to @a host at given @a port.
+ *
+ * @param host			ICQ login server IP address
+ * @param port			ICQ login server port
+ */
+void Connection::connectToHost(const QHostAddress& host, quint16 port)
 {
 	d->socket->connectToHost(host, port);
 }
 
-void ICQ::Connection::connectToServer(const QHostInfo& host)
+/**
+ * Starts connecting to server by given DNS lookup result. Throws an error if dns lookup fails.
+ * @param host			DNS lookup result
+ */
+void Connection::connectToServer(const QHostInfo& host)
 {
 	if ( host.error() != QHostInfo::NoError ) {
 		qCritical() << "[ICQ::Connection] Lookup failed:" << host.errorString();
 		return;
-		// TODO: Throw error for GUI
 	}
 	QHostAddress address = host.addresses().value(0);
 	qDebug() << "[ICQ::Connection] Found address:" << address.toString();
@@ -196,45 +248,88 @@ void ICQ::Connection::connectToServer(const QHostInfo& host)
 	delete d->lookupTimer;
 }
 
-void ICQ::Connection::disconnectFromHost()
+/**
+ * closes connection to ICQ server.
+ */
+void Connection::disconnectFromHost()
 {
 	d->socket->disconnectFromHost();
 }
 
-void ICQ::Connection::startConnectionTimer()
+/**
+ * Starts connection sequence timeout timer.
+ */
+void Connection::startConnectionTimer()
 {
 	d->connectTimer->stop();
 	d->connectTimer->start(CONNECTION_TIMEOUT);
 }
 
-ICQ::Connection* ICQ::Connection::setUin(const QString& uin)
+/**
+ * Sets connection ICQ user UIN to @a uin.
+ *
+ * @param uin			ICQ UIN
+ * @return				Pointer to this connection
+ * @sa setPassword(), setServer(), setServerPort()
+ */
+Connection* Connection::setUin(const QString& uin)
 {
 	d->uin = uin;
 	return this;
 }
-ICQ::Connection* ICQ::Connection::setPassword(const QString& password)
+
+/**
+ * Sets connection ICQ user password to @a password.
+ *
+ * @param password		ICQ password
+ * @return				Pointer to this connection
+ * @sa setUin(), setServer(), setServerPort()
+ */
+Connection* Connection::setPassword(const QString& password)
 {
 	d->password = password;
 	return this;
 }
 
-ICQ::Connection* ICQ::Connection::setServer(const QString& server)
+/**
+ * Sets connection ICQ login server host to @a server.
+ *
+ * @param server		ICQ login server host
+ * @return				Pointer to this connection
+ * @sa setUin(), setPassword(), setServerPort()
+ */
+Connection* Connection::setServer(const QString& server)
 {
 	d->server = server;
 	return this;
 }
 
-ICQ::Connection* ICQ::Connection::setServerPort(quint16 port)
+/**
+ * Sets connection ICQ login server port to @a port.
+ *
+ * @param port			ICQ login server port
+ * @return				Pointer to this connection
+ * @sa setUin(), setPassword(), setServer()
+ */
+Connection* Connection::setServerPort(quint16 port)
 {
 	d->port = port;
 	return this;
 }
 
-ICQ::Connection* ICQ::Connection::setOnlineStatus(Word onlineStatus)
+/**
+ * Sets connected user online status. If user is offline, connection starts
+ * to login on the icq server.
+ *
+ * @param onlineStatus	ICQ user online status
+ * @return				Pointer to this connection
+ * @sa	setVisibility()
+ */
+Connection* Connection::setOnlineStatus(Word onlineStatus)
 {
 	d->onlineStatus = onlineStatus;
 
-	if ( onlineStatus == ICQ::stOffline ) {
+	if ( onlineStatus == Offline ) {
 		if ( connectionStatus() == Connecting ) {
 			d->socket->disconnectFromHost();
 		} else if ( connectionStatus() == Connected ) {
@@ -252,8 +347,8 @@ ICQ::Connection* ICQ::Connection::setOnlineStatus(Word onlineStatus)
 		return this;
 	}
 
-	SnacBuffer reqSetStatus(ICQ::sfGeneric, 0x1E);
-	Word flags = ICQ::flagDCAuth;
+	SnacBuffer reqSetStatus(sfGeneric, 0x1E);
+	Word flags = flagDCAuth;
 	reqSetStatus.addTlv( (Tlv)Tlv(0x06).addWord(flags).addWord(d->onlineStatus) );
 
 	reqSetStatus.addTlv( (Tlv)Tlv(0x08).addWord(0x0) ); // unknown. Don't know what is that;
@@ -279,13 +374,20 @@ ICQ::Connection* ICQ::Connection::setOnlineStatus(Word onlineStatus)
 	return this;
 }
 
-ICQ::Connection* ICQ::Connection::setVisibility(int vis)
+Connection* Connection::setVisibility(int vis)
 {
 	Q_UNUSED(vis)
 	return this;
 }
 
-void ICQ::Connection::signOn(QString& uin, QString& password, QString& server)
+/**
+ * Sign on on the ICQ server with the given credentails.
+ *
+ * @param uin			ICQ user UIN
+ * @param password		ICQ user password
+ * @param server		ICQ login server host
+ */
+void Connection::signOn(QString& uin, QString& password, QString& server)
 {
 	d->setConnectionStatus(Connecting);
 
@@ -298,17 +400,33 @@ void ICQ::Connection::signOn(QString& uin, QString& password, QString& server)
 	startConnectionTimer();
 }
 
-void ICQ::Connection::snacRequest(Word family, Word subtype)
+/**
+ * Send empty snac request 'on the wire'.
+ *
+ * @param family		Snac family
+ * @param subtype		Snac subtype
+ */
+void Connection::snacRequest(Word family, Word subtype)
 {
 	write( SnacBuffer(family, subtype) );
 }
 
-void ICQ::Connection::write(const FlapBuffer& flap)
+/**
+ * Write @a flap packet to the socket.
+ *
+ * @param flap			FLAP data packet
+ */
+void Connection::write(const FlapBuffer& flap)
 {
 	writeForced( const_cast<FlapBuffer*>(&flap) );
 }
 
-void ICQ::Connection::write(const SnacBuffer& snac)
+/**
+ * Write @a snac packet to the socket.
+ *
+ * @param snac			SNAC data packet
+ */
+void Connection::write(const SnacBuffer& snac)
 {
 	if ( d->rateManager && !d->rateManager->canSend(snac) ) {
 		d->rateManager->enqueue(snac);
@@ -317,7 +435,12 @@ void ICQ::Connection::write(const SnacBuffer& snac)
 	}
 }
 
-void ICQ::Connection::writeForced(FlapBuffer* flap)
+/**
+ * Write @a flap packet to the socket without checking the rate manager.
+ *
+ * @param flap			Pointer to FLAP data packet
+ */
+void Connection::writeForced(FlapBuffer* flap)
 {
 	flap->setSequence( d->flapSequence() );
 
@@ -326,7 +449,12 @@ void ICQ::Connection::writeForced(FlapBuffer* flap)
 	d->socket->write( flap->data() );
 }
 
-void ICQ::Connection::writeForced(SnacBuffer* snac)
+/**
+ * Write @a snac packet to the socket without checking the rate manager.
+ *
+ * @param snac			Pointer to SNAC data packet
+ */
+void Connection::writeForced(SnacBuffer* snac)
 {
 	snac->setRequestId( d->snacRequest() );
 
@@ -340,7 +468,10 @@ void ICQ::Connection::writeForced(SnacBuffer* snac)
 		<< "requestid" << QByteArray::number(snac->requestId(), 16);
 }
 
-void ICQ::Connection::signOff()
+/**
+ * Sign off from the ICQ server.
+ */
+void Connection::signOff()
 {
 	qDebug() << "[ICQ::Connection] Signing off";
 	write( FlapBuffer(FlapBuffer::CloseChannel) );
@@ -348,28 +479,34 @@ void ICQ::Connection::signOff()
 	d->socket->disconnectFromHost();
 }
 
-ICQ::RateManager* ICQ::Connection::rateManager() const
+/**
+ * Returns pointer to the RateManager for this connection.
+ */
+RateManager* Connection::rateManager() const
 {
 	return d->rateManager;
 }
 
-ICQ::SSIManager* ICQ::Connection::ssiManager() const
+/**
+ * Returns pointer to the SSIManager for this connection. SSI is server-side information.
+ */
+SSIManager* Connection::ssiManager() const
 {
 	return d->ssiManager;
 }
 
-void ICQ::Connection::sendMetaRequest(Word type)
+void Connection::sendMetaRequest(Word type)
 {
 	d->metaManager->sendMetaRequest(type);
 }
 
-void ICQ::Connection::sendMetaRequest(Word type, Buffer& data)
+void Connection::sendMetaRequest(Word type, Buffer& data)
 {
 	d->metaManager->sendMetaRequest(type, data);
 }
 
 /* << SNAC(xx,01) - error handling */
-void ICQ::Connection::handle_error(SnacBuffer& snac)
+void Connection::handle_error(SnacBuffer& snac)
 {
 	QString errmsg = "errCode " + QString::number(snac.getWord(), 16);
 	TlvChain tlvs = snac.readAll();
@@ -379,21 +516,21 @@ void ICQ::Connection::handle_error(SnacBuffer& snac)
 	qDebug() << "[ICQ::Connection] ERROR!!" << "family" << snac.family() << errmsg;
 }
 
-void ICQ::Connection::incomingData()
+void Connection::incomingData()
 {
-	if ( d->socket->bytesAvailable() < ICQ::FLAP_HEADER_SIZE ) {
+	if ( d->socket->bytesAvailable() < FLAP_HEADER_SIZE ) {
 		qDebug() << "[ICQ::Connection] Not enough data for a header in the socket";
 		return; // we don't have a header at this point
 	}
 
-	FlapBuffer flap = FlapBuffer::fromRawData( d->socket->peek(ICQ::FLAP_HEADER_SIZE) );
+	FlapBuffer flap = FlapBuffer::fromRawData( d->socket->peek(FLAP_HEADER_SIZE) );
 
-	if (flap.flapDataSize() > (d->socket->bytesAvailable() - ICQ::FLAP_HEADER_SIZE) ) {
+	if (flap.flapDataSize() > (d->socket->bytesAvailable() - FLAP_HEADER_SIZE) ) {
 		qDebug() << "[ICQ::Connection] Not enough data for a packet" << flap.flapDataSize() << d->socket->bytesAvailable();
 		return; // we don't need an incomplete packet
 	}
 
-	d->socket->seek(ICQ::FLAP_HEADER_SIZE);
+	d->socket->seek(FLAP_HEADER_SIZE);
 
 	flap.setData( d->socket->read( flap.flapDataSize() ) );
 /*
@@ -402,7 +539,7 @@ void ICQ::Connection::incomingData()
 		<< "channel" << flap.channel()
 		<< "sequence" << QByteArray::number(flap.sequence(), 16)
 		<< "size" << flap.size();
-	qDebug() << "[ICQ::Connection] << flap data" << flap.data().remove(0, ICQ::FLAP_HEADER_SIZE).toHex();*/
+	qDebug() << "[ICQ::Connection] << flap data" << flap.data().remove(0, FLAP_HEADER_SIZE).toHex();*/
 
 	if ( flap.channel() == FlapBuffer::CloseChannel ) {
 		d->socket->disconnectFromHost();
@@ -436,7 +573,7 @@ void ICQ::Connection::incomingData()
 		}
 
 		// read out motd
-		if ( snac.family() == ICQ::sfGeneric && snac.subtype() == 0x13 ) {
+		if ( snac.family() == sfGeneric && snac.subtype() == 0x13 ) {
 			snac.seekEnd();
 		}
 
@@ -461,13 +598,13 @@ void ICQ::Connection::incomingData()
 	}
 }
 
-void ICQ::Connection::sendKeepAlive()
+void Connection::sendKeepAlive()
 {
 	qDebug() << "[ICQ::Connection] Keep-alive sent";
 	write ( FlapBuffer(FlapBuffer::KeepAliveChannel) );
 }
 
-void ICQ::Connection::slot_disconnected()
+void Connection::slot_disconnected()
 {
 	d->socket->close();
 	qDebug() << "[ICQ::Connection] Disconnected";
@@ -478,12 +615,12 @@ void ICQ::Connection::slot_disconnected()
 	}
 }
 
-void ICQ::Connection::slot_connected()
+void Connection::slot_connected()
 {
 	qDebug() << "[ICQ::Connection] Connected to" << d->socket->peerName() << "port" << d->socket->peerPort();
 }
 
-void ICQ::Connection::slot_lookupFailed()
+void Connection::slot_lookupFailed()
 {
 	QHostInfo::abortHostLookup(d->lookupId);
 	d->lookupTimer->deleteLater();
@@ -491,19 +628,20 @@ void ICQ::Connection::slot_lookupFailed()
 
 	qDebug() << "[Error] Host lookup timeout";
 
-	emit statusChanged(ICQ::stOffline);
+	emit statusChanged(Offline);
 }
 
-void ICQ::Connection::slot_connectionTimeout()
+void Connection::slot_connectionTimeout()
 {
 	qWarning() << "[error]" << "connection timed out";
 	d->connectTimer->deleteLater();
 	d->socket->disconnectFromHost();
 	d->setConnectionStatus(Disconnected);
-	emit statusChanged(ICQ::stOffline);
+
+	emit statusChanged(Offline);
 }
 
-void ICQ::Connection::slot_signedOn()
+void Connection::slot_signedOn()
 {
 	delete d->connectTimer;
 
@@ -516,7 +654,7 @@ void ICQ::Connection::slot_signedOn()
 	d->userInfoManager = new UserInfoManager(this);
 	d->msgManager = new MessageManager(this);
 	d->metaManager = new MetaInfoManager(this);
-	QObject::connect(d->metaManager, SIGNAL( metaInfoAvailable(ICQ::Word,ICQ::Buffer&) ), d->msgManager, SLOT( incomingMetaInfo(ICQ::Word,ICQ::Buffer&) ) );
+	QObject::connect(d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->msgManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );
 
 	d->msgManager->requestOfflineMessages();
 
@@ -524,12 +662,114 @@ void ICQ::Connection::slot_signedOn()
 	setOnlineStatus(d->onlineStatus);
 }
 
-void ICQ::Connection::slot_signedOff()
+void Connection::slot_signedOff()
 {
 	delete d->keepAliveTimer;
-	emit statusChanged(ICQ::stOffline);
+	emit statusChanged(Offline);
 
 	delete d->userInfoManager;
 	delete d->msgManager;
 	delete d->metaManager;
 }
+
+/**
+ * @fn void Connection::statusChanged(int status)
+ * @brief This signal is emitted when the the connected user status changes.
+ *
+ * @param status		ICQ online status
+ */
+
+/**
+ * @fn void Connection::incomingFlap(FlapBuffer& flap)
+ * @brief This signal is emitted when there is incoming @a flap packet.
+ *
+ * @param flap			FLAP data packet
+ */
+
+/**
+ * @fn void Connection::incomingSnac(SnacBuffer& snac)
+ * @brief This signal is emitted when there is incoming @a snac packet.
+ *
+ * @param snac			SNAC data packet
+ */
+
+/**
+ * @fn void Connection::readyRead()
+ * @brief This signal is emitted when not all data was processed in the incomingData() slot to process next packet.
+ */
+
+/**
+ * @fn void Connection::ssiNewGroup(Contact *contact)
+ * @brief This signal is emitted when new group was added to the roster.
+ */
+
+/**
+ * @fn void Connection::ssiNewBuddy(Contact *contact)
+ * @brief This signal is emitted when new buddy was added to the roster.
+ */
+
+/**
+ * @fn void Connection::ssiNewIgnore(Contact *contact)
+ * @brief This signal is emitted when new ignore-list record was added to the roster.
+ */
+
+/**
+ * @fn void Connection::ssiNewVisible(Contact *contact)
+ * @brief This signal is emitted when new visible-list record was added to the roster.
+ */
+
+/**
+ * @fn void Connection::ssiNewInvisible(Contact *contact)
+ * @brief This signal is emitted when new invisible-list record was added to the roster.
+ */
+
+/**
+ * @fn void Connection::userOnline(QString userId)
+ * @brief This signal is emitted when a user from buddy list goes online.
+ *
+ * @param userId		UIN of user which gone online.
+ */
+
+/**
+ * @fn void Connection::userOffline(QString userId)
+ * @brief This signal is emitted when a user from buddy list goes offline.
+ *
+ * @param userId		UIN of user which gone offline.
+ */
+
+/**
+ * @fn void Connection::incomingMessage(const Message& msg)
+ * @brief This signal is emitted when someone sends a message to connected user.
+ *
+ * @param Message		Incoming message
+ */
+
+/**
+ * @fn void Connection::signedOff()
+ * @brief This signal is emitted when user signs off from ICQ server.
+ */
+
+/**
+ * @enum Connection::ConnectionStatus
+ * @brief This enum describes connection state to the ICQ service.
+ *
+ * @li Disconnected		This connection is not connected to the ICQ server.
+ * @li Connecting		This connection is trying to connect to the ICQ server.
+ * @li Connected		This connection is connected to the ICQ server.
+ */
+
+/**
+ * @enum Connection::OnlineStatus
+ * @brief This enum desribes user online status.
+ *
+ * @li Online			User is Online
+ * @li Away				User is away
+ * @li DoNotDisturb		User is in 'Do Not Disturb' mode
+ * @li NotAvailable		User is not available
+ * @li FreeForChat		User is free for chat
+ * @li Invisible		User is invisible (used in conjunction with other statuses)
+ * @li Offline			User is Offline (this is an internal status value)
+ */
+
+
+} /* end of namespace ICQ */

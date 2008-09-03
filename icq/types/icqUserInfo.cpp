@@ -74,7 +74,7 @@ ICQ::UserInfo::Private::Private()
 	classFlags 			= 0;
 	signOnTime 			= 0;
 	registerTime 		= 0;
-	onlineStatus 		= ICQ::stOffline;
+	onlineStatus 		= 0xFFFF;
 	statusFlags 		= 0;
 	externalIP 			= 0;
 

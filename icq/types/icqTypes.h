@@ -91,16 +91,6 @@ namespace ICQ {
 	const Word flagDCAuth		= 0x1000; // Direct connection upon authorization
 	const Word flagDCContacts	= 0x2000; // Direct connection only with contact-list
 
-	/* Online statuses */
-    const Word stOnline		= 0x0000; // Online
-    const Word stAway		= 0x0001; // Away
-    const Word stDND		= 0x0002; // Do not Disturb
-    const Word stNA			= 0x0004; // Not Available
-    const Word stOccupied	= 0x0010; // Occupied (BUSY/BISY)
-    const Word stFFC		= 0x0020; // Free for chat
-    const Word stInvisible	= 0x0100; // Invisible
-    const Word stOffline	= 0xFFFF; // Offline (for private use)
-
     /* extra status list */
     enum XStatus { xsNone, xsAngry, xsDuck, xsTired, xsParty, xsBeer, xsThinking, xsEating,
     	xsTV, xsFriends, xsCoffee, xsMusic, xsBusiness, xsCamera, xsFunny, xsPhone,

@@ -60,6 +60,7 @@ class Stanza
 	protected:
 		QDomDocument* doc();
 		QDomDocument* doc() const;
+		void setProperty(const QString& name, const QString& value);
 	private:
 		QDomDocument m_doc;
 };

@@ -68,7 +68,7 @@ bool Stanza::isValid() const
 }
 
 /**
- * Returns recepient's jabber-id.
+ * Returns recipient's jabber-id.
  */
 Jid Stanza::to() const
 {
@@ -100,7 +100,7 @@ QString Stanza::id() const
 }
 
 /**
- * Set stanza recepient's jabber-id to @a toJid.
+ * Set stanza recipient's jabber-id to @a toJid.
  */
 void Stanza::setTo(const XMPP::Jid& toJid)
 {
@@ -156,6 +156,26 @@ QDomDocument* Stanza::doc()
 QDomDocument* Stanza::doc() const
 {
 	return const_cast<QDomDocument*>(&m_doc);
+}
+
+/**
+ * Sets internal stanza element called @a name to @a value
+ *
+ * @param name		tag name
+ * @param value		tag value
+ */
+void Stanza::setProperty(const QString& name, const QString& value)
+{
+	QDomElement element;
+	if ( !m_doc.documentElement().elementsByTagName(name).isEmpty() ) {
+		element = m_doc.documentElement().elementsByTagName(name).item(0).toElement();
+		m_doc.documentElement().removeChild(element);
+	}
+	element = m_doc.createElement(name);
+	m_doc.documentElement().appendChild(element);
+
+	QDomText text = m_doc.createTextNode(value);
+	element.appendChild(text);
 }
 
 

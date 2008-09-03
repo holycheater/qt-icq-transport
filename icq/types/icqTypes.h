@@ -49,7 +49,6 @@ namespace ICQ {
 		ccTZers,
 		ccRnQProtectMsg,
 
-		ccCuteICQ,
 		ccKopete,
 		ccLicq,
 		ccAndrq,
@@ -72,7 +71,6 @@ namespace ICQ {
 		Guid( QLatin1String("D6687F4F-3DC3-4BDB-8A8C-4C1A572763CD") ), // 09 RnQ protect msg (sounds like encryption support)
 
 		// client list
-		Guid( QByteArray("CuteICQ").leftJustified(16, '\0') ), // CuteICQ (Myself)
 		Guid( QByteArray::fromRawData("Kopete ICQ      ", 16) ), // Kopete ICQ
 		Guid( QLatin1String("4C696371-2063-6C69-656E-742000000000") ), //LICQ
 		Guid( QLatin1String("26525169-6E73-6964-6500-000000000000") ), // &RQ

@@ -195,7 +195,6 @@ void ICQ::LoginManager::recv_location_services_limits(SnacBuffer& reply)
 	tlv.addData( ICQ::Capabilities[ICQ::ccICQServerRelay] );
 	tlv.addData( ICQ::Capabilities[ICQ::ccUTF8Messages] );
 	tlv.addData( ICQ::Capabilities[ICQ::ccRTFMessages] );
-	tlv.addData( ICQ::Capabilities[ICQ::ccCuteICQ] );
 
 	snac.addTlv(tlv); // 0x05 - clsid values
 

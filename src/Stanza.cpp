@@ -14,6 +14,11 @@
 namespace X
 {
 
+/**
+ * @class Stanza
+ * @brief Represents XMPP Stanza.
+ */
+
 
 using namespace XMPP;
 

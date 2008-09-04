@@ -27,7 +27,7 @@ namespace X
 
 /**
  * @class Presence
- * @brief XMPP 'presence' stanza.
+ * @brief Represents XMPP presence stanza object.
  */
 
 

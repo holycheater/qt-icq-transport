@@ -25,10 +25,9 @@
 namespace X
 {
 
-
 /**
  * @class Message
- * @brief Represents Message stanza object.
+ * @brief Represents XMPP Message stanza object.
  */
 
 

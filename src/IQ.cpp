@@ -24,6 +24,11 @@
 
 namespace X {
 
+/**
+ * @class IQ
+ * @brief Represents XMPP info/query stanza object.
+ */
+
 
 /**
  * Default constructor for info/query stanza

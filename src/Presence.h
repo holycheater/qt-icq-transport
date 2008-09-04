@@ -34,6 +34,7 @@ class Presence : public Stanza
 		enum Show { Chat, Away, NotAvailable, DoNotDisturb };
 
 		Presence();
+		Presence(const Presence& other);
 		Presence(const QDomDocument& document);
 		Presence(const QDomElement& element);
 		~Presence();

@@ -44,6 +44,14 @@ Message::Message()
 }
 
 /**
+ * Constructs a deep copy of @a other message stanza.
+ */
+Message::Message(const Message& other)
+	: Stanza(other)
+{
+}
+
+/**
  * Constructs message stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
  *
  * @param document	DOM document

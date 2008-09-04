@@ -33,6 +33,7 @@ class Message : public Stanza
 		enum Type { Normal, Chat, GroupChat, Headline, Error };
 
 		Message();
+		Message(const Message& other);
 		Message(const QDomDocument& document);
 		Message(const QDomElement& element);
 		~Message();

@@ -42,6 +42,14 @@ Presence::Presence()
 }
 
 /**
+ * Constructs a deep copy of @a other presence stanza.
+ */
+Presence::Presence(const Presence& other)
+	: Stanza(other)
+{
+}
+
+/**
  * Constructs presence stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
  *
  * @param document	DOM document

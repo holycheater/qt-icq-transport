@@ -21,9 +21,8 @@
 #include <QDomDocument>
 
 #include "IQ.h"
-#include "jid/jid.h"
 
-namespace XMPP {
+namespace X {
 
 
 /**
@@ -31,6 +30,14 @@ namespace XMPP {
  */
 IQ::IQ()
 	: Stanza()
+{
+}
+
+/**
+ * Constructs a deep copy of @a other iq stanza.
+ */
+IQ::IQ(const IQ& other)
+	: Stanza(other)
 {
 }
 
@@ -118,4 +125,4 @@ int IQ::stringToType(const QString& type)
  */
 
 
-} /* end of namespace XMPP */
+} /* end of namespace X */

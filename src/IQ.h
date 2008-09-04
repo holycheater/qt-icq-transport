@@ -23,22 +23,21 @@
 
 #include "Stanza.h"
 
-namespace XMPP {
-
-class Jid;
+namespace X {
 
 
-class IQ : public X::Stanza
+class IQ : public Stanza
 {
 	public:
 		enum Type { Get, Set, Result, Error };
 
 		IQ();
+		IQ(const IQ& other);
 		IQ(const QDomDocument& document);
 		IQ(const QDomElement& element);
 		~IQ();
 
-		using X::Stanza::setType;
+		using Stanza::setType;
 		void setType(Type type);
 	private:
 		static QString typeToString(Type type);
@@ -46,6 +45,6 @@ class IQ : public X::Stanza
 };
 
 
-} /* end of namespace XMPP */
+} /* end of namespace X */
 
-#endif /* XMPP_STANZA_IQ_H_ */
+#endif /* X_STANZA_IQ_H_ */

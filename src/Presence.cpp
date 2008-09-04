@@ -80,6 +80,16 @@ int Presence::priority() const
 	}
 }
 
+QString Presence::show() const
+{
+	if ( doc()->documentElement().elementsByTagName("show").isEmpty() ) {
+		return QString();
+	} else {
+		QDomElement eShow = doc()->documentElement().elementsByTagName("show").item(0).toElement();
+		return eShow.text();
+	}
+}
+
 /**
  * Returns presence status text.
  */
@@ -105,6 +115,35 @@ void Presence::setPriority(int priority)
 	}
 
 	setProperty( "priority", QString::number(priority) );
+}
+
+/**
+ * Sets presence "show" value to @a showState which specifies particulary availability status.
+ * The show value can only be set if presence type is "available" (no presence type set).
+ *
+ * @param showState		Presence show value
+ * @sa Show
+ */
+void Presence::setShow(Show showState)
+{
+	QString str;
+	switch (showState) {
+		case Chat:
+			str = "chat";
+		case Away:
+			str = "away";
+			break;
+		case NotAvailable:
+			str = "xa";
+			break;
+		case DoNotDisturb:
+			str = "dnd";
+			break;
+		default:
+			return;
+			break;
+	}
+	setProperty("show", str);
 }
 
 /**

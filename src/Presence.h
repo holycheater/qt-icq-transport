@@ -39,9 +39,11 @@ class Presence : public Stanza
 		~Presence();
 
 		int priority() const;
+		QString show() const;
 		QString status() const;
 
 		void setPriority(int priority);
+		void setShow(Show showState);
 		void setStatus(const QString& status);
 		using Stanza::setType;
 		void setType(Type type);

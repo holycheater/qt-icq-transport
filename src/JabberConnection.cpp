@@ -30,8 +30,7 @@ class JabberConnection::Private {
 
 	public:
 		XMPP::AdvancedConnector* connector;
-		XMPP::ComponentStream* stream;
-		XMPP::Client* client;
+		X::ComponentStream* stream;
 		XMPP::Jid jid;
 		QString password;
 };
@@ -44,7 +43,7 @@ JabberConnection::JabberConnection(QObject *parent)
 	d = new Private;
 
 	d->connector = new XMPP::AdvancedConnector;
-	d->stream = new XMPP::ComponentStream(d->connector);
+	d->stream = new X::ComponentStream(d->connector);
 
 	d->stream->connectToServer("icq.dragonfly", 5555, "jaba");
 

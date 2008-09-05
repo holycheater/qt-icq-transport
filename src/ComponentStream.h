@@ -18,25 +18,27 @@
  *
  */
 
-#ifndef COMPONENTSTREAM_H_
-#define COMPONENTSTREAM_H_
+#ifndef X_COMPONENTSTREAM_H_
+#define X_COMPONENTSTREAM_H_
 
 #include "parser.h"
 #include <QObject>
+#include <QDomDocument>
 
 #ifndef NS_ETHERX
 #define NS_ETHERX "http://etherx.jabber.org/streams"
 #endif
 #define NS_COMPONENT "jabber:component:accept"
 
-namespace X {
-	class Stanza;
+namespace XMPP {
+	class AdvancedConnector;
+	class Jid;
 }
 
-namespace XMPP {
+namespace X {
 
-class AdvancedConnector;
-class Jid;
+
+class Stanza;
 
 class ComponentStream : public QObject
 {
@@ -45,23 +47,27 @@ class ComponentStream : public QObject
 	enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
 
 	public:
-		ComponentStream(AdvancedConnector *connector, QObject *parent = 0);
+		ComponentStream(XMPP::AdvancedConnector *connector, QObject *parent = 0);
 		~ComponentStream();
+
+		class Error;
 
 		QString baseNS() const;
 
-		void connectToServer(const Jid& jid, quint16 port, const QString& secret);
+		void connectToServer(const XMPP::Jid& jid, quint16 port, const QString& secret);
 		void close();
 
-		void sendStanza(const X::Stanza& stanza);
+		void sendStanza(const Stanza& stanza);
 	signals:
 		void connected();
 		void disconnected();
+		void error(const Error& streamError);
 	private:
-		void processEvent(const Parser::Event& event);
-		void processStanza(const Parser::Event& event);
-		void recv_stream_open(const Parser::Event& event);
-		void recv_handshake_reply(const Parser::Event& event);
+		void handleStreamError(const XMPP::Parser::Event& event);
+		void processEvent(const XMPP::Parser::Event& event);
+		void processStanza(const XMPP::Parser::Event& event);
+		void recv_stream_open(const XMPP::Parser::Event& event);
+		void recv_handshake_reply(const XMPP::Parser::Event& event);
 		void send_stream_open();
 		void send_handshake();
 		void write(const QByteArray& data);
@@ -77,7 +83,36 @@ class ComponentStream : public QObject
 		Private *d;
 };
 
+class ComponentStream::Error
+{
+	public:
+		enum Type { BadFormat, BadNamespacePrefix, Conflict, ConnectionTimeout, HostGone,
+			HostUnknown, ImproperAddressing, InternalServerError, InvalidFrom, InvalidId,
+			InvalidNamespace, InvalidXml, NotAuthorized, PolicyViolation, RemoteConnectionFailed,
+			ResourceConstraint, RestrictedXml, SeeOtherHost, SystemShutdown, UndefinedCondition,
+			UnsupportedEncoding, UnsupportedStanzaType, UnsupportedVersion, XmlNotWellFormed };
 
-} /* end of namespace XMPP */
+		Error();
+		Error(const QDomDocument& document);
+		Error(const QDomElement& element);
+		~Error();
 
-#endif /* COMPONENTSTREAM_H_ */
+		QString appSpec() const;
+		QString text() const;
+		QString type() const;
+
+		void setAppSpec(const QString& ns, const QString& spec);
+		void setText(const QString& text);
+		void setType(Type type);
+	private:
+		static QString typeToString(Type type);
+
+		QDomDocument m_doc;
+		QDomElement m_errorCondition;
+		QDomElement m_appSpec;
+};
+
+
+} /* end of namespace X */
+
+#endif /* X_COMPONENTSTREAM_H_ */

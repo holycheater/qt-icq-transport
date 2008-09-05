@@ -18,16 +18,18 @@
  *
  */
 
+#include <QCryptographicHash>
+
 #include "ComponentStream.h"
 #include "Stanza.h"
 
 #include "xmpp.h"
 #include "bytestream.h"
 
-#include <QCryptographicHash>
-#include <QXmlStreamWriter>
+namespace X {
 
-namespace XMPP {
+using namespace XMPP;
+
 
 class ComponentStream::Private
 {
@@ -56,7 +58,7 @@ class ComponentStream::Private
 
 /**
  * Constructs stream object with @a connector to be used for initating
- * connection to the server. @a parent will be passed to the QObject constructor
+ * connection to the server. @a parent will be passed to the QObject constructor.
  */
 ComponentStream::ComponentStream(AdvancedConnector *connector, QObject *parent)
 	: QObject(parent)
@@ -70,7 +72,7 @@ ComponentStream::ComponentStream(AdvancedConnector *connector, QObject *parent)
 }
 
 /**
- * Destroys the stream
+ * Destroys the stream.
  */
 ComponentStream::~ComponentStream()
 {
@@ -79,7 +81,7 @@ ComponentStream::~ComponentStream()
 
 /**
  *
- * @return base stream namespace
+ * @return base stream namespace.
  */
 QString ComponentStream::baseNS() const
 {
@@ -87,7 +89,7 @@ QString ComponentStream::baseNS() const
 }
 
 /**
- * Connects to the JID domain host to the specified port with secret
+ * Connects to the JID domain host to the specified port with secret.
  *
  * @param jid		jabber-id
  * @param port		server port
@@ -103,7 +105,7 @@ void ComponentStream::connectToServer(const Jid& jid, quint16 port, const QStrin
 }
 
 /**
- * Close the stream and connection
+ * Close the stream and connection.
  */
 void ComponentStream::close()
 {
@@ -111,15 +113,25 @@ void ComponentStream::close()
 }
 
 /**
- * Sends @a stanza to the outgoing stream
+ * Sends @a stanza to the outgoing stream.
  */
-void ComponentStream::sendStanza(const X::Stanza& stanza)
+void ComponentStream::sendStanza(const Stanza& stanza)
 {
 	write ( stanza.toString().toUtf8() );
 }
 
 /**
- * Process events from incoming stream
+ * Handles stream erorrs (<stream:error/> element).
+ *
+ * @param event		incoming stream event containing an error
+ */
+void ComponentStream::handleStreamError(const Parser::Event& event)
+{
+	emit error( Error( event.element() ) );
+}
+
+/**
+ * Process events from incoming stream.
  *
  * @param event		incoming event
  */
@@ -141,7 +153,9 @@ void ComponentStream::processEvent(const Parser::Event& event)
 
 		case Parser::Event::Element:
 			qDebug() << "[CS] incoming element" << event.qualifiedName();
-			/* TODO: check for stream:error */
+			if ( event.qualifiedName() == "stream:error" ) {
+				handleStreamError(event);
+			}
 			if (d->connectionStatus == RecvHandshakeReply) {
 				recv_handshake_reply(event);
 				return;
@@ -157,12 +171,14 @@ void ComponentStream::processEvent(const Parser::Event& event)
 }
 
 /**
- * Process incoming stanza (first-level element)
+ * Process incoming stanza (first-level element).
+ *
  * @param event		parser event
  */
 void ComponentStream::processStanza(const Parser::Event& event)
 {
 	if ( event.qualifiedName() == "message" ) {
+		qDebug() << event.element().nodeType();
 		qDebug() << "[CS]" << "-message-";
 	} else if ( event.qualifiedName() == "iq" ) {
 		qDebug() << "[CS]" << "-iq-";
@@ -172,7 +188,7 @@ void ComponentStream::processStanza(const Parser::Event& event)
 }
 
 /**
- * Handle incoming stream initiation event @a event
+ * Handle incoming stream initiation event @a event.
  */
 void ComponentStream::recv_stream_open(const Parser::Event& event)
 {
@@ -183,7 +199,7 @@ void ComponentStream::recv_stream_open(const Parser::Event& event)
 }
 
 /**
- * Handle handshake reply event @a event
+ * Handle handshake reply event @a event.
  */
 void ComponentStream::recv_handshake_reply(const Parser::Event& event)
 {
@@ -200,46 +216,32 @@ void ComponentStream::recv_handshake_reply(const Parser::Event& event)
 }
 
 /**
- * Initiate outgoing stream
+ * Initiate outgoing stream.
  */
 void ComponentStream::send_stream_open()
 {
-	QByteArray data;
-	QXmlStreamWriter xmlStream(&data);
-	xmlStream.writeStartDocument();
-	xmlStream.writeStartElement("stream:stream");
-	xmlStream.writeAttribute("xmlns:stream", NS_ETHERX);
-	xmlStream.writeDefaultNamespace(NS_COMPONENT);
-	xmlStream.writeAttribute( "to", d->jid.domain() );
+	write("<?xml version='1.0'?>");
+	write("<stream:s/tream xmlns:stream='" + QByteArray(NS_ETHERX) + "' xmlns='"+QByteArray(NS_COMPONENT)+"' to='" + d->jid.domain().toUtf8() + "'>");
 
-	/* dirty hack, cause QXmlStreamWriter can't close an opening element without appending closing tag */
-	data += ">";
-
-	write(data);
 	/* we sent stream open instruction, so server need to open the incoming stream */
 	d->connectionStatus = InitIncomingStream;
 }
 
 /**
- * Send a handshake to the server: sha1(sessionID + secret)
+ * Send a handshake to the server: sha1(sessionID + secret).
  */
 void ComponentStream::send_handshake()
 {
 	QByteArray hash = QCryptographicHash::hash(d->sessionId + d->secret, QCryptographicHash::Sha1).toHex();
 
-	QByteArray data;
-	QXmlStreamWriter writer(&data);
-	writer.writeStartElement("handshake");
-	writer.writeCharacters(hash);
-	writer.writeEndElement();
-	write(data);
+	write("<handshake>" + hash + "</handshake>");
 
 	/* we've sent handshake element, we need to get ack/error reply from the server */
 	d->connectionStatus = RecvHandshakeReply;
 }
 
 /**
- * Write data to the outgoing stream
+ * Write data to the outgoing stream.
  *
  * @param data		XML data
  */

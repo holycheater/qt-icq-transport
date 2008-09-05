@@ -17,7 +17,8 @@ HEADERS += Presence.h \
     ComponentStream.h \
     GatewayTask.h \
     JabberConnection.h
-SOURCES += Presence.cpp \
+SOURCES += StreamError.cpp \
+    Presence.cpp \
     Message.cpp \
     Stanza.cpp \
     IQ.cpp \

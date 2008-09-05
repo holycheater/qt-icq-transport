@@ -18,13 +18,12 @@
  *
  */
 
-#ifndef X_PRESENCE_H_
-#define X_PRESENCE_H_
+#ifndef XMPP_STANZA_PRESENCE_H_
+#define XMPP_STANZA_PRESENCE_H_
 
 #include "Stanza.h"
 
-namespace X
-{
+namespace XMPP {
 
 
 class Presence : public Stanza
@@ -54,4 +53,4 @@ class Presence : public Stanza
 
 }
 
-#endif /* X_PRESENCE_H_ */
+#endif /* XMPP_STANZA_PRESENCE_H_ */

@@ -18,30 +18,25 @@
  *
  */
 
-#ifndef X_COMPONENTSTREAM_H_
-#define X_COMPONENTSTREAM_H_
+#ifndef XMPP_COMPONENTSTREAM_H_
+#define XMPP_COMPONENTSTREAM_H_
 
 #include "parser.h"
 #include <QObject>
 #include <QDomDocument>
 
-#ifndef NS_ETHERX
 #define NS_ETHERX "http://etherx.jabber.org/streams"
-#endif
 #define NS_COMPONENT "jabber:component:accept"
 
 namespace XMPP {
-	class AdvancedConnector;
-	class Jid;
-}
 
-namespace X {
-
-
+class AdvancedConnector;
+class Jid;
 class Stanza;
 class IQ;
 class Message;
 class Presence;
+
 
 class ComponentStream : public QObject
 {
@@ -50,14 +45,14 @@ class ComponentStream : public QObject
 	enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
 
 	public:
-		ComponentStream(XMPP::AdvancedConnector *connector, QObject *parent = 0);
+		ComponentStream(AdvancedConnector *connector, QObject *parent = 0);
 		~ComponentStream();
 
 		class Error;
 
 		QString baseNS() const;
 
-		void connectToServer(const XMPP::Jid& jid, const QString& secret);
+		void connectToServer(const Jid& jid, const QString& secret);
 		void close();
 
 		void sendStanza(const Stanza& stanza);
@@ -69,11 +64,11 @@ class ComponentStream : public QObject
 		void stanzaMessage(const Message& message);
 		void stanzaPresence(const Presence& presence);
 	private:
-		void handleStreamError(const XMPP::Parser::Event& event);
-		void processEvent(const XMPP::Parser::Event& event);
-		void processStanza(const XMPP::Parser::Event& event);
-		void recv_stream_open(const XMPP::Parser::Event& event);
-		void recv_handshake_reply(const XMPP::Parser::Event& event);
+		void handleStreamError(const Parser::Event& event);
+		void processEvent(const Parser::Event& event);
+		void processStanza(const Parser::Event& event);
+		void recv_stream_open(const Parser::Event& event);
+		void recv_handshake_reply(const Parser::Event& event);
 		void send_stream_open();
 		void send_handshake();
 		void write(const QByteArray& data);
@@ -119,6 +114,6 @@ class ComponentStream::Error
 };
 
 
-} /* end of namespace X */
+} /* end of namespace XMPP */
 
-#endif /* X_COMPONENTSTREAM_H_ */
+#endif /* XMPP_COMPONENTSTREAM_H_ */

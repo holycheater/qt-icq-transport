@@ -22,7 +22,7 @@
 
 #include "ComponentStream.h"
 
-namespace X {
+namespace XMPP {
 
 /**
  * @class ComponentStream::Error
@@ -261,4 +261,4 @@ QString ComponentStream::Error::typeToString(Type type)
  */
 
 
-} /* end of namespace X */
+} /* end of namespace XMPP */

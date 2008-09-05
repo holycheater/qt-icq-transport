@@ -22,8 +22,7 @@
 
 #include "Message.h"
 
-namespace X
-{
+namespace XMPP {
 
 /**
  * @class Message
@@ -179,4 +178,4 @@ QString Message::typeToString(Type type)
  * @li Error		Indicates messaging error.
  */
 
-}
+} /* end of namespace XMPP */

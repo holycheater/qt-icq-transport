@@ -22,8 +22,7 @@
 
 #include "Presence.h"
 
-namespace X
-{
+namespace XMPP {
 
 /**
  * @class Presence
@@ -230,4 +229,4 @@ QString Presence::typeToString(Type type)
  * @li DoNotDisturb		Entity or resource is busy
  */
 
-}
+} /* end of namespace XMPP */

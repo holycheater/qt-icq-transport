@@ -18,19 +18,16 @@
  *
  */
 
-#ifndef X_STANZA_H_
-#define X_STANZA_H_
+#ifndef XMPP_STANZA_H_
+#define XMPP_STANZA_H_
 
 class QDomDocument;
 class QDomElement;
 class QString;
 
 namespace XMPP {
-	class Jid;
-}
 
-namespace X
-{
+class Jid;
 
 
 class Stanza
@@ -46,13 +43,13 @@ class Stanza
 
 		bool isValid() const;
 
-		XMPP::Jid to() const;
-		XMPP::Jid from() const;
+		Jid to() const;
+		Jid from() const;
 		QString type() const;
 		QString id() const;
 
-		void setTo(const XMPP::Jid& toJid);
-		void setFrom(const XMPP::Jid& fromJid);
+		void setTo(const Jid& toJid);
+		void setFrom(const Jid& fromJid);
 		void setType(const QString& type);
 		void setId(const QString& id);
 
@@ -68,4 +65,4 @@ class Stanza
 
 }
 
-#endif /* X_STANZA_H_ */
+#endif /* XMPP_STANZA_H_ */

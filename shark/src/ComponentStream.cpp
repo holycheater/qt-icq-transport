@@ -28,9 +28,7 @@
 #include "xmpp.h"
 #include "bytestream.h"
 
-namespace X {
-
-using namespace XMPP;
+namespace XMPP {
 
 
 class ComponentStream::Private

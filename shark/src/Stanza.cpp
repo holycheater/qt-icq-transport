@@ -22,18 +22,15 @@
 
 #include "Stanza.h"
 
-#include "jid/jid.h"
+#include "core/jid.h"
 
-namespace X
-{
+namespace XMPP {
 
 /**
  * @class Stanza
  * @brief Represents XMPP Stanza.
  */
 
-
-using namespace XMPP;
 
 /**
  * Default constructor for Stanza element.
@@ -121,7 +118,7 @@ QString Stanza::id() const
 /**
  * Set stanza recipient's jabber-id to @a toJid.
  */
-void Stanza::setTo(const XMPP::Jid& toJid)
+void Stanza::setTo(const Jid& toJid)
 {
 	m_doc.documentElement().setAttribute( "to", toJid.full() );
 }
@@ -129,7 +126,7 @@ void Stanza::setTo(const XMPP::Jid& toJid)
 /**
  * Set stanza sender's jabber-id to @a fromJid.
  */
-void Stanza::setFrom(const XMPP::Jid& fromJid)
+void Stanza::setFrom(const Jid& fromJid)
 {
 	m_doc.documentElement().setAttribute( "from",fromJid.full() );
 }
@@ -198,4 +195,4 @@ void Stanza::setProperty(const QString& name, const QString& value)
 }
 
 
-}
+} /* end of namespace XMPP */

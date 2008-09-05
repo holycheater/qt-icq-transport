@@ -18,13 +18,12 @@
  *
  */
 
-#ifndef X_MESSAGE_H_
-#define X_MESSAGE_H_
+#ifndef XMPP_STANZA_MESSAGE_H_
+#define XMPP_STANZA_MESSAGE_H_
 
 #include "Stanza.h"
 
-namespace X
-{
+namespace XMPP {
 
 
 class Message : public Stanza
@@ -53,4 +52,4 @@ class Message : public Stanza
 
 }
 
-#endif /* X_MESSAGE_H_ */
+#endif /* XMPP_STANZA_MESSAGE_H_ */

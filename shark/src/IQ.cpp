@@ -22,7 +22,7 @@
 
 #include "IQ.h"
 
-namespace X {
+namespace XMPP {
 
 /**
  * @class IQ
@@ -165,4 +165,4 @@ int IQ::id = 0;
  */
 
 
-} /* end of namespace X */
+} /* end of namespace XMPP */

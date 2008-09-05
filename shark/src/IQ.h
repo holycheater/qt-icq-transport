@@ -23,7 +23,7 @@
 
 #include "Stanza.h"
 
-namespace X {
+namespace XMPP {
 
 
 class IQ : public Stanza
@@ -53,6 +53,6 @@ class IQ : public Stanza
 };
 
 
-} /* end of namespace X */
+} /* end of namespace XMPP */
 
-#endif /* X_STANZA_IQ_H_ */
+#endif /* XMPP_STANZA_IQ_H_ */

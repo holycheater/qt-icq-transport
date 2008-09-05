@@ -1,0 +1,12 @@
+Shark XMPP Library
+-----------------
+
+License
+-------
+  This library is licensed under the GNU Lesser General Public License.  See
+  the COPYING file for more information.
+
+
+Description
+-----------
+  Shark is an XMPP Library which borrowed some code from Iris.

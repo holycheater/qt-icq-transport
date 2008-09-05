@@ -1,6 +1,4 @@
 CONFIG += crypto
 
-CONFIG += iris_bundle
-include(iris/iris.pri)
-
+include(shark/shark.pri)
 include(icq/icq.pri)

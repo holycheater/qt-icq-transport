@@ -36,10 +36,10 @@ namespace X {
 IQ::IQ()
 	: Stanza()
 {
-	setId( QString::number(++id, 16) );
-
 	QDomElement root = doc()->createElement("iq");
 	doc()->appendChild(root);
+
+	setId( QString::number(++id, 16) );
 
 	m_element = doc()->createElement("query");
 	doc()->documentElement().appendChild(m_element);

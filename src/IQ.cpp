@@ -36,6 +36,7 @@ namespace X {
 IQ::IQ()
 	: Stanza()
 {
+	setId( QString::number(++id, 16) );
 }
 
 /**
@@ -44,6 +45,7 @@ IQ::IQ()
 IQ::IQ(const IQ& other)
 	: Stanza(other)
 {
+	setId( QString::number(++id, 16) );
 }
 
 /**
@@ -118,6 +120,8 @@ int IQ::stringToType(const QString& type)
 	}
 	return -1;
 }
+
+int IQ::id = 0;
 
 /**
  * @enum IQ::Type

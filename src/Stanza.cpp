@@ -82,6 +82,7 @@ Stanza::~Stanza()
  */
 bool Stanza::isValid() const
 {
+	/* TODO: Some stanzas can have no type set.. Some stanzas require other attributes, like IQ requires ID to be set */
 	return !m_doc.documentElement().attribute("type").isEmpty();
 }
 

@@ -10,3 +10,9 @@ License
 Description
 -----------
   Shark is an XMPP Library which borrowed some code from Iris.
+
+Build requirements
+------------------
+libidn-dev
+libqt4-dev
+libqca2-dev

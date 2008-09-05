@@ -94,16 +94,14 @@ QString ComponentStream::baseNS() const
  * Connects to the JID domain host to the specified port with secret.
  *
  * @param jid		jabber-id
- * @param port		server port
  * @param secret	server secret for component
  */
-void ComponentStream::connectToServer(const Jid& jid, quint16 port, const QString& secret)
+void ComponentStream::connectToServer(const Jid& jid, const QString& secret)
 {
 	d->jid = jid;
 	d->secret = secret.toUtf8();
 
-	d->connector->setOptHostPort(jid.domain(), port);
-	d->connector->connectToServer( jid.domain() );
+	d->connector->connectToServer( jid.full() );
 }
 
 /**

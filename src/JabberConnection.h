@@ -23,6 +23,8 @@
 
 #include <QObject>
 
+#include "ComponentStream.h"
+
 class JabberConnection : public QObject
 {
 	Q_OBJECT
@@ -37,7 +39,8 @@ class JabberConnection : public QObject
 		void setServer(const QString& host, quint16 port = 5222);
 		void setPassword(const QString& password);
 	private slots:
-		void stream_error(int err);
+		void stream_error(X::ComponentStream::Error& err);
+		void stream_connected();
 	private:
 		class Private;
 		Private *d;

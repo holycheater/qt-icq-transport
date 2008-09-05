@@ -20,11 +20,11 @@
 
 #include "JabberConnection.h"
 
+#include "IQ.h"
+
 #include <im.h>
 #include <xmpp.h>
 #include <QCoreApplication>
-
-#include "ComponentStream.h"
 
 class JabberConnection::Private {
 
@@ -32,7 +32,7 @@ class JabberConnection::Private {
 		XMPP::AdvancedConnector* connector;
 		X::ComponentStream* stream;
 		XMPP::Jid jid;
-		QString password;
+		QString secret;
 };
 
 
@@ -45,24 +45,19 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->connector = new XMPP::AdvancedConnector;
 	d->stream = new X::ComponentStream(d->connector);
 
-	d->stream->connectToServer("icq.dragonfly", 5555, "jaba");
-
-	/*QObject::connect( d->stream, SIGNAL( error( int ) ), SLOT( stream_error( int ) ) );
-	QObject::connect( d->stream, SIGNAL( needAuthParams( bool, bool, bool ) ), SLOT( stream_needAuthParams( bool, bool, bool ) ) );
-	QObject::connect( d->stream, SIGNAL( authenticated() ), SLOT( stream_authenticated() ) );*/
+	QObject::connect(d->stream, SIGNAL( error(const X::Stream::Error&) ), SLOT( stream_error(const X::Stream::Error&) ) );
+	QObject::connect(d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
 }
 
 JabberConnection::~JabberConnection()
 {
-	//delete d->client;
 	delete d->stream;
 	delete d->connector;
 }
 
 void JabberConnection::login()
 {
-	//qDebug() << "[JC]" << "start login";
-	//d->client->connectToServer(d->stream, d->jid);
+	d->stream->connectToServer(d->jid, d->secret);
 }
 
 void JabberConnection::setUsername(const QString& username)
@@ -77,12 +72,22 @@ void JabberConnection::setServer(const QString& host, quint16 port)
 
 void JabberConnection::setPassword(const QString& password)
 {
-	d->password = password;
+	d->secret = password;
 }
 
-void JabberConnection::stream_error(int err)
+void JabberConnection::stream_connected()
 {
-	qDebug() << "D'oh - a stream error occurred! Code: " << err;
+	qDebug() << "signed on";
+	X::IQ query;
+	query.setType(X::IQ::Get);
+	query.setFrom("icq.dragonfly");
+	query.setTo("dragonfly");
+	query.setChildElement("query", "http://jabber.org/protocol/disco#info");
+	d->stream->sendStanza(query);
+}
 
+void JabberConnection::stream_error(X::ComponentStream::Error& err)
+{
+	qDebug() << "Stream error! Condition:" << err.type();
 	qApp->quit();
 }

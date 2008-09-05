@@ -57,7 +57,7 @@ class ComponentStream : public QObject
 
 		QString baseNS() const;
 
-		void connectToServer(const XMPP::Jid& jid, quint16 port, const QString& secret);
+		void connectToServer(const XMPP::Jid& jid, const QString& secret);
 		void close();
 
 		void sendStanza(const Stanza& stanza);

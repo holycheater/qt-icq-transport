@@ -94,6 +94,18 @@ QDomElement& IQ::childElement()
 }
 
 /**
+ * Sets info/query child element to @a name with xmlns @a ns
+ * @param name	element name
+ * @param ns	element namespace
+ */
+void IQ::setChildElement(const QString& name, const QString& ns)
+{
+	doc()->documentElement().removeChild(m_element);
+	m_element = doc()->createElementNS(ns, name);
+	doc()->documentElement().appendChild(m_element);
+}
+
+/**
  * Sets IQ stanza 'type' field to @a type string.
  */
 void IQ::setType(Type type)

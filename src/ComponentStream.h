@@ -39,6 +39,9 @@ namespace X {
 
 
 class Stanza;
+class IQ;
+class Message;
+class Presence;
 
 class ComponentStream : public QObject
 {
@@ -62,6 +65,9 @@ class ComponentStream : public QObject
 		void connected();
 		void disconnected();
 		void error(const Error& streamError);
+		void stanzaIQ(const IQ& iq);
+		void stanzaMessage(const Message& message);
+		void stanzaPresence(const Presence& presence);
 	private:
 		void handleStreamError(const XMPP::Parser::Event& event);
 		void processEvent(const XMPP::Parser::Event& event);

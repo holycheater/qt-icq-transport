@@ -21,7 +21,9 @@
 #include <QCryptographicHash>
 
 #include "ComponentStream.h"
-#include "Stanza.h"
+#include "IQ.h"
+#include "Message.h"
+#include "Presence.h"
 
 #include "xmpp.h"
 #include "bytestream.h"
@@ -178,12 +180,14 @@ void ComponentStream::processEvent(const Parser::Event& event)
 void ComponentStream::processStanza(const Parser::Event& event)
 {
 	if ( event.qualifiedName() == "message" ) {
-		qDebug() << event.element().nodeType();
 		qDebug() << "[CS]" << "-message-";
+		emit stanzaMessage( event.element() );
 	} else if ( event.qualifiedName() == "iq" ) {
 		qDebug() << "[CS]" << "-iq-";
+		emit stanzaIQ( event.element() );
 	} else if ( event.qualifiedName() == "presence" ) {
 		qDebug() << "[CS]" << "-presence-";
+		emit stanzaPresence( event.element() );
 	}
 }
 
@@ -221,7 +225,7 @@ void ComponentStream::recv_handshake_reply(const Parser::Event& event)
 void ComponentStream::send_stream_open()
 {
 	write("<?xml version='1.0'?>");
-	write("<stream:s/tream xmlns:stream='" + QByteArray(NS_ETHERX) + "' xmlns='"+QByteArray(NS_COMPONENT)+"' to='" + d->jid.domain().toUtf8() + "'>");
+	write("<stream:stream xmlns:stream='" + QByteArray(NS_ETHERX) + "' xmlns='"+QByteArray(NS_COMPONENT)+"' to='" + d->jid.domain().toUtf8() + "'>");
 
 	/* we sent stream open instruction, so server need to open the incoming stream */
 	d->connectionStatus = InitIncomingStream;
@@ -317,6 +321,37 @@ void ComponentStream::send_keepalive()
  * @sa connected()
  */
 
+/**
+ * @fn void ComponentStream::error(const Error& streamError)
+ *
+ * This signal is emitted when there is an error on the stream(<stream:error/> element).
+ *
+ * @param streamError	Stream error object, containing error condition and (optionally) description.
+ */
+
+/**
+ * @fn void ComponentStream::stanzaIQ(const IQ& iq)
+ *
+ * This signal is emitted when there is an incoming info/query stanza on the stream.
+ *
+ * @param iq			Info/query stanza.
+ */
+
+/**
+ * @fn void ComponentStream::stanzaMessage(const Message& message);
+ *
+ * This signal is emitted when there is an incoming message stanza on the stream.
+ *
+ * @param message		Message stanza.
+ */
+
+/**
+ * @fn void ComponentStream::stanzaPresence(const Presence& presence)
+ *
+ * This signal is emitted when there is an incoming presence stanza on the stream.
+ *
+ * @param presence		Presence stanza.
+ */
 
 /**
  * @enum ComponentStream::ConnectionStatus

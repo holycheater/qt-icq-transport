@@ -37,6 +37,12 @@ IQ::IQ()
 	: Stanza()
 {
 	setId( QString::number(++id, 16) );
+
+	QDomElement root = doc()->createElement("iq");
+	doc()->appendChild(root);
+
+	m_element = doc()->createElement("query");
+	doc()->documentElement().appendChild(m_element);
 }
 
 /**
@@ -46,6 +52,7 @@ IQ::IQ(const IQ& other)
 	: Stanza(other)
 {
 	setId( QString::number(++id, 16) );
+	m_element = other.m_element;
 }
 
 /**
@@ -56,6 +63,7 @@ IQ::IQ(const IQ& other)
 IQ::IQ(const QDomDocument& document)
 	: Stanza(document)
 {
+	m_element = doc()->documentElement().firstChild().toElement();
 }
 
 /**
@@ -65,6 +73,7 @@ IQ::IQ(const QDomDocument& document)
 IQ::IQ(const QDomElement& element)
 	: Stanza(element)
 {
+	m_element = doc()->documentElement().firstChild().toElement();
 }
 
 /**
@@ -72,6 +81,16 @@ IQ::IQ(const QDomElement& element)
  */
 IQ::~IQ()
 {
+}
+
+/**
+ * Gives access to info/query stanza child element.
+ *
+ * @return Reference to stanza child element.
+ */
+QDomElement& IQ::childElement()
+{
+	return m_element;
 }
 
 /**

@@ -45,12 +45,7 @@
 				<pathentry base-path="/usr/include/qt4" include="QtNetwork" kind="inc" path="" system="true"/>
 				<pathentry base-path="/usr/include/qt4" include="QtXmlPatterns" kind="inc" path="" system="true"/>
 				<pathentry base-path="/usr/include" include="QtCrypto" kind="inc" path="" system="true"/>
-				<pathentry base-path="qt-icq-transport" include="iris/src" kind="inc" path="" system="true"/>
-				<pathentry base-path="qt-icq-transport" include="iris/src/xmpp" kind="inc" path="" system="true"/>
-				<pathentry base-path="qt-icq-transport" include="iris/src/xmpp/xmpp-core" kind="inc" path="" system="true"/>
-				<pathentry base-path="qt-icq-transport" include="iris/src/xmpp/xmpp-im" kind="inc" path="" system="true"/>
-				<pathentry base-path="qt-icq-transport" include="iris/src/xmpp/xep-0114" kind="inc" path="" system="true"/>
-				<pathentry base-path="qt-icq-transport" include="iris/src/xmpp/cutestuff" kind="inc" path="" system="true"/>
+				<pathentry base-path="qt-icq-transport" include="shark/src" kind="inc" path="" system="true"/>
 				<pathentry base-path="qt-icq-transport" include="icq" kind="inc" path="" system="true"/>
 				<pathentry base-path="qt-icq-transport" include="icq/types" kind="inc" path="" system="true"/>
 				<pathentry base-path="qt-icq-transport" include="icq/managers" kind="inc" path="" system="true"/>

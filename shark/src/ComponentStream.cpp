@@ -24,9 +24,12 @@
 #include "IQ.h"
 #include "Message.h"
 #include "Presence.h"
+#include "jid.h"
 
-#include "xmpp.h"
+#include "connector.h"
 #include "bytestream.h"
+
+#include <QtDebug>
 
 namespace XMPP {
 
@@ -35,7 +38,7 @@ class ComponentStream::Private
 {
 	public:
 		/* server connector (dns-lookups, connect) */
-		AdvancedConnector *connector;
+		Connector *connector;
 
 		/* Connection socket stream */
 		ByteStream *bs;
@@ -60,7 +63,7 @@ class ComponentStream::Private
  * Constructs stream object with @a connector to be used for initating
  * connection to the server. @a parent will be passed to the QObject constructor.
  */
-ComponentStream::ComponentStream(AdvancedConnector *connector, QObject *parent)
+ComponentStream::ComponentStream(Connector *connector, QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;

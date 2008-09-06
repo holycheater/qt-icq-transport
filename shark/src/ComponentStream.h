@@ -30,7 +30,7 @@
 
 namespace XMPP {
 
-class AdvancedConnector;
+class Connector;
 class Jid;
 class Stanza;
 class IQ;
@@ -45,7 +45,7 @@ class ComponentStream : public QObject
 	enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
 
 	public:
-		ComponentStream(AdvancedConnector *connector, QObject *parent = 0);
+		ComponentStream(Connector *connector, QObject *parent = 0);
 		~ComponentStream();
 
 		class Error;

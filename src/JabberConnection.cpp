@@ -46,7 +46,10 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->connector = new Connector;
 	d->stream = new ComponentStream(d->connector);
 
-	QObject::connect(d->stream, SIGNAL( error(const XMPP::Stream::Error&) ), SLOT( stream_error(const XMPP::Stream::Error&) ) );
+	QObject::connect(d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
+	QObject::connect(d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
+	QObject::connect(d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
+	QObject::connect(d->stream, SIGNAL( error(ComponentStream::Error) ), SLOT( stream_error(ComponentStream::Error) ) );
 	QObject::connect(d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
 }
 
@@ -76,6 +79,18 @@ void JabberConnection::setPassword(const QString& password)
 	d->secret = password;
 }
 
+void JabberConnection::stream_iq(const IQ& iq)
+{
+}
+
+void JabberConnection::stream_message(const Message& msg)
+{
+}
+
+void JabberConnection::stream_presence(const Presence& presence)
+{
+}
+
 void JabberConnection::stream_connected()
 {
 	qDebug() << "signed on";
@@ -84,10 +99,10 @@ void JabberConnection::stream_connected()
 	query.setFrom("icq.dragonfly");
 	query.setTo("dragonfly");
 	query.setChildElement("query", "http://jabber.org/protocol/disco#info");
-	d->stream->sendStanza(query);
+	//d->stream->sendStanza(query);
 }
 
-void JabberConnection::stream_error(ComponentStream::Error& err)
+void JabberConnection::stream_error(const ComponentStream::Error& err)
 {
 	qDebug() << "Stream error! Condition:" << err.type();
 	qApp->quit();

@@ -60,10 +60,10 @@ class ComponentStream : public QObject
 	signals:
 		void connected();
 		void disconnected();
-		void error(const Error& streamError);
-		void stanzaIQ(const IQ& iq);
-		void stanzaMessage(const Message& message);
-		void stanzaPresence(const Presence& presence);
+		void error(const ComponentStream::Error&);
+		void stanzaIQ(const IQ&);
+		void stanzaMessage(const Message&);
+		void stanzaPresence(const Presence&);
 	private:
 		void handleStreamError(const Parser::Event& event);
 		void processEvent(const Parser::Event& event);

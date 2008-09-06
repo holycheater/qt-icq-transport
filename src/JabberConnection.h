@@ -29,6 +29,12 @@ class JabberConnection : public QObject
 {
 	Q_OBJECT
 
+	/* typedefs for slots */
+	typedef XMPP::IQ IQ;
+	typedef XMPP::Message Message;
+	typedef XMPP::Presence Presence;
+	typedef XMPP::ComponentStream ComponentStream;
+
 	public:
 		JabberConnection(QObject *parent = 0);
 		~JabberConnection();
@@ -39,8 +45,11 @@ class JabberConnection : public QObject
 		void setServer(const QString& host, quint16 port = 5222);
 		void setPassword(const QString& password);
 	private slots:
-		void stream_error(XMPP::ComponentStream::Error& err);
+		void stream_error(const ComponentStream::Error&);
 		void stream_connected();
+		void stream_iq(const IQ&);
+		void stream_message(const Message&);
+		void stream_presence(const Presence&);
 	private:
 		class Private;
 		Private *d;

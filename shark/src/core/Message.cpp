@@ -79,38 +79,49 @@ Message::~Message()
  * Get message stanza body (message itself).
  *
  * @return message body string
- * @sa subject()
+ * @sa subject(), thread()
  */
 QString Message::body() const
 {
-	if ( doc()->documentElement().elementsByTagName("body").isEmpty() ) {
-		return QString();
-	} else {
-		QDomElement eBody = doc()->documentElement().elementsByTagName("body").item(0).toElement();
-		return eBody.text();
-	}
+	return doc()->documentElement().firstChildElement("body").text();
 }
 
 /**
  * Get message stanza subject.
  *
  * @return message subject string
- * @sa body()
+ * @sa body(), thread()
  */
 QString Message::subject() const
 {
-	if ( doc()->documentElement().elementsByTagName("subject").isEmpty() ) {
-		return QString();
-	} else {
-		QDomElement eSubject = doc()->documentElement().elementsByTagName("subject").item(0).toElement();
-		return eSubject.text();
-	}
+	return doc()->documentElement().firstChildElement("subject").text();
+}
+
+/**
+ * Get message thread.
+ *
+ * @return	message thread string
+ * @sa body(), subject()
+ */
+QString Message::thread() const
+{
+	return doc()->documentElement().firstChildElement("thread").text();
+}
+
+/**
+ * Sets message stanza text to @a body.
+ *
+ * @sa setSubject(), setThread()
+ */
+void Message::setBody(const QString& body)
+{
+	setProperty("body", body);
 }
 
 /**
  * Sets message stanza subject to @a subject.
  *
- * @sa setBody()
+ * @sa setBody(), setThread()
  */
 void Message::setSubject(const QString& subject)
 {
@@ -118,13 +129,13 @@ void Message::setSubject(const QString& subject)
 }
 
 /**
- * Sets message stanza text to @a body.
+ * Sets message thread to @a thread.
  *
- * @sa setSubject()
+ * @sa setBody(), setSubject()
  */
-void Message::setBody(const QString& body)
+void Message::setThread(const QString& thread)
 {
-	setProperty("body", body);
+	setProperty("thread", thread);
 }
 
 /**

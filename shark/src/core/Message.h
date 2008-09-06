@@ -39,9 +39,11 @@ class Message : public Stanza
 
 		QString body() const;
 		QString subject() const;
+		QString thread() const;
 
 		void setBody(const QString& body);
 		void setSubject(const QString& subject);
+		void setThread(const QString& thread);
 
 		using Stanza::setType;
 		void setType(Type type);

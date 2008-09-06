@@ -21,8 +21,8 @@
 #include "JabberConnection.h"
 
 #include "IQ.h"
-#include "connector.h"
-#include "jid.h"
+#include "Connector.h"
+#include "Jid.h"
 
 #include <QCoreApplication>
 #include <QtDebug>

@@ -1,5 +1,5 @@
 /*
- * parser.cpp - parse an XMPP "document"
+ * Parser.cpp - parse an XMPP "document"
  * Copyright (C) 2003  Justin Karneges
  *
  * This library is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@
     it would be nice if Qt had this already.
 */
 
-#include "parser.h"
+#include "Parser.h"
 
 #include <QTextCodec>
 #include <QString>

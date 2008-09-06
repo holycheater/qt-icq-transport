@@ -19,8 +19,7 @@
  */
 
 #include "Stanza.h"
-
-#include "core/jid.h"
+#include "Jid.h"
 
 namespace XMPP {
 

@@ -1,5 +1,5 @@
 /*
- * connector.cpp - establish a connection to an XMPP server
+ * Connector.cpp - establish a connection to an XMPP server
  * Copyright (C) 2003  Justin Karneges
  *
  * This library is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
 #include <QList>
 #include <QUrl>
 
-#include "connector.h"
+#include "Connector.h"
 
 #include <QtCrypto>
 

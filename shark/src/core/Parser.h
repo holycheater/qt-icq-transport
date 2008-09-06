@@ -1,5 +1,5 @@
 /*
- * parser.h - parse an XMPP "document"
+ * Parser.h - parse an XMPP "document"
  * Copyright (C) 2003  Justin Karneges
  *
  * This library is free software; you can redistribute it and/or
@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef XMPP_CORE_PARSER_H_
+#define XMPP_CORE_PARSER_H_
 
 #include <QDomElement>
 #include <QSharedDataPointer>
@@ -87,4 +87,4 @@ namespace XMPP
 	};
 }
 
-#endif
+#endif /* XMPP_CORE_PARSER_H_ */

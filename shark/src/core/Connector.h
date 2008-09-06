@@ -1,5 +1,5 @@
 /*
- * connector.h - establish a connection to an XMPP server
+ * Connector.h - establish a connection to an XMPP server
  * Copyright (C) 2003  Justin Karneges
  *
  * This library is free software; you can redistribute it and/or

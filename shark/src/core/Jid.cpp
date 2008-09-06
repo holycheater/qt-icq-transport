@@ -1,5 +1,5 @@
 /*
- * jid.cpp - class for verifying and manipulating Jabber IDs
+ * Jid.cpp - class for verifying and manipulating Jabber IDs
  * Copyright (C) 2003  Justin Karneges
  *
  * This library is free software; you can redistribute it and/or
@@ -18,13 +18,13 @@
  *
  */
 
-#include "jid.h"
+#include "Jid.h"
 
 #include <QCoreApplication>
 #include <QByteArray>
 #include <QHash>
 #include <QSharedData>
-#include <stringprep.h>
+#include <libidn/stringprep.h>
 
 
 using namespace XMPP;

@@ -24,9 +24,9 @@
 #include "IQ.h"
 #include "Message.h"
 #include "Presence.h"
-#include "jid.h"
+#include "Jid.h"
 
-#include "connector.h"
+#include "Connector.h"
 #include "bytestream.h"
 
 #include <QtDebug>

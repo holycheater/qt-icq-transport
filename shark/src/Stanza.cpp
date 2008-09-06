@@ -18,8 +18,6 @@
  *
  */
 
-#include <QDomDocument>
-
 #include "Stanza.h"
 
 #include "core/jid.h"

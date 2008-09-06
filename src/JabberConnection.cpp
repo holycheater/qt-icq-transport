@@ -25,25 +25,26 @@
 #include "jid.h"
 
 #include <QCoreApplication>
+#include <QtDebug>
 
 class JabberConnection::Private {
 
 	public:
-		XMPP::AdvancedConnector* connector;
+		XMPP::Connector* connector;
 		XMPP::ComponentStream* stream;
 		XMPP::Jid jid;
 		QString secret;
 };
 
-
+using namespace XMPP;
 
 JabberConnection::JabberConnection(QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
 
-	d->connector = new XMPP::AdvancedConnector;
-	d->stream = new XMPP::ComponentStream(d->connector);
+	d->connector = new Connector;
+	d->stream = new ComponentStream(d->connector);
 
 	QObject::connect(d->stream, SIGNAL( error(const XMPP::Stream::Error&) ), SLOT( stream_error(const XMPP::Stream::Error&) ) );
 	QObject::connect(d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
@@ -78,15 +79,15 @@ void JabberConnection::setPassword(const QString& password)
 void JabberConnection::stream_connected()
 {
 	qDebug() << "signed on";
-	X::IQ query;
-	query.setType(X::IQ::Get);
+	IQ query;
+	query.setType(IQ::Get);
 	query.setFrom("icq.dragonfly");
 	query.setTo("dragonfly");
 	query.setChildElement("query", "http://jabber.org/protocol/disco#info");
 	d->stream->sendStanza(query);
 }
 
-void JabberConnection::stream_error(X::ComponentStream::Error& err)
+void JabberConnection::stream_error(ComponentStream::Error& err)
 {
 	qDebug() << "Stream error! Condition:" << err.type();
 	qApp->quit();

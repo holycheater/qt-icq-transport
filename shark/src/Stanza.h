@@ -21,9 +21,7 @@
 #ifndef XMPP_STANZA_H_
 #define XMPP_STANZA_H_
 
-class QDomDocument;
-class QDomElement;
-class QString;
+#include <QDomDocument>
 
 namespace XMPP {
 

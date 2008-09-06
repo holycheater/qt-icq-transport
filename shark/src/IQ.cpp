@@ -18,8 +18,6 @@
  *
  */
 
-#include <QDomDocument>
-
 #include "IQ.h"
 
 namespace XMPP {

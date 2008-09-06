@@ -1,5 +1,3 @@
-INCLUDEPATH += $$PWD
-
 HEADERS += \
 	$$PWD/Connector.h \
 	$$PWD/IQ.h \

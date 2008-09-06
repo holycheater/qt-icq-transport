@@ -21,7 +21,8 @@
 #ifndef XMPP_COMPONENTSTREAM_H_
 #define XMPP_COMPONENTSTREAM_H_
 
-#include "Parser.h"
+#include "core/Parser.h"
+
 #include <QObject>
 #include <QDomDocument>
 

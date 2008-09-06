@@ -20,9 +20,9 @@
 
 #include "JabberConnection.h"
 
-#include "IQ.h"
-#include "Connector.h"
-#include "Jid.h"
+#include "core/IQ.h"
+#include "core/Connector.h"
+#include "core/Jid.h"
 
 #include <QCoreApplication>
 #include <QtDebug>

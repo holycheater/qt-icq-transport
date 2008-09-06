@@ -21,13 +21,14 @@
 #include <QCryptographicHash>
 
 #include "ComponentStream.h"
-#include "IQ.h"
-#include "Message.h"
-#include "Presence.h"
-#include "Jid.h"
 
-#include "Connector.h"
-#include "bytestream.h"
+#include "core/IQ.h"
+#include "core/Jid.h"
+#include "core/Message.h"
+#include "core/Presence.h"
+
+#include "core/Connector.h"
+#include "cutestuff/bytestream.h"
 
 #include <QtDebug>
 

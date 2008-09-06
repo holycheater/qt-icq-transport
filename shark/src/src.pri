@@ -5,7 +5,7 @@ include($$PWD/libidn/libidn.pri)
 
 INCLUDEPATH += $$PWD
 HEADERS += \
-	$$PWD/ComponentStream.h \
+	$$PWD/ComponentStream.h
 SOURCES += \
 	$$PWD/StreamError.cpp \
-	$$PWD/ComponentStream.cpp \
+	$$PWD/ComponentStream.cpp

@@ -25,18 +25,18 @@
 
 #include "connector.h"
 
-#include <qca.h>
+#include <QtCrypto>
 
 #include "safedelete.h"
-#include <idna.h>
+#include <libidn/idna.h>
 
 #include "ndns.h"
-
-#include "bsocket.h"
-#include "httpconnect.h"
-#include "httppoll.h"
-#include "socks.h"
 #include "srvresolver.h"
+
+#include "cutestuff/bsocket.h"
+#include "cutestuff/httpconnect.h"
+#include "cutestuff/httppoll.h"
+#include "cutestuff/socks.h"
 
 using namespace XMPP;
 
@@ -46,7 +46,7 @@ class Connector::Private
 {
 	public:
 		/* from connector's private */
-		bool ssl;
+		bool useSSL;
 		bool haveaddr;
 		QHostAddress addr;
 		quint16 port;
@@ -80,7 +80,6 @@ class Connector::Private
 Connector::Connector(QObject *parent)
 	: QObject(parent)
 {
-
 	d = new Private;
 
 	setUseSSL(false);
@@ -104,7 +103,7 @@ Connector::~Connector()
 
 bool Connector::useSSL() const
 {
-	return d->ssl;
+	return d->useSSL;
 }
 
 bool Connector::havePeerAddress() const
@@ -122,9 +121,9 @@ quint16 Connector::peerPort() const
 	return d->port;
 }
 
-void Connector::setUseSSL(bool b)
+void Connector::setUseSSL(bool useSSL)
 {
-	d->ssl = b;
+	d->useSSL = useSSL;
 }
 
 void Connector::setPeerAddressNone()
@@ -134,11 +133,11 @@ void Connector::setPeerAddressNone()
 	d->port = 0;
 }
 
-void Connector::setPeerAddress(const QHostAddress &_addr, quint16 _port)
+void Connector::setPeerAddress(const QHostAddress& address, quint16 port)
 {
 	d->haveaddr = true;
-	d->addr = _addr;
-	d->port = _port;
+	d->addr = address;
+	d->port = port;
 }
 
 
@@ -147,10 +146,12 @@ void Connector::cleanup()
 	d->mode = Idle;
 
 	// stop any dns
-	if(d->dns.isBusy())
+	if ( d->dns.isBusy() ) {
 		d->dns.stop();
-	if(d->srv.isBusy())
+	}
+	if ( d->srv.isBusy() ) {
 		d->srv.stop();
+	}
 
 	// destroy the bytestream, if there is one
 	delete d->bs;
@@ -165,19 +166,21 @@ void Connector::cleanup()
 	setPeerAddressNone();
 }
 
-void Connector::setProxy(const Proxy &proxy)
+void Connector::setProxy(const Proxy& proxy)
 {
-	if(d->mode != Idle)
+	if (d->mode != Idle) {
 		return;
+	}
 	d->proxy = proxy;
 }
 
-void Connector::setOptHostPort(const QString &host, quint16 _port)
+void Connector::setOptHostPort(const QString& host, quint16 port)
 {
-	if(d->mode != Idle)
+	if (d->mode != Idle) {
 		return;
+	}
 	d->opt_host = host;
-	d->opt_port = _port;
+	d->opt_port = port;
 }
 
 void Connector::setOptProbe(bool b)
@@ -212,10 +215,10 @@ void Connector::connectToServer(const QString &server)
 
 		HttpPoll *s = new HttpPoll;
 		d->bs = s;
-		connect(s, SIGNAL(connected()), SLOT(bs_connected()));
-		connect(s, SIGNAL(syncStarted()), SLOT(http_syncStarted()));
-		connect(s, SIGNAL(syncFinished()), SLOT(http_syncFinished()));
-		connect(s, SIGNAL(error(int)), SLOT(bs_error(int)));
+		connect(s, SIGNAL( connected() ), SLOT( bs_connected() ));
+		connect(s, SIGNAL( syncStarted() ), SIGNAL( httpSyncStarted() ));
+		connect(s, SIGNAL( syncFinished() ), SIGNAL( httpSyncFinished() ));
+		connect(s, SIGNAL( error(int) ), SLOT( bs_error(int) ));
 		if(!d->proxy.user().isEmpty())
 			s->setAuth(d->proxy.user(), d->proxy.pass());
 		s->setPollInterval(d->proxy.pollInterval());
@@ -246,7 +249,7 @@ void Connector::connectToServer(const QString &server)
 			d->multi = true;
 
 			QPointer<QObject> self = this;
-			srvLookup(d->server);
+			emit srvLookup(d->server);
 			if(!self)
 				return;
 
@@ -333,7 +336,7 @@ void Connector::dns_done()
 #endif
 			cleanup();
 			d->errorCode = ErrHostNotFound;
-			error();
+			emit error();
 		}
 	}
 	else {
@@ -407,7 +410,7 @@ void Connector::srv_done()
 #endif
 	d->servers = d->srv.servers();
 	if(d->servers.isEmpty()) {
-		srvResult(false);
+		emit srvResult(false);
 		if(!self)
 			return;
 
@@ -466,7 +469,7 @@ void Connector::bs_error(int x)
 {
 	if(d->mode == Connected) {
 		d->errorCode = ErrStream;
-		error();
+		emit error();
 		return;
 	}
 
@@ -560,7 +563,7 @@ void Connector::bs_error(int x)
 #endif
 		cleanup();
 		d->errorCode = ErrConnectionRefused;
-		error();
+		emit error();
 	}
 }
 
@@ -569,8 +572,8 @@ void Connector::bs_error(int x)
 //----------------------------------------------------------------------------
 Connector::Proxy::Proxy()
 {
-	t = None;
-	v_poll = 30;
+	m_type = None;
+	m_poll = 30;
 }
 
 Connector::Proxy::~Proxy()
@@ -579,69 +582,69 @@ Connector::Proxy::~Proxy()
 
 int Connector::Proxy::type() const
 {
-	return t;
+	return m_type;
 }
 
 QString Connector::Proxy::host() const
 {
-	return v_host;
+	return m_host;
 }
 
 quint16 Connector::Proxy::port() const
 {
-	return v_port;
+	return m_port;
 }
 
 QString Connector::Proxy::url() const
 {
-	return v_url;
+	return m_url;
 }
 
 QString Connector::Proxy::user() const
 {
-	return v_user;
+	return m_username;
 }
 
 QString Connector::Proxy::pass() const
 {
-	return v_pass;
+	return m_password;
 }
 
 int Connector::Proxy::pollInterval() const
 {
-	return v_poll;
+	return m_poll;
 }
 
 void Connector::Proxy::setHttpConnect(const QString &host, quint16 port)
 {
-	t = HttpConnect;
-	v_host = host;
-	v_port = port;
+	m_type = HttpConnect;
+	m_host = host;
+	m_port = port;
 }
 
 void Connector::Proxy::setHttpPoll(const QString &host, quint16 port, const QString &url)
 {
-	t = HttpPoll;
-	v_host = host;
-	v_port = port;
-	v_url = url;
+	m_type = HttpPoll;
+	m_host = host;
+	m_port = port;
+	m_url  = url;
 }
 
 void Connector::Proxy::setSocks(const QString &host, quint16 port)
 {
-	t = Socks;
-	v_host = host;
-	v_port = port;
+	m_type = Socks;
+	m_host = host;
+	m_port = port;
 }
 
 void Connector::Proxy::setUserPass(const QString &user, const QString &pass)
 {
-	v_user = user;
-	v_pass = pass;
+	m_username = user;
+	m_password = pass;
 }
 
 void Connector::Proxy::setPollInterval(int secs)
 {
-	v_poll = secs;
+	m_poll = secs;
 }
 

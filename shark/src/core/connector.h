@@ -41,8 +41,7 @@ class Connector : public QObject
 
 		class Proxy;
 
-
-		void connectToServer(const QString &server);
+		void connectToServer(const QString& server);
 		ByteStream *stream() const;
 		void done();
 
@@ -52,8 +51,8 @@ class Connector : public QObject
 		QHostAddress peerAddress() const;
 		quint16 peerPort() const;
 
-		void setProxy(const Proxy &proxy);
-		void setOptHostPort(const QString &host, quint16 port);
+		void setProxy(const Proxy& proxy);
+		void setOptHostPort(const QString& host, quint16 port);
 		void setOptProbe(bool);
 		void setOptSSL(bool);
 
@@ -72,7 +71,7 @@ class Connector : public QObject
 	protected:
 		void setUseSSL(bool b);
 		void setPeerAddressNone();
-		void setPeerAddress(const QHostAddress &addr, quint16 port);
+		void setPeerAddress(const QHostAddress& addr, quint16 port);
 	private:
 		void cleanup();
 		void do_resolve();
@@ -109,11 +108,11 @@ class Connector::Proxy
 		void setUserPass(const QString& user, const QString& pass);
 		void setPollInterval(int secs);
 	private:
-		int t;
-		QString v_host, v_url;
-		quint16 v_port;
-		QString v_user, v_pass;
-		int v_poll;
+		int m_type;
+		QString m_host, m_url;
+		quint16 m_port;
+		QString m_username, m_password;
+		int m_poll;
 };
 
 

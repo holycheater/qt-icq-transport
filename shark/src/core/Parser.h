@@ -27,56 +27,18 @@
 
 namespace XMPP
 {
-	class Parser
-	{
+
+
+class Parser
+{
 	public:
 		Parser();
 		~Parser();
 
-		class Event
-		{
-		public:
-			enum Type { DocumentOpen, DocumentClose, Element, Error };
-			Event();
-			Event(const Event& other);
-			Event& operator=(const Event& other);
-			~Event();
-
-			bool isNull() const;
-			int type() const;
-			QString typeString() const;
-
-			// for document open
-			QString nsprefix(const QString &s=QString::null) const;
-
-			// for document open / close
-			QString namespaceURI() const;
-			QString localName() const;
-			QString qName() const;
-			QString qualifiedName() const;
-			QXmlAttributes atts() const;
-			QXmlAttributes attributes() const;
-
-			// for element
-			QDomElement element() const;
-
-			// for any
-			QString actualString() const;
-
-			// setup
-			void setDocumentOpen(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts, const QStringList &nsnames, const QStringList &nsvalues);
-			void setDocumentClose(const QString &namespaceURI, const QString &localName, const QString &qName);
-			void setElement(const QDomElement &elem);
-			void setError();
-			void setActualString(const QString &);
-
-		private:
-			class Private;
-			QSharedDataPointer<Private> d;
-		};
+		class Event;
 
 		void reset();
-		void appendData(const QByteArray &a);
+		void appendData(const QByteArray& data);
 		Event readNext();
 		QByteArray unprocessed() const;
 		QString encoding() const;
@@ -84,7 +46,49 @@ namespace XMPP
 	private:
 		class Private;
 		Private *d;
-	};
+};
+
+class Parser::Event
+{
+	public:
+		enum Type { DocumentOpen, DocumentClose, Element, Error };
+		Event();
+		Event(const Event& other);
+		Event& operator=(const Event& other);
+		~Event();
+
+		bool isNull() const;
+		int type() const;
+		QString typeString() const;
+
+		// for document open
+		QString nsprefix(const QString& str = QString() ) const;
+
+		// for document open / close
+		QString namespaceURI() const;
+		QString localName() const;
+		QString qualifiedName() const;
+		QXmlAttributes attributes() const;
+
+		// for element
+		QDomElement element() const;
+
+		// for any
+		QString actualString() const;
+
+		// setup
+		void setDocumentOpen(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts, const QStringList &nsnames, const QStringList &nsvalues);
+		void setDocumentClose(const QString &namespaceURI, const QString &localName, const QString &qName);
+		void setElement(const QDomElement &elem);
+		void setError();
+		void setActualString(const QString &);
+
+	private:
+		class Private;
+		QSharedDataPointer<Private> d;
+};
+
+
 }
 
 #endif /* XMPP_CORE_PARSER_H_ */

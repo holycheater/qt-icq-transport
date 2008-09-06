@@ -60,491 +60,566 @@ using namespace XMPP;
 //----------------------------------------------------------------------------
 class StreamInput : public QXmlInputSource
 {
-public:
-	StreamInput()
-	{
-		dec = 0;
-		reset();
-	}
+	public:
+		StreamInput();
+		~StreamInput();
 
-	~StreamInput()
-	{
-		delete dec;
-	}
+		void appendData(const QByteArray& data);
 
-	void reset()
-	{
-		delete dec;
-		dec = 0;
-		in.resize(0);
-		out = "";
-		at = 0;
-		paused = false;
-		mightChangeEncoding = true;
-		checkBad = true;
-		last = QChar();
-		v_encoding = "";
-		resetLastData();
-	}
+		QString encoding() const;
 
-	void resetLastData()
-	{
-		last_string = "";
-	}
+		bool isPaused();
 
-	QString lastString() const
-	{
-		return last_string;
-	}
+		QChar lastRead();
+		QString lastString() const;
 
-	void appendData(const QByteArray &a)
-	{
-		int oldsize = in.size();
-		in.resize(oldsize + a.size());
-		memcpy(in.data() + oldsize, a.data(), a.size());
-		processBuf();
-	}
+		QChar next();
 
-	QChar lastRead()
-	{
-		return last;
-	}
+		void pause(bool paused);
 
-	QChar next()
-	{
-		if(paused)
-			return EndOfData;
-		else
-			return readNext();
-	}
+		// NOTE: setting 'peek' to true allows the same char to be read again,
+		//       however this still advances the internal byte processing.
+		QChar readNext(bool peek = false);
 
-	// NOTE: setting 'peek' to true allows the same char to be read again,
-	//       however this still advances the internal byte processing.
-	QChar readNext(bool peek=false)
-	{
-		QChar c;
-		if(mightChangeEncoding)
-			c = EndOfData;
-		else {
-			if(out.isEmpty()) {
-				QString s;
-				if(!tryExtractPart(&s))
-					c = EndOfData;
-				else {
-					out = s;
-					c = out[0];
-				}
+		void reset();
+		void resetLastData();
+
+		QByteArray unprocessed() const;
+
+	private:
+		bool checkForBadChars(const QString &s);
+		void processBuf();
+		QString processXmlHeader(const QString &h);
+		bool tryExtractPart(QString *s);
+
+		bool m_bCheckBad;
+		bool m_bMightChangeEncoding;
+		bool m_bPaused;
+
+		int m_pos;
+
+		QTextDecoder* m_decoder;
+
+		QByteArray m_input;
+		QString m_output;
+
+		QChar m_lastChar;
+		QString m_lastString;
+
+		QString m_encoding;
+
+};
+
+StreamInput::StreamInput()
+{
+	m_decoder = 0;
+	reset();
+}
+
+StreamInput::~StreamInput()
+{
+	delete m_decoder;
+}
+
+void StreamInput::reset()
+{
+	delete m_decoder;
+	m_decoder = 0;
+
+	m_bCheckBad = true;
+	m_bMightChangeEncoding = true;
+	m_bPaused = false;
+
+	m_pos = 0;
+
+	m_input.resize(0);
+	m_output = "";
+
+	m_lastChar = QChar();
+	m_encoding.clear();
+
+	resetLastData();
+}
+
+void StreamInput::resetLastData()
+{
+	m_lastString.clear();
+}
+
+QString StreamInput::lastString() const
+{
+	return m_lastString;
+}
+
+void StreamInput::appendData(const QByteArray& data)
+{
+	int oldsize = m_input.size();
+	m_input.resize( oldsize + data.size() );
+	qMemCopy( m_input.data() + oldsize, data.data(), data.size() );
+	processBuf();
+}
+
+QChar StreamInput::lastRead()
+{
+	return m_lastChar;
+}
+
+QChar StreamInput::next()
+{
+	if (m_bPaused) {
+		return EndOfData;
+	} else {
+		return readNext();
+	}
+}
+
+QChar StreamInput::readNext(bool peek)
+{
+	QChar c;
+	if (m_bMightChangeEncoding) {
+		c = EndOfData;
+	} else {
+		if ( m_output.isEmpty() ) {
+			QString s;
+			if ( !tryExtractPart(&s) ) {
+				c = EndOfData;
+			} else {
+				m_output = s;
+				c = m_output[0];
 			}
-			else
-				c = out[0];
-			if(!peek)
-				out.remove(0, 1);
+		} else {
+			c = m_output[0];
 		}
-		if(c == EndOfData) {
-#ifdef XMPP_PARSER_DEBUG
-			printf("next() = EOD\n");
-#endif
+		if (!peek) {
+			m_output.remove(0, 1);
 		}
-		else {
-#ifdef XMPP_PARSER_DEBUG
-			printf("next() = [%c]\n", c.latin1());
-#endif
-			last = c;
+	}
+	if (c == EndOfData) {
+		// qDebug() << "readNext() = EndOfData";
+	}
+	else {
+		// qDebug() << "readNext():" << c;
+		m_lastChar = c;
+	}
+
+	return c;
+}
+
+QByteArray StreamInput::unprocessed() const
+{
+	QByteArray data;
+	data.resize(m_input.size() - m_pos);
+	qMemCopy( data.data(), m_input.data() + m_pos, data.size() );
+	return data;
+}
+
+void StreamInput::pause(bool paused)
+{
+	m_bPaused = paused;
+}
+
+bool StreamInput::isPaused()
+{
+	return m_bPaused;
+}
+
+QString StreamInput::encoding() const
+{
+	return m_encoding;
+}
+
+void StreamInput::processBuf()
+{
+	// qDebug() << "processing buffer" << "size" << in.size() << "pos" << at;
+	if ( !m_decoder ) {
+		QTextCodec *codec = 0;
+		uchar *p = (uchar *)m_input.data() + m_pos;
+		int size = m_input.size() - m_pos;
+
+		// do we have enough information to determine the encoding?
+		if (size == 0) {
+			return;
 		}
-
-		return c;
-	}
-
-	QByteArray unprocessed() const
-	{
-		QByteArray a;
-		a.resize(in.size() - at);
-		memcpy(a.data(), in.data() + at, a.size());
-		return a;
-	}
-
-	void pause(bool b)
-	{
-		paused = b;
-	}
-
-	bool isPaused()
-	{
-		return paused;
-	}
-
-	QString encoding() const
-	{
-		return v_encoding;
-	}
-
-private:
-	QTextDecoder *dec;
-	QByteArray in;
-	QString out;
-	int at;
-	bool paused;
-	bool mightChangeEncoding;
-	QChar last;
-	QString v_encoding;
-	QString last_string;
-	bool checkBad;
-
-	void processBuf()
-	{
-#ifdef XMPP_PARSER_DEBUG
-		printf("processing.  size=%d, at=%d\n", in.size(), at);
-#endif
-		if(!dec) {
-			QTextCodec *codec = 0;
-			uchar *p = (uchar *)in.data() + at;
-			int size = in.size() - at;
-
-			// do we have enough information to determine the encoding?
-			if(size == 0)
+		bool utf16 = false;
+		if (p[0] == 0xfe || p[0] == 0xff) {
+			// probably going to be a UTF-16 byte order mark
+			if (size < 2) {
 				return;
-			bool utf16 = false;
-			if(p[0] == 0xfe || p[0] == 0xff) {
-				// probably going to be a UTF-16 byte order mark
-				if(size < 2)
-					return;
-				if((p[0] == 0xfe && p[1] == 0xff) || (p[0] == 0xff && p[1] == 0xfe)) {
-					// ok it is UTF-16
-					utf16 = true;
-				}
 			}
-			if(utf16)
-				codec = QTextCodec::codecForMib(1000); // UTF-16
-			else
-				codec = QTextCodec::codecForMib(106); // UTF-8
-
-			v_encoding = codec->name();
-			dec = codec->makeDecoder();
-
-			// for utf16, put in the byte order mark
-			if(utf16) {
-				out += dec->toUnicode((const char *)p, 2);
-				at += 2;
+			if ( (p[0] == 0xfe && p[1] == 0xff) || (p[0] == 0xff && p[1] == 0xfe) ) {
+				// ok it is UTF-16
+				utf16 = true;
 			}
 		}
+		if (utf16) {
+			codec = QTextCodec::codecForMib(1000); // UTF-16
+		} else {
+			codec = QTextCodec::codecForMib(106); // UTF-8
+		}
 
-		if(mightChangeEncoding) {
-			while(1) {
-				int n = out.indexOf('<');
-				if(n != -1) {
-					// we need a closing bracket
-					int n2 = out.indexOf('>', n);
-					if(n2 != -1) {
-						++n2;
-						QString h = out.mid(n, n2-n);
-						QString enc = processXmlHeader(h);
-						QTextCodec *codec = 0;
-						if(!enc.isEmpty())
-							codec = QTextCodec::codecForName(enc.toLatin1());
+		m_encoding = codec->name();
+		m_decoder = codec->makeDecoder();
 
-						// changing codecs
-						if(codec) {
-							v_encoding = codec->name();
-							delete dec;
-							dec = codec->makeDecoder();
-						}
-						mightChangeEncoding = false;
-						out.truncate(0);
-						at = 0;
-						resetLastData();
-						break;
+		// for utf16, put in the byte order mark
+		if (utf16) {
+			m_output += m_decoder->toUnicode((const char *)p, 2);
+			m_pos += 2;
+		}
+	}
+
+	if (m_bMightChangeEncoding) {
+		forever {
+			int n = m_output.indexOf('<');
+			if (n != -1) {
+				// we need a closing bracket
+				int n2 = m_output.indexOf('>', n);
+				if (n2 != -1) {
+					++n2;
+					QString h = m_output.mid(n, n2-n);
+					QString enc = processXmlHeader(h);
+					QTextCodec *codec = 0;
+					if ( !enc.isEmpty() ) {
+						codec = QTextCodec::codecForName( enc.toLatin1() );
 					}
-				}
-				QString s;
-				if(!tryExtractPart(&s))
-					break;
-				if(checkBad && checkForBadChars(s)) {
-					// go to the parser
-					mightChangeEncoding = false;
-					out.truncate(0);
-					at = 0;
+
+					// changing codecs
+					if (codec) {
+						m_encoding = codec->name();
+						delete m_decoder;
+						m_decoder = codec->makeDecoder();
+					}
+					m_bMightChangeEncoding = false;
+					m_output.truncate(0);
+					m_pos = 0;
 					resetLastData();
 					break;
 				}
-				out += s;
 			}
-		}
-	}
-
-	QString processXmlHeader(const QString &h)
-	{
-		if(h.left(5) != "<?xml")
-			return "";
-
-		int endPos = h.indexOf(">");
-		int startPos = h.indexOf("encoding");
-		if(startPos < endPos && startPos != -1) {
-			QString encoding;
-			do {
-				startPos++;
-				if(startPos > endPos) {
-					return "";
-				}
-			} while(h[startPos] != '"' && h[startPos] != '\'');
-			startPos++;
-			while(h[startPos] != '"' && h[startPos] != '\'') {
-				encoding += h[startPos];
-				startPos++;
-				if(startPos > endPos) {
-					return "";
-				}
-			}
-			return encoding;
-		}
-		else
-			return "";
-	}
-
-	bool tryExtractPart(QString *s)
-	{
-		int size = in.size() - at;
-		if(size == 0)
-			return false;
-		uchar *p = (uchar *)in.data() + at;
-		QString nextChars;
-		while(1) {
-			nextChars = dec->toUnicode((const char *)p, 1);
-			++p;
-			++at;
-			if(!nextChars.isEmpty())
+			QString s;
+			if ( !tryExtractPart(&s) ) {
 				break;
-			if(at == (int)in.size())
-				return false;
+			}
+			if ( m_bCheckBad && checkForBadChars(s) ) {
+				// go to the parser
+				m_bMightChangeEncoding = false;
+				m_output.truncate(0);
+				m_pos = 0;
+				resetLastData();
+				break;
+			}
+			m_output += s;
 		}
-		last_string += nextChars;
-		*s = nextChars;
+	}
+}
 
-		// free processed data?
-		if(at >= 1024) {
-			char *p = in.data();
-			int size = in.size() - at;
-			memmove(p, p + at, size);
-			in.resize(size);
-			at = 0;
-		}
-
-		return true;
+QString StreamInput::processXmlHeader(const QString& header)
+{
+	if (header.left(5) != "<?xml") {
+		return "";
 	}
 
-	bool checkForBadChars(const QString &s)
-	{
-		int len = s.indexOf('<');
-		if(len == -1)
-			len = s.length();
-		else
-			checkBad = false;
-		for(int n = 0; n < len; ++n) {
-			if(!s.at(n).isSpace())
-				return true;
+	int endPos = header.indexOf(">");
+	int startPos = header.indexOf("encoding");
+	if (startPos < endPos && startPos != -1) {
+		QString encoding;
+		do {
+			startPos++;
+			if (startPos > endPos) {
+				return "";
+			}
+		} while (header[startPos] != '"' && header[startPos] != '\'');
+		startPos++;
+		while (header[startPos] != '"' && header[startPos] != '\'') {
+			encoding += header[startPos];
+			startPos++;
+			if (startPos > endPos) {
+				return "";
+			}
 		}
+		return encoding;
+	} else {
+		return "";
+	}
+}
+
+bool StreamInput::tryExtractPart(QString *s)
+{
+	int size = m_input.size() - m_pos;
+	if (size == 0) {
 		return false;
 	}
-};
+	uchar *p = (uchar *)m_input.data() + m_pos;
+	QString nextChars;
+	while(1) {
+		nextChars = m_decoder->toUnicode((const char *)p, 1);
+		++p;
+		++m_pos;
+		if ( !nextChars.isEmpty() ) {
+			break;
+		}
+		if ( m_pos == m_input.size() ) {
+			return false;
+		}
+	}
+	m_lastString += nextChars;
+	*s = nextChars;
 
+	// free processed data?
+	if (m_pos >= 1024) {
+		char *p = m_input.data();
+		int size = m_input.size() - m_pos;
+		memmove(p, p + m_pos, size);
+		m_input.resize(size);
+		m_pos = 0;
+	}
+
+	return true;
+}
+
+bool StreamInput::checkForBadChars(const QString &s)
+{
+	int len = s.indexOf('<');
+	if (len == -1) {
+		len = s.length();
+	} else {
+		m_bCheckBad = false;
+	}
+	for(int n = 0; n < len; ++n) {
+		if ( !s.at(n).isSpace() ) {
+			return true;
+		}
+	}
+	return false;
+}
 
 //----------------------------------------------------------------------------
 // ParserHandler
 //----------------------------------------------------------------------------
 namespace XMPP
 {
-	class ParserHandler : public QXmlDefaultHandler
-	{
+
+
+class ParserHandler : public QXmlDefaultHandler
+{
 	public:
-		ParserHandler(StreamInput *_in, QDomDocument *_doc)
-		{
-			in = _in;
-			doc = _doc;
-			needMore = false;
-		}
+		ParserHandler(StreamInput* input, QDomDocument* document);
+		~ParserHandler();
 
-		~ParserHandler()
-		{
-			while (!eventList.isEmpty()) {
-				delete eventList.takeFirst();
-			}
-		}
+		bool needMore() const;
 
-		bool startDocument()
-		{
-			depth = 0;
-			return true;
-		}
+		bool startDocument();
 
-		bool endDocument()
-		{
-			return true;
-		}
+		bool endDocument();
 
-		bool startPrefixMapping(const QString &prefix, const QString &uri)
-		{
-			if(depth == 0) {
-				nsnames += prefix;
-				nsvalues += uri;
-			}
-			return true;
-		}
+		bool startPrefixMapping(const QString& prefix, const QString& uri);
 
-		bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts)
-		{
-			if(depth == 0) {
-				Parser::Event *e = new Parser::Event;
-				QXmlAttributes a;
-				for(int n = 0; n < atts.length(); ++n) {
-					QString uri = atts.uri(n);
-					QString ln = atts.localName(n);
-					if(a.index(uri, ln) == -1)
-						a.append(atts.qName(n), uri, ln, atts.value(n));
-				}
-				e->setDocumentOpen(namespaceURI, localName, qName, a, nsnames, nsvalues);
-				nsnames.clear();
-				nsvalues.clear();
-				e->setActualString(in->lastString());
+		bool startElement(const QString& namespaceURI, const QString& localName, const QString& qualifiedName, const QXmlAttributes& attributes);
 
-				in->resetLastData();
-				eventList.append(e);
-				in->pause(true);
-			}
-			else {
-				QDomElement e = doc->createElementNS(namespaceURI, qName);
-				for(int n = 0; n < atts.length(); ++n) {
-					QString uri = atts.uri(n);
-					QString ln = atts.localName(n);
-					bool have;
-					if( !uri.isEmpty() ) {
-						have = e.hasAttributeNS(uri, ln);
-					} else {
-						have = e.hasAttribute(ln);
-					}
-					if (!have) {
-						e.setAttributeNS(uri, atts.qName(n), atts.value(n));
-					}
-				}
+		bool endElement(const QString& namespaceURI, const QString& localName, const QString& qualifiedName);
 
-				if(depth == 1) {
-					elem = e;
-					current = e;
-				}
-				else {
-					current.appendChild(e);
-					current = e;
-				}
-			}
-			++depth;
-			return true;
-		}
+		bool characters(const QString& str);
 
-		bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName)
-		{
-			--depth;
-			if(depth == 0) {
-				Parser::Event *e = new Parser::Event;
-				e->setDocumentClose(namespaceURI, localName, qName);
-				e->setActualString(in->lastString());
-				in->resetLastData();
-				eventList.append(e);
-				in->pause(true);
-			}
-			else {
-				// done with a depth 1 element?
-				if(depth == 1) {
-					Parser::Event *e = new Parser::Event;
-					e->setElement(elem);
-					e->setActualString(in->lastString());
-					in->resetLastData();
-					eventList.append(e);
-					in->pause(true);
+		void checkNeedMore();
 
-					elem = QDomElement();
-					current = QDomElement();
-				}
-				else
-					current = current.parentNode().toElement();
-			}
+		Parser::Event* takeEvent();
+	private:
+		bool m_bNeedMore;
+		int m_depth;
 
-			if(in->lastRead() == '/')
-				checkNeedMore();
+		StreamInput* m_input;
+		QDomDocument* m_document;
 
-			return true;
-		}
+		QDomElement m_element, m_current;
+		QList<Parser::Event*> m_eventList;
 
-		bool characters(const QString &str)
-		{
-			if(depth >= 1) {
-				QString content = str;
-				if(content.isEmpty())
-					return true;
-
-				if(!current.isNull()) {
-					QDomText text = doc->createTextNode(content);
-					current.appendChild(text);
-				}
-			}
-			return true;
-		}
-
-		/*bool processingInstruction(const QString &target, const QString &data)
-		{
-			printf("Processing: [%s], [%s]\n", target.latin1(), data.latin1());
-			in->resetLastData();
-			return true;
-		}*/
-
-		void checkNeedMore()
-		{
-			// Here we will work around QXmlSimpleReader strangeness and self-closing tags.
-			// The problem is that endElement() is called when the '/' is read, not when
-			// the final '>' is read.  This is a potential problem when obtaining unprocessed
-			// bytes from StreamInput after this event, as the '>' character will end up
-			// in the unprocessed chunk.  To work around this, we need to advance StreamInput's
-			// internal byte processing, but not the xml character data.  This way, the '>'
-			// will get processed and will no longer be in the unprocessed return, but
-			// QXmlSimpleReader can still read it.  To do this, we call StreamInput::readNext
-			// with 'peek' mode.
-			QChar c = in->readNext(true); // peek
-			if(c == QXmlInputSource::EndOfData) {
-				needMore = true;
-			}
-			else {
-				// We'll assume the next char is a '>'.  If it isn't, then
-				// QXmlSimpleReader will deal with that problem on the next
-				// parse.  We don't need to take any action here.
-				needMore = false;
-
-				// there should have been a pending event
-				if (!eventList.isEmpty()) {
-					Parser::Event *e = eventList.first();
-					e->setActualString(e->actualString() + '>');
-					in->resetLastData();
-				}
-			}
-		}
-
-		Parser::Event *takeEvent()
-		{
-			if(needMore)
-				return 0;
-			if(eventList.isEmpty())
-				return 0;
-
-			Parser::Event *e = eventList.takeFirst();
-			in->pause(false);
-			return e;
-		}
-
-		StreamInput *in;
-		QDomDocument *doc;
-		int depth;
-		QStringList nsnames, nsvalues;
-		QDomElement elem, current;
-		QList<Parser::Event*> eventList;
-		bool needMore;
-	};
+		QStringList m_nsnames, m_nsvalues;
 };
+
+ParserHandler::ParserHandler(StreamInput* input, QDomDocument* document)
+{
+	m_bNeedMore = false;
+
+	m_input = input;
+	m_document = document;
+}
+
+ParserHandler::~ParserHandler()
+{
+	while ( !m_eventList.isEmpty() ) {
+		delete m_eventList.takeFirst();
+	}
+}
+
+bool ParserHandler::needMore() const
+{
+	return m_bNeedMore;
+}
+
+bool ParserHandler::startDocument()
+{
+	m_depth = 0;
+	return true;
+}
+
+bool ParserHandler::endDocument()
+{
+	return true;
+}
+
+bool ParserHandler::startPrefixMapping(const QString &prefix, const QString &uri)
+{
+	if (m_depth == 0) {
+		m_nsnames += prefix;
+		m_nsvalues += uri;
+	}
+	return true;
+}
+
+bool ParserHandler::startElement(const QString& namespaceURI, const QString& localName, const QString& qualifiedName, const QXmlAttributes& attributes)
+{
+	if (m_depth == 0) {
+		Parser::Event *e = new Parser::Event;
+		QXmlAttributes a;
+		for(int n = 0; n < attributes.length(); ++n) {
+			QString uri = attributes.uri(n);
+			QString ln = attributes.localName(n);
+			if (a.index(uri, ln) == -1) {
+				a.append( attributes.qName(n), uri, ln, attributes.value(n) );
+			}
+		}
+		e->setDocumentOpen(namespaceURI, localName, qualifiedName, a, m_nsnames, m_nsvalues);
+		m_nsnames.clear();
+		m_nsvalues.clear();
+		e->setActualString( m_input->lastString() );
+
+		m_input->resetLastData();
+		m_eventList.append(e);
+		m_input->pause(true);
+	}
+	else {
+		QDomElement e = m_document->createElementNS(namespaceURI, qualifiedName);
+		for(int n = 0; n < attributes.length(); ++n) {
+			QString uri = attributes.uri(n);
+			QString ln = attributes.localName(n);
+			bool have;
+			if ( !uri.isEmpty() ) {
+				have = e.hasAttributeNS(uri, ln);
+			} else {
+				have = e.hasAttribute(ln);
+			}
+			if (!have) {
+				e.setAttributeNS( uri, attributes.qName(n), attributes.value(n) );
+			}
+		}
+
+		if (m_depth == 1) {
+			m_element = e;
+			m_current = e;
+		}
+		else {
+			m_current.appendChild(e);
+			m_current = e;
+		}
+	}
+	++m_depth;
+	return true;
+}
+
+bool ParserHandler::endElement(const QString& namespaceURI, const QString& localName, const QString& qName)
+{
+	--m_depth;
+	if (m_depth == 0) {
+		Parser::Event *e = new Parser::Event;
+		e->setDocumentClose(namespaceURI, localName, qName);
+		e->setActualString( m_input->lastString() );
+		m_input->resetLastData();
+		m_eventList.append(e);
+		m_input->pause(true);
+	} else {
+		// done with a depth 1 element?
+		if (m_depth == 1) {
+			Parser::Event *e = new Parser::Event;
+			e->setElement(m_element);
+			e->setActualString( m_input->lastString() );
+			m_input->resetLastData();
+			m_eventList.append(e);
+			m_input->pause(true);
+
+			m_element = QDomElement();
+			m_current = QDomElement();
+		} else {
+			m_current = m_current.parentNode().toElement();
+		}
+	}
+
+	if (m_input->lastRead() == '/') {
+		checkNeedMore();
+	}
+
+	return true;
+}
+
+bool ParserHandler::characters(const QString& str)
+{
+	if (m_depth >= 1) {
+		QString content = str;
+		if ( content.isEmpty() ) {
+			return true;
+		}
+
+		if ( !m_current.isNull() ) {
+			QDomText text = m_document->createTextNode(content);
+			m_current.appendChild(text);
+		}
+	}
+	return true;
+}
+
+void ParserHandler::checkNeedMore()
+{
+	/*
+	 * Here we will work around QXmlSimpleReader strangeness and self-closing tags.
+	 * The problem is that endElement() is called when the '/' is read, not when
+	 * the final '>' is read.  This is a potential problem when obtaining unprocessed
+	 * bytes from StreamInput after this event, as the '>' character will end up
+	 * in the unprocessed chunk.  To work around this, we need to advance StreamInput's
+	 * internal byte processing, but not the xml character data.  This way, the '>'
+	 * will get processed and will no longer be in the unprocessed return, but
+	 * QXmlSimpleReader can still read it.  To do this, we call StreamInput::readNext
+	 * with 'peek' mode.
+	 */
+	QChar c = m_input->readNext(true); // peek
+	if (c == QXmlInputSource::EndOfData) {
+		m_bNeedMore = true;
+	} else {
+		// We'll assume the next char is a '>'.  If it isn't, then
+		// QXmlSimpleReader will deal with that problem on the next
+		// parse.  We don't need to take any action here.
+		m_bNeedMore = false;
+
+		// there should have been a pending event
+		if ( !m_eventList.isEmpty() ) {
+			Parser::Event *e = m_eventList.first();
+			e->setActualString(e->actualString() + '>');
+			m_input->resetLastData();
+		}
+	}
+}
+
+Parser::Event* ParserHandler::takeEvent()
+{
+	if ( m_bNeedMore || m_eventList.isEmpty() ) {
+		return 0;
+	}
+
+	Parser::Event *e = m_eventList.takeFirst();
+	m_input->pause(false);
+	return e;
+}
+
+
+
+} /* end of namespace XMPP */
 
 
 //----------------------------------------------------------------------------
@@ -654,8 +729,9 @@ QString Parser::Event::nsprefix(const QString &s) const
 	QStringList::ConstIterator it = d->nsnames.begin();
 	QStringList::ConstIterator it2 = d->nsvalues.begin();
 	for(; it != d->nsnames.end(); ++it) {
-		if((*it) == s)
+		if ( (*it) == s ) {
 			return (*it2);
+		}
 		++it2;
 	}
 	return QString::null;
@@ -674,7 +750,7 @@ QString Parser::Event::localName() const
 	return d->localName;
 }
 
-QString Parser::Event::qName() const
+QString Parser::Event::qualifiedName() const
 {
 	if ( d->type == Element ) {
 		return d->element.nodeName();
@@ -682,19 +758,9 @@ QString Parser::Event::qName() const
 	return d->qualifiedName;
 }
 
-QString Parser::Event::qualifiedName() const
-{
-	return qName();
-}
-
-QXmlAttributes Parser::Event::atts() const
-{
-	return d->attributes;
-}
-
 QXmlAttributes Parser::Event::attributes() const
 {
-	return atts();
+	return d->attributes;
 }
 
 QString Parser::Event::actualString() const
@@ -747,47 +813,52 @@ void Parser::Event::setActualString(const QString &str)
 //----------------------------------------------------------------------------
 class Parser::Private
 {
-public:
-	Private()
-	{
-		doc = 0;
-		in = 0;
-		handler = 0;
-		reader = 0;
-		reset();
-	}
+	public:
+		Private();
+		~Private();
 
-	~Private()
-	{
-		reset(false);
-	}
+		void reset(bool create = true);
 
-	void reset(bool create=true)
-	{
-		delete reader;
-		delete handler;
-		delete in;
-		delete doc;
-
-		if(create) {
-			doc = new QDomDocument;
-			in = new StreamInput;
-			handler = new ParserHandler(in, doc);
-			reader = new QXmlSimpleReader;
-			reader->setContentHandler(handler);
-
-			// initialize the reader
-			in->pause(true);
-			reader->parse(in, true);
-			in->pause(false);
-		}
-	}
-
-	QDomDocument *doc;
-	StreamInput *in;
-	ParserHandler *handler;
-	QXmlSimpleReader *reader;
+		QDomDocument *document;
+		StreamInput *input;
+		ParserHandler *handler;
+		QXmlSimpleReader *reader;
 };
+
+Parser::Private::Private()
+{
+	document = 0;
+	input = 0;
+	handler = 0;
+	reader = 0;
+	reset();
+}
+
+Parser::Private::~Private()
+{
+	reset(false);
+}
+
+void Parser::Private::reset(bool create)
+{
+	delete reader;
+	delete handler;
+	delete input;
+	delete document;
+
+	if (create) {
+		document = new QDomDocument;
+		input = new StreamInput;
+		handler = new ParserHandler(input, document);
+		reader = new QXmlSimpleReader;
+		reader->setContentHandler(handler);
+
+		// initialize the reader
+		input->pause(true);
+		reader->parse(input, true);
+		input->pause(false);
+	}
+}
 
 Parser::Parser()
 {
@@ -804,29 +875,32 @@ void Parser::reset()
 	d->reset();
 }
 
-void Parser::appendData(const QByteArray &a)
+void Parser::appendData(const QByteArray& data)
 {
-	d->in->appendData(a);
+	d->input->appendData(data);
 
 	// if handler was waiting for more, give it a kick
-	if(d->handler->needMore)
+	if ( d->handler->needMore() ) {
 		d->handler->checkNeedMore();
+	}
 }
 
 Parser::Event Parser::readNext()
 {
 	Event e;
-	if(d->handler->needMore)
+	if ( d->handler->needMore() ) {
 		return e;
+	}
 	Event *ep = d->handler->takeEvent();
-	if(!ep) {
-		if(!d->reader->parseContinue()) {
+	if (!ep) {
+		if ( !d->reader->parseContinue() ) {
 			e.setError();
 			return e;
 		}
 		ep = d->handler->takeEvent();
-		if(!ep)
+		if (!ep) {
 			return e;
+		}
 	}
 	e = *ep;
 	delete ep;
@@ -835,10 +909,10 @@ Parser::Event Parser::readNext()
 
 QByteArray Parser::unprocessed() const
 {
-	return d->in->unprocessed();
+	return d->input->unprocessed();
 }
 
 QString Parser::encoding() const
 {
-	return d->in->encoding();
+	return d->input->encoding();
 }

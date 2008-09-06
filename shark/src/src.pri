@@ -1,4 +1,6 @@
-include($$PWD/core/core.pri);
+include($$PWD/cutestuff/cutestuff.pri)
+include($$PWD/core/core.pri)
+include($$PWD/irisnet/irisnet.pri)
 
 INCLUDEPATH += $$PWD
 HEADERS += \

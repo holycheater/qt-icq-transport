@@ -21,16 +21,16 @@
 #include "JabberConnection.h"
 
 #include "IQ.h"
+#include "connector.h"
+#include "jid.h"
 
-#include <im.h>
-#include <xmpp.h>
 #include <QCoreApplication>
 
 class JabberConnection::Private {
 
 	public:
 		XMPP::AdvancedConnector* connector;
-		X::ComponentStream* stream;
+		XMPP::ComponentStream* stream;
 		XMPP::Jid jid;
 		QString secret;
 };
@@ -43,9 +43,9 @@ JabberConnection::JabberConnection(QObject *parent)
 	d = new Private;
 
 	d->connector = new XMPP::AdvancedConnector;
-	d->stream = new X::ComponentStream(d->connector);
+	d->stream = new XMPP::ComponentStream(d->connector);
 
-	QObject::connect(d->stream, SIGNAL( error(const X::Stream::Error&) ), SLOT( stream_error(const X::Stream::Error&) ) );
+	QObject::connect(d->stream, SIGNAL( error(const XMPP::Stream::Error&) ), SLOT( stream_error(const XMPP::Stream::Error&) ) );
 	QObject::connect(d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
 }
 

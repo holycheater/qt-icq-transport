@@ -67,6 +67,8 @@ class Jid
 		static bool validDomain(const QString &s, QString *norm=0);
 		static bool validNode(const QString &s, QString *norm=0);
 		static bool validResource(const QString &s, QString *norm=0);
+
+		operator QString();
 	private:
 		void reset();
 		void update();

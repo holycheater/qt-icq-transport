@@ -486,3 +486,8 @@ bool Jid::validResource(const QString& resource, QString *norm)
 {
 	return StringPrepCache::resourceprep(resource, 1024, norm);
 }
+
+Jid::operator QString()
+{
+	return full();
+}

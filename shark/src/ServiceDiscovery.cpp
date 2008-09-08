@@ -25,6 +25,7 @@
 #include <QDomDocument>
 #include <QListIterator>
 #include <QStringList>
+#include "core/Jid.h"
 
 #include "ServiceDiscovery.h"
 
@@ -32,7 +33,7 @@ namespace XMPP
 {
 
 
-/* ****************************************************************************
+/* ***************************************************************************
  * XMPP::DiscoInfo
  *************************************************************************** */
 
@@ -121,7 +122,7 @@ DiscoInfo& DiscoInfo::operator<<(const Identity& identity)
 	return *this;
 }
 
-/* ****************************************************************************
+/* ***************************************************************************
  * XMPP::DiscoInfo::Identity
  *************************************************************************** */
 
@@ -203,6 +204,166 @@ void DiscoInfo::Identity::setName(const QString& name)
 void DiscoInfo::Identity::setType(const QString& type)
 {
 	m_type = type;
+}
+
+/* ***************************************************************************
+ * XMPP::DiscoItem
+ *************************************************************************** */
+
+/**
+ * @class DiscoItem
+ * @brief Represents service discovery disco-item.
+ */
+
+/**
+ * Constructs disco-item element.
+ */
+DiscoItem::DiscoItem()
+{
+}
+
+/**
+ * Constructs disco-item element with initialising it's fields.
+ * @param jid		Item jabber-id.
+ * @param node		Item node.
+ * @param name		Item name.
+ */
+DiscoItem::DiscoItem(const Jid& jid, const QString& node, const QString& name)
+{
+	m_jid = jid;
+	m_name = name;
+	m_node = node;
+}
+
+/**
+ * Destroys disco-item element.
+ */
+DiscoItem::~DiscoItem()
+{
+}
+
+/**
+ * Returns disco-item jabber-id.
+ *
+ * @sa name(), node()
+ */
+Jid DiscoItem::jid() const
+{
+	return m_jid;
+}
+
+/**
+ * Returns disco-item name.
+ *
+ * @sa jid(), node()
+ */
+QString DiscoItem::name() const
+{
+	return m_name;
+}
+
+/**
+ * Returns disco-item node.
+ *
+ * @sa jid(), name()
+ */
+QString DiscoItem::node() const
+{
+	return m_node;
+}
+
+/**
+ * Sets disco-item jabber-id to @a jid.
+ */
+void DiscoItem::setJid(const Jid& jid)
+{
+	m_jid = jid;
+}
+
+/**
+ * Sets disco-item name to @a name.
+ */
+void DiscoItem::setName(const QString& name)
+{
+	m_name = name;
+}
+
+/**
+ * Sets disco-item node to @a node.
+ */
+void DiscoItem::setNode(const QString& node)
+{
+	m_node = node;
+}
+
+/* ***************************************************************************
+ * XMPP::DiscoItems
+ *************************************************************************** */
+
+/**
+ * @class DiscoItems
+ * @brief Represents list of service discovery disco-items.
+ */
+
+/**
+ * Constructs disco-items list.
+ */
+DiscoItems::DiscoItems()
+{
+}
+
+/**
+ * Destroys disco-items list.
+ */
+DiscoItems::~DiscoItems()
+{
+}
+
+/**
+ * Adds an @a item to disco-items list.
+ */
+void DiscoItems::addItem(const DiscoItem& item)
+{
+	m_items << item;
+}
+
+/**
+ * Clears disco-items list.
+ */
+void DiscoItems::clear()
+{
+	m_items.clear();
+}
+
+/**
+ * Returns list of disco-items.
+ */
+QList<DiscoItem> DiscoItems::items() const
+{
+	return m_items;
+}
+
+/**
+ * Inserts list of disco-items into DOM @a element.
+ */
+void DiscoItems::pushToDomElement(QDomElement& element) const
+{
+	QDomDocument doc = element.ownerDocument();
+
+	QListIterator<DiscoItem> i(m_items);
+	while ( i.hasNext() ) {
+		DiscoItem item = i.next();
+
+		QDomElement eItem = doc.createElement("item");
+		eItem.setAttribute( "jid", item.jid() );
+		if ( !item.name().isEmpty() ) {
+			eItem.setAttribute( "name", item.name() );
+		}
+		if ( !item.node().isEmpty() ) {
+			eItem.setAttribute( "node", item.node() );
+		}
+		element.appendChild(eItem);
+	}
 }
 
 

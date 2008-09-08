@@ -79,22 +79,16 @@ Presence::~Presence()
  */
 int Presence::priority() const
 {
-	if ( doc()->documentElement().elementsByTagName("priority").isEmpty() ) {
+	QDomElement element = doc()->documentElement().firstChildElement("priority");
+	if ( element.isNull() ) {
 		return 0;
-	} else {
-		QDomElement ePriority = doc()->documentElement().elementsByTagName("priority").item(0).toElement();
-		return ePriority.text().toInt();
 	}
+	return element.text().toInt();
 }
 
 QString Presence::show() const
 {
-	if ( doc()->documentElement().elementsByTagName("show").isEmpty() ) {
-		return QString();
-	} else {
-		QDomElement eShow = doc()->documentElement().elementsByTagName("show").item(0).toElement();
-		return eShow.text();
-	}
+	return doc()->documentElement().firstChildElement("show").text();
 }
 
 /**
@@ -102,12 +96,7 @@ QString Presence::show() const
  */
 QString Presence::status() const
 {
-	if ( doc()->documentElement().elementsByTagName("status").isEmpty() ) {
-		return QString();
-	} else {
-		QDomElement ePriority = doc()->documentElement().elementsByTagName("status").item(0).toElement();
-		return ePriority.text();
-	}
+	return doc()->documentElement().firstChildElement("show").text();
 }
 
 /**

@@ -93,13 +93,13 @@ void DiscoInfo::pushToDomElement(QDomElement& element) const
 			eIdentity.setAttribute( "name", identity.name() );
 		}
 
-		doc.appendChild(eIdentity);
+		element.appendChild(eIdentity);
 	}
 	QStringListIterator fi(m_features);
 	while ( fi.hasNext() ) {
 		QDomElement eFeature = doc.createElement("feature");
 		eFeature.setAttribute( "var", fi.next() );
-		doc.appendChild(eFeature);
+		element.appendChild(eFeature);
 	}
 }
 

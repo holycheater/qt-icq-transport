@@ -61,7 +61,7 @@ IQ::IQ(const IQ& other)
 IQ::IQ(const QDomDocument& document)
 	: Stanza(document)
 {
-	m_element = doc()->documentElement().firstChild().toElement();
+	m_element = doc()->documentElement().firstChildElement();
 }
 
 /**
@@ -71,7 +71,7 @@ IQ::IQ(const QDomDocument& document)
 IQ::IQ(const QDomElement& element)
 	: Stanza(element)
 {
-	m_element = doc()->documentElement().firstChild().toElement();
+	m_element = doc()->documentElement().firstChildElement();
 }
 
 /**
@@ -87,6 +87,17 @@ IQ::~IQ()
  * @return Reference to stanza child element.
  */
 QDomElement& IQ::childElement()
+{
+	return m_element;
+}
+
+/**
+ * Gives access to info/query stanza child element.
+ *
+ * @return Const reference to stanza child element.
+ * @overload
+ */
+const QDomElement& IQ::childElement() const
 {
 	return m_element;
 }

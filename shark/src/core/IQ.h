@@ -38,6 +38,7 @@ class IQ : public Stanza
 		~IQ();
 
 		QDomElement& childElement();
+		const QDomElement& childElement() const;
 
 		void setChildElement(const QString& name, const QString& ns);
 

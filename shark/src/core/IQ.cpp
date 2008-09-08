@@ -49,8 +49,7 @@ IQ::IQ()
 IQ::IQ(const IQ& other)
 	: Stanza(other)
 {
-	setId( QString::number(++m_id, 16) );
-	m_element = other.m_element;
+	m_element = doc()->documentElement().firstChildElement();
 }
 
 /**

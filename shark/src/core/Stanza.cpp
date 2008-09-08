@@ -145,6 +145,26 @@ void Stanza::setId(const QString& id)
 }
 
 /**
+ * Swaps stanza's 'from' and 'to' fields. This could be useful when you are
+ * forming a reply to info/query.
+ */
+void Stanza::swapFromTo()
+{
+	QString from = m_doc.documentElement().attribute("from");
+	QString to   = m_doc.documentElement().attribute("to");
+
+	m_doc.documentElement().setAttribute("from", to);
+	m_doc.documentElement().setAttribute("to", from);
+
+	if ( from.isEmpty() ) {
+		m_doc.documentElement().removeAttribute("to");
+	}
+	if ( to.isEmpty() ) {
+		m_doc.documentElement().removeAttribute("from");
+	}
+}
+
+/**
  * Serializes internal XML data to string.
  * @return string with xml data
  */

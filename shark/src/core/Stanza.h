@@ -51,6 +51,7 @@ class Stanza
 		void setType(const QString& type);
 		void setId(const QString& id);
 
+		void swapFromTo();
 		QString toString() const;
 	protected:
 		QDomDocument* doc();

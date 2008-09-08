@@ -48,7 +48,7 @@ class IQ : public Stanza
 		static QString typeToString(Type type);
 		static int stringToType(const QString& type);
 
-		static int id;
+		static int m_id;
 
 		QDomElement m_element;
 };

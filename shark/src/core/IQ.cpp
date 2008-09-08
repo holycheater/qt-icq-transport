@@ -37,7 +37,7 @@ IQ::IQ()
 	QDomElement root = doc()->createElement("iq");
 	doc()->appendChild(root);
 
-	setId( QString::number(++id, 16) );
+	setId( QString::number(++m_id, 16) );
 
 	m_element = doc()->createElement("query");
 	doc()->documentElement().appendChild(m_element);
@@ -49,7 +49,7 @@ IQ::IQ()
 IQ::IQ(const IQ& other)
 	: Stanza(other)
 {
-	setId( QString::number(++id, 16) );
+	setId( QString::number(++m_id, 16) );
 	m_element = other.m_element;
 }
 
@@ -161,7 +161,7 @@ int IQ::stringToType(const QString& type)
 	return -1;
 }
 
-int IQ::id = 0;
+int IQ::m_id = 0;
 
 /**
  * @enum IQ::Type

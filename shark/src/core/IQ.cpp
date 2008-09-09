@@ -164,12 +164,27 @@ int IQ::m_id = 0;
 
 /**
  * @enum IQ::Type
- * @brief This enum describes possible Info/Query stanza types.
- *
- * @var Get		IQ is an information request.
- * @var Set		IQ provides required data, sets new values or replace existing ones.
- * @var Result	IQ response to a successful get/set request
- * @var Error	An error has occured during result delivery or get/set request.
+ * This enum describes possible Info/Query stanza types.
+ */
+
+/**
+ * @var IQ::Get
+ * IQ is an information request.
+ */
+
+/**
+ * @var IQ::Set
+ * IQ provides required data, sets new values or replace existing ones.
+ */
+
+/**
+ * @var IQ::Result
+ * IQ response to a successful get/set request
+ */
+
+/**
+ * @var IQ::Error
+ * An error has occured during result delivery or get/set request.
  */
 
 

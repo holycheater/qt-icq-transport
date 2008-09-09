@@ -150,9 +150,9 @@ void Message::setType(Type type)
 }
 
 /**
- * Converts string type representation of @a type to @link #Type Type.
- * @param type	string representation of IQ stanza type
- * @return		Type enum value of the given type.
+ * Returns string representation of @a type.
+ *
+ * @sa Type
  */
 QString Message::typeToString(Type type)
 {
@@ -180,13 +180,32 @@ QString Message::typeToString(Type type)
 
 /**
  * @enum Message::Type
- * @brief Message stanza type. The types are:
- *
- * @li Normal		(Default) Normal text message used in e-mail like interfaces.
- * @li Chat			Typical message used in chat interfaces.
- * @li GroupChat	Chat message sent to group-chat server for group chats.
- * @li Headline		Text message to be displayed in scrolling marquee displays.
- * @li Error		Indicates messaging error.
+ * Message stanza type.
+ */
+
+/**
+ * @var Message::Normal
+ * (Default) Normal text message used in e-mail like interfaces.
+ */
+
+/**
+ * @var Message::Chat
+ * Typical message used in chat interfaces.
+ */
+
+/**
+ * @var Message::GroupChat
+ * Chat message sent to group-chat server for group chats.
+ */
+
+/**
+ * @var Message::Headline
+ * Text message to be displayed in scrolling marquee displays.
+ */
+
+/**
+ * @var Message::Error
+ * Indicates messaging error.
  */
 
 } /* end of namespace XMPP */

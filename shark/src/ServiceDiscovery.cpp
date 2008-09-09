@@ -39,8 +39,9 @@ namespace XMPP
 
 /**
  * @class DiscoInfo
- * @brief Represents DiscoInfo element (list of identities and features).
- * @details More details can be found @link http://www.xmpp.org/extensions/xep-0030.html here @endlink
+ * Represents DiscoInfo element (list of identities and features).
+ *
+ * More details can be found <a href="http://www.xmpp.org/extensions/xep-0030.html">here</a>
  */
 
 /**

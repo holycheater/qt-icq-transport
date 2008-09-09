@@ -161,10 +161,8 @@ void Presence::setType(Type type)
 }
 
 /**
- * Converts string type representation of @a type to @link #Type Type.
+ * Returns string representation of @a type.
  *
- * @param type	string representation of 'presence' stanza type
- * @return		Type enum value of the given type.
  * @sa Type
  */
 QString Presence::typeToString(Type type)
@@ -197,25 +195,68 @@ QString Presence::typeToString(Type type)
 
 /**
  * @enum Presence::Type
- * @brief Message stanza type. The types are:
- *
- * @li Unavailable
- * @li Subscribe		Sender wishes to subscribe to recipient's presence.
- * @li Subscribed		Sender has allowed recipient to receive it's presence.
- * @li Unsubscribe		Sender is unsubscribing from another entity's presence.
- * @li Unsubscribed		Presence subscription has been denied or revoked.
- * @li Probe			Request for entity's current presence. It SHOULD be generated only by server on behalf of a user.
- * @li Error			Error has occured during stanza processing or delivery
+ * Message stanza type.
+ */
+
+/**
+ * @var Presence::Unavailable
+ * Sender is unavailable.
+ */
+
+/**
+ * @var Presence::Subscribe
+ * Sender wishes to subscribe to recipient's presence.
+ */
+
+/**
+ * @var Presence::Subscribed
+ * Sender has allowed recipient to receive it's presence.
+ */
+
+/**
+ * @var Presence::Unsubscribe
+ * Sender is unsubscribing from another entity's presence.
+ */
+
+/**
+ * @var Presence::Unsubscribed
+ * Presence subscription has been denied or revoked.
+ */
+
+/**
+ * @var Presence::Probe
+ * Request for entity's current presence.
+ * It SHOULD be generated only by server on behalf of a user.
+ */
+
+/**
+ * @var Presence::Error
+ * Error has occured during stanza processing or delivery
  */
 
 /**
  * @enum Presence::Show
- * @brief presence show type. The types are:
- *
- * @li Chat				Entity or resource is actively interested in chatting
- * @li Away				Entity or resource is temporarily away
- * @li NotAvailable		Entity or resource is away for an extended period
- * @li DoNotDisturb		Entity or resource is busy
+ * presence "show" type
+ */
+
+/**
+ * @var Presence::Chat
+ * Entity or resource is actively interested in chatting
+ */
+
+/**
+ * @var Presence::Away
+ * Entity or resource is temporarily away
+ */
+
+/**
+ * @var Presence::NotAvailable
+ * Entity or resource is away for an extended period
+ */
+
+/**
+ * @var Presence::DoNotDisturb
+ * Entity or resource is busy
  */
 
 } /* end of namespace XMPP */

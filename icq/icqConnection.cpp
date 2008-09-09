@@ -741,7 +741,7 @@ void Connection::slot_signedOff()
  * @fn void Connection::incomingMessage(const Message& msg)
  * @brief This signal is emitted when someone sends a message to connected user.
  *
- * @param Message		Incoming message
+ * @param msg		Incoming message
  */
 
 /**

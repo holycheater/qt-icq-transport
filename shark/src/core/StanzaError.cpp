@@ -224,7 +224,7 @@ void Stanza::Error::setType(Type type)
 }
 
 /**
- * Adds and fills an <error/> element to the specified @a element.
+ * Adds and fills an \<error/\> element to the specified @a element.
  *
  * Element SHOULD be a stanza element.
  */
@@ -488,7 +488,7 @@ Stanza::Error::Type Stanza::Error::stringToType(const QString& type)
  * @var Stanza::Error::Gone
  * The recipient or server can no longer be contacted at this address
  * (the error stanza MAY contain a new address in the XML character data
- * of the <gone/> element);
+ * of the \<gone/\> element);
  * <br>the associated error type SHOULD be "modify".
  */
 /**
@@ -550,7 +550,7 @@ Stanza::Error::Type Stanza::Error::stringToType(const QString& type)
  * @var Stanza::Error::Redirect
  * The recipient or server is redirecting requests for this information to another
  * entity, usually temporarily (the error stanza SHOULD contain the alternate address,
- * which MUST be a valid JID, in the XML character data of the <redirect/> element);
+ * which MUST be a valid JID, in the XML character data of the \<redirect/\> element);
  * <br>the associated error type SHOULD be "modify".
  */
 

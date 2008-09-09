@@ -14,4 +14,5 @@ SOURCES += \
 	$$PWD/Message.cpp \
 	$$PWD/Parser.cpp \
 	$$PWD/Presence.cpp \
-	$$PWD/Stanza.cpp
+	$$PWD/Stanza.cpp \
+	$$PWD/StanzaError.cpp

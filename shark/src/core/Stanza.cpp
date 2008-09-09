@@ -1,5 +1,5 @@
 /*
- * Stanza.h - XMPP Stanza
+ * Stanza.cpp - XMPP Stanza
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -69,6 +69,25 @@ Stanza::Stanza(const QDomElement& element)
  */
 Stanza::~Stanza()
 {
+}
+
+Stanza::Error Stanza::error() const
+{
+	return Stanza::Error::fromStanza(*this);
+}
+
+/**
+ * Returns true if stanza contains an error.
+ */
+bool Stanza::hasError() const
+{
+	return !m_doc.documentElement().firstChildElement("error").isNull();
+}
+
+void Stanza::setError(const Error& error)
+{
+	setType("error");
+	error.pushToDomElement( m_doc.documentElement() );
 }
 
 /**

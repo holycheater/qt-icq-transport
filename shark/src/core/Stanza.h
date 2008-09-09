@@ -23,6 +23,8 @@
 
 #include <QDomDocument>
 
+#define NS_STANZAS "urn:ietf:params:xml:ns:xmpp-stanzas"
+
 namespace XMPP {
 
 class Jid;
@@ -37,7 +39,11 @@ class Stanza
 		Stanza(const QDomElement& element);
 		virtual ~Stanza();
 
-		Stanza& operator=(const Stanza& other);
+		class Error;
+
+		Error error() const;
+		bool hasError() const;
+		void setError(const Error& error);
 
 		bool isValid() const;
 
@@ -53,12 +59,61 @@ class Stanza
 
 		void swapFromTo();
 		QString toString() const;
+
+		Stanza& operator=(const Stanza& other);
 	protected:
 		QDomDocument* doc();
 		QDomDocument* doc() const;
 		void setProperty(const QString& name, const QString& value);
 	private:
 		QDomDocument m_doc;
+};
+
+class Stanza::Error {
+	public:
+		enum Type { Cancel, Continue, Modify, Auth, Wait };
+		enum Condition {
+			BadRequest, Conflict, FeatureNotImplemented, Forbidden, Gone,
+			InternalServerError, ItemNotFound, JidMalformed, NotAcceptable,
+			NotAllowed, NotAuthorized, PaymentRequired, RecipientUnavailable,
+			Redirect, RegistrationRequired, RemoteServerNotFound, RemoteServerTimeout,
+			ResourceConstraint, ServiceUnavailable, SubscriptionRequired, UndefinedCondition,
+			UnexpectedRequest
+		};
+
+		Error();
+		Error(Type type, Condition condition, const QString& text = "");
+		Error(Type type, Condition condition, const QString& appConditionNS, const QString& appCondition, const QString& text = "");
+		static Error fromStanza(const Stanza& stanza);
+		~Error();
+
+		QString appCondition() const;
+		QString appConditionNS() const;
+		int code() const;
+		Condition condition() const;
+		QString text() const;
+		Type type() const;
+
+		void setAppCondition(const QString& appConditionNS, const QString& appCondition);
+		void setCode(int code);
+		void setCondition(Condition condition);
+		void setText(const QString& text);
+		void setType(Type type);
+
+		void pushToDomElement(QDomElement element) const;
+	private:
+		static QString conditionToString(Condition errCondition);
+		static QString typeToString(Type errType);
+		static int stringToCondition(const QString& condition);
+		static Type stringToType(const QString& type);
+
+		int m_code;
+		Condition m_condition;
+		Type m_type;
+
+		QString m_appCondition;
+		QString m_appConditionNS;
+		QString m_text;
 };
 
 

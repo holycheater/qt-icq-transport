@@ -10,6 +10,9 @@ License
 Description
 -----------
   Shark is an XMPP Library which borrowed some code from Iris.
+  Features implemented:
+  - XEP-0030 (Feature Discovery)
+  - XEP-0114 (Jabber Component Protocol)
 
 Build requirements
 ------------------

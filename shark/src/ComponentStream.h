@@ -21,13 +21,15 @@
 #ifndef XMPP_COMPONENTSTREAM_H_
 #define XMPP_COMPONENTSTREAM_H_
 
-#include "core/Parser.h"
-
-#include <QObject>
-#include <QDomDocument>
-
 #define NS_ETHERX "http://etherx.jabber.org/streams"
 #define NS_COMPONENT "jabber:component:accept"
+#define NS_STREAMS "urn:ietf:params:xml:ns:xmpp-streams"
+
+#include <QObject>
+
+#include "core/Parser.h"
+
+class QDomDocument;
 
 namespace XMPP {
 
@@ -88,30 +90,33 @@ class ComponentStream : public QObject
 class ComponentStream::Error
 {
 	public:
-		enum Type { BadFormat, BadNamespacePrefix, Conflict, ConnectionTimeout, HostGone,
-			HostUnknown, ImproperAddressing, InternalServerError, InvalidFrom, InvalidId,
-			InvalidNamespace, InvalidXml, NotAuthorized, PolicyViolation, RemoteConnectionFailed,
-			ResourceConstraint, RestrictedXml, SeeOtherHost, SystemShutdown, UndefinedCondition,
-			UnsupportedEncoding, UnsupportedStanzaType, UnsupportedVersion, XmlNotWellFormed };
+		enum Condition {
+			BadFormat, BadNamespacePrefix, Conflict, ConnectionTimeout, HostGone,
+			HostUnknown, ImproperAddressing, InternalServerError, InvalidFrom,
+			InvalidId, InvalidNamespace, InvalidXml, NotAuthorized, PolicyViolation,
+			RemoteConnectionFailed, ResourceConstraint, RestrictedXml, SeeOtherHost,
+			SystemShutdown, UndefinedCondition, UnsupportedEncoding, UnsupportedStanzaType,
+			UnsupportedVersion, XmlNotWellFormed
+		};
 
 		Error();
+		Error(const Error& other);
 		Error(const QDomDocument& document);
 		Error(const QDomElement& element);
 		~Error();
 
 		QString appSpec() const;
+		QString appSpecNS() const;
+		Condition condition() const;
+		QString conditionString() const;
 		QString text() const;
-		QString type() const;
 
 		void setAppSpec(const QString& ns, const QString& spec);
+		void setCondition(Condition type);
 		void setText(const QString& text);
-		void setType(Type type);
 	private:
-		static QString typeToString(Type type);
-
-		QDomDocument m_doc;
-		QDomElement m_errorCondition;
-		QDomElement m_appSpec;
+		class Private;
+		QSharedDataPointer<Private> d;
 };
 
 

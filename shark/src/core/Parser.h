@@ -21,9 +21,11 @@
 #ifndef XMPP_CORE_PARSER_H_
 #define XMPP_CORE_PARSER_H_
 
-#include <QDomElement>
+#include <QString>
 #include <QSharedDataPointer>
-#include <QXmlAttributes>
+
+class QDomElement;
+class QXmlAttributes;
 
 namespace XMPP
 {

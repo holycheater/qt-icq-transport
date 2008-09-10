@@ -1,5 +1,5 @@
 /*
- * ServiceDiscovery.h - XMPP Service Discovery (XEP-0030)
+ * ServiceDiscovery.cpp - XMPP Service Discovery (XEP-0030)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -18,20 +18,39 @@
  *
  */
 
-/*
- * TODO: Implement disco#items.
- */
-
 #include <QDomDocument>
 #include <QListIterator>
+#include <QSharedData>
 #include <QStringList>
-#include "core/Jid.h"
 
+#include "core/Jid.h"
 #include "ServiceDiscovery.h"
 
 namespace XMPP
 {
 
+
+class DiscoInfo::Private : public QSharedData
+{
+	public:
+		Private();
+		~Private();
+
+		typedef QList<Identity> IdentityList;
+		typedef QListIterator<Identity> IdentityListIterator;
+
+		IdentityList identities;
+		QStringList features;
+};
+
+DiscoInfo::Private::Private()
+	: QSharedData()
+{
+}
+
+DiscoInfo::Private::~Private()
+{
+}
 
 /* ***************************************************************************
  * XMPP::DiscoInfo
@@ -48,6 +67,7 @@ namespace XMPP
  * Constructs disco-info object.
  */
 DiscoInfo::DiscoInfo()
+	: d(new Private)
 {
 }
 
@@ -67,7 +87,7 @@ DiscoInfo::~DiscoInfo()
  */
 void DiscoInfo::addIdentity(const QString& category, const QString& type, const QString& name)
 {
-	m_identities << Identity(category, type, name);
+	d->identities << Identity(category, type, name);
 }
 
 /**
@@ -75,7 +95,7 @@ void DiscoInfo::addIdentity(const QString& category, const QString& type, const 
  */
 void DiscoInfo::addFeature(const QString& feature)
 {
-	m_features << feature;
+	d->features << feature;
 }
 
 /**
@@ -84,7 +104,8 @@ void DiscoInfo::addFeature(const QString& feature)
 void DiscoInfo::pushToDomElement(QDomElement& element) const
 {
 	QDomDocument doc = element.ownerDocument();
-	XIdentityListIterator ii(m_identities);
+
+	Private::IdentityListIterator ii(d->identities);
 	while ( ii.hasNext() ) {
 		QDomElement eIdentity = doc.createElement("identity");
 		Identity identity = ii.next();
@@ -97,7 +118,8 @@ void DiscoInfo::pushToDomElement(QDomElement& element) const
 
 		element.appendChild(eIdentity);
 	}
-	QStringListIterator fi(m_features);
+
+	QStringListIterator fi(d->features);
 	while ( fi.hasNext() ) {
 		QDomElement eFeature = doc.createElement("feature");
 		eFeature.setAttribute( "var", fi.next() );
@@ -110,7 +132,7 @@ void DiscoInfo::pushToDomElement(QDomElement& element) const
  */
 DiscoInfo& DiscoInfo::operator<<(const QString& feature)
 {
-	m_features << feature;
+	d->features << feature;
 	return *this;
 }
 
@@ -119,7 +141,7 @@ DiscoInfo& DiscoInfo::operator<<(const QString& feature)
  */
 DiscoInfo& DiscoInfo::operator<<(const Identity& identity)
 {
-	m_identities << identity;
+	d->identities << identity;
 	return *this;
 }
 

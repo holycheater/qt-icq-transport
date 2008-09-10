@@ -23,7 +23,6 @@
 
 class QDomElement;
 class QString;
-class QStringList;
 
 #define NS_QUERY_DISCO_INFO  "http://jabber.org/protocol/disco#info"
 #define NS_QUERY_DISCO_ITEMS "http://jabber.org/protocol/disco#items"
@@ -51,10 +50,8 @@ class DiscoInfo
 		DiscoInfo& operator<<(const QString& feature);
 		DiscoInfo& operator<<(const Identity& identity);
 	private:
-		typedef QList<Identity> XIdentityList;
-		typedef QListIterator<Identity> XIdentityListIterator;
-		XIdentityList m_identities;
-		QStringList m_features;
+		class Private;
+		QSharedDataPointer<Private> d;
 };
 
 class DiscoInfo::Identity

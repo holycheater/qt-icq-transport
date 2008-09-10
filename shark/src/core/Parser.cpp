@@ -47,11 +47,13 @@
     it would be nice if Qt had this already.
 */
 
-#include "Parser.h"
-
+#include <QDomElement>
 #include <QTextCodec>
 #include <QString>
 #include <QSharedData>
+#include <QXmlAttributes>
+
+#include "Parser.h"
 
 using namespace XMPP;
 

@@ -18,7 +18,9 @@
  *
  */
 
+#include <QDomDocument>
 #include <QCryptographicHash>
+#include <QXmlAttributes>
 
 #include "ComponentStream.h"
 

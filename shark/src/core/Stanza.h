@@ -18,10 +18,11 @@
  *
  */
 
-#ifndef XMPP_STANZA_H_
-#define XMPP_STANZA_H_
+#ifndef XMPP_CORE_STANZA_H_
+#define XMPP_CORE_STANZA_H_
 
 #include <QDomDocument>
+#include <QSharedDataPointer>
 
 #define NS_STANZAS "urn:ietf:params:xml:ns:xmpp-stanzas"
 
@@ -82,6 +83,7 @@ class Stanza::Error {
 		};
 
 		Error();
+		Error(const Error& other);
 		Error(Type type, Condition condition, const QString& text = "");
 		Error(Type type, Condition condition, const QString& appConditionNS, const QString& appCondition, const QString& text = "");
 		static Error fromStanza(const Stanza& stanza);
@@ -102,21 +104,11 @@ class Stanza::Error {
 
 		void pushToDomElement(QDomElement element) const;
 	private:
-		static QString conditionToString(Condition errCondition);
-		static QString typeToString(Type errType);
-		static int stringToCondition(const QString& condition);
-		static Type stringToType(const QString& type);
-
-		int m_code;
-		Condition m_condition;
-		Type m_type;
-
-		QString m_appCondition;
-		QString m_appConditionNS;
-		QString m_text;
+		class Private;
+		QSharedDataPointer<Private> d;
 };
 
 
 }
 
-#endif /* XMPP_STANZA_H_ */
+#endif /* XMPP_CORE_STANZA_H_ */

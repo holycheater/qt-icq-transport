@@ -18,6 +18,10 @@
  *
  */
 
+#include <QDomElement>
+#include <QSharedData>
+#include <QString>
+
 #include "Stanza.h"
 
 namespace XMPP {
@@ -43,11 +47,130 @@ namespace XMPP {
  * Then you can simply send it to the stream.
  */
 
+class Stanza::Error::Private : public QSharedData
+{
+	public:
+		Private();
+		~Private();
+
+		static QString conditionToString(int condition);
+		static QString typeToString(int type);
+		static int stringToCondition(const QString& condition);
+		static int stringToType(const QString& type);
+
+		typedef struct {
+			int num;
+			const char* str;
+		} IntStringPair;
+
+		static IntStringPair errorTypeTable[];
+		static IntStringPair errorCondTable[];
+
+		int code;
+		Condition condition;
+		Type type;
+
+		QString appCondition;
+		QString appConditionNS;
+		QString text;
+};
+
+Stanza::Error::Private::Private()
+	: QSharedData()
+{
+}
+
+Stanza::Error::Private::~Private()
+{
+}
+
+Stanza::Error::Private::IntStringPair Stanza::Error::Private::errorTypeTable[] = {
+		{ Cancel	, "cancel" },
+		{ Continue	, "continue" },
+		{ Modify	, "modify" },
+		{ Auth		, "auth" },
+		{ Wait		, "wait" },
+		{ 0, 0 }
+};
+
+Stanza::Error::Private::IntStringPair Stanza::Error::Private::errorCondTable[] = {
+		{ BadRequest			, "bad-request" },
+		{ Conflict				, "conflict" },
+		{ FeatureNotImplemented	, "feature-not-implemented" },
+		{ Forbidden				, "forbidden" },
+		{ Gone					, "gone" },
+		{ InternalServerError	, "internal-server-error" },
+		{ NotAcceptable			, "not-acceptable" },
+		{ NotAllowed			, "not-allowed" },
+		{ NotAuthorized			, "not-authorized" },
+		{ PaymentRequired		, "payment-required" },
+		{ RecipientUnavailable	, "recipient-unavailable" },
+		{ Redirect				, "redirect" },
+		{ RegistrationRequired	, "registration-required" },
+		{ RemoteServerNotFound	, "remote-server-not-found" },
+		{ RemoteServerTimeout	, "remote-server-timeout" },
+		{ ResourceConstraint	, "resource-constraint" },
+		{ ServiceUnavailable	, "service-unavailable" },
+		{ SubscriptionRequired	, "subscription-required" },
+		{ UndefinedCondition	, "undefined-condition" },
+		{ UnexpectedRequest		, "unexpected-request" },
+		{ 0, 0 }
+
+};
+
+QString Stanza::Error::Private::conditionToString(int condition)
+{
+	for (int i = 0; errorCondTable[i].str; ++i) {
+		if (errorCondTable[i].num == condition) {
+			return errorCondTable[i].str;
+		}
+	}
+	return "undefined-condition";
+}
+
+QString Stanza::Error::Private::typeToString(int type)
+{
+	for (int i = 0; errorTypeTable[i].str; ++i) {
+		if (errorTypeTable[i].num == type) {
+			return errorTypeTable[i].str;
+		}
+	}
+	return "cancel";
+}
+
+int Stanza::Error::Private::stringToCondition(const QString& condition)
+{
+	for (int i = 0; errorCondTable[i].str; ++i) {
+		if (errorCondTable[i].str == condition) {
+			return errorCondTable[i].num;
+		}
+	}
+	return UndefinedCondition;
+}
+
+int Stanza::Error::Private::stringToType(const QString& type)
+{
+	for (int i = 0; errorTypeTable[i].str; ++i) {
+		if (errorTypeTable[i].str == type) {
+			return errorTypeTable[i].num;
+		}
+	}
+	return Cancel;
+}
 
 /**
  * Default constructor for stanza-error object. It does not set any data.
  */
 Stanza::Error::Error()
+	: d(new Private)
+{
+}
+
+/**
+ * Constructs a deep copy of @a other
+ */
+Stanza::Error::Error(const Error& other)
+	: d(other.d)
 {
 }
 
@@ -55,10 +178,11 @@ Stanza::Error::Error()
  * Constructs stanza-error with given @a type, @a condition and (optionally) @a text
  */
 Stanza::Error::Error(Type type, Condition condition, const QString& text)
+	: d(new Private)
 {
-	m_type = type;
-	m_condition = condition;
-	m_text = text;
+	d->type = type;
+	d->condition = condition;
+	d->text = text;
 }
 
 /**
@@ -70,12 +194,13 @@ Stanza::Error::Error(Type type, Condition condition, const QString& text)
  * @param text				optional description text
  */
 Stanza::Error::Error(Type type, Condition condition, const QString& appConditionNS, const QString& appCondition, const QString& text)
+	: d(new Private)
 {
-	m_type = type;
-	m_condition = condition;
-	m_appConditionNS = appConditionNS;
-	m_appCondition = appCondition;
-	m_text = text;
+	d->type = type;
+	d->condition = condition;
+	d->appConditionNS = appConditionNS;
+	d->appCondition = appCondition;
+	d->text = text;
 }
 
 /**
@@ -89,16 +214,16 @@ Stanza::Error Stanza::Error::fromStanza(const Stanza& stanza)
 	}
 
 	Error error;
-	error.m_type = stringToType( eError.attribute("type") );
-	error.m_code = eError.attribute("code", 0).toInt();
+	error.d->type = (Type)Private::stringToType( eError.attribute("type") );
+	error.d->code = eError.attribute("code", 0).toInt();
 
 	QDomNodeList childs = eError.childNodes();
 	for ( int i = 0; i < childs.count(); ++i ) {
 		QDomElement element = childs.item(i).toElement();
 		if ( element.namespaceURI() == NS_STANZAS) {
-			int condition = stringToCondition(element.tagName() );
+			int condition = Private::stringToCondition(element.tagName() );
 			if ( condition != -1 ) {
-				error.m_condition = (Condition)condition;
+				error.d->condition = (Condition)condition;
 				break;
 			}
 		}
@@ -106,15 +231,15 @@ Stanza::Error Stanza::Error::fromStanza(const Stanza& stanza)
 
 	QDomElement eText = eError.firstChildElement("text");
 	if ( eText.namespaceURI() == NS_STANZAS && !eText.text().isNull() ) {
-		error.m_text = eText.text().trimmed();
+		error.d->text = eText.text().trimmed();
 	}
 
 	for ( int i = 0; i < childs.count(); ++i ) {
 		QDomElement element = childs.item(i).toElement();
 		/* first element outside NS_STANZAS ns will be an app-specific error condition */
 		if ( element.namespaceURI() != NS_STANZAS) {
-			error.m_appConditionNS = element.namespaceURI();
-			error.m_appCondition = element.tagName();
+			error.d->appConditionNS = element.namespaceURI();
+			error.d->appCondition = element.tagName();
 		}
 	}
 	return error;
@@ -132,7 +257,7 @@ Stanza::Error::~Error()
  */
 QString Stanza::Error::appCondition() const
 {
-	return m_appCondition;
+	return d->appCondition;
 }
 
 /**
@@ -140,7 +265,7 @@ QString Stanza::Error::appCondition() const
  */
 QString Stanza::Error::appConditionNS() const
 {
-	return m_appConditionNS;
+	return d->appConditionNS;
 }
 
 /**
@@ -148,7 +273,7 @@ QString Stanza::Error::appConditionNS() const
  */
 int Stanza::Error::code() const
 {
-	return m_code;
+	return d->code;
 }
 
 /**
@@ -158,7 +283,7 @@ int Stanza::Error::code() const
  */
 Stanza::Error::Condition Stanza::Error::condition() const
 {
-	return m_condition;
+	return d->condition;
 }
 
 /**
@@ -166,7 +291,7 @@ Stanza::Error::Condition Stanza::Error::condition() const
  */
 QString Stanza::Error::text() const
 {
-	return m_text;
+	return d->text;
 }
 
 /**
@@ -176,7 +301,7 @@ QString Stanza::Error::text() const
  */
 Stanza::Error::Type Stanza::Error::type() const
 {
-	return m_type;
+	return d->type;
 }
 
 /**
@@ -187,8 +312,8 @@ Stanza::Error::Type Stanza::Error::type() const
  */
 void Stanza::Error::setAppCondition(const QString& appConditionNS, const QString& appCondition)
 {
-	m_appCondition = appCondition;
-	m_appConditionNS = appConditionNS;
+	d->appCondition = appCondition;
+	d->appConditionNS = appConditionNS;
 }
 
 /**
@@ -196,7 +321,7 @@ void Stanza::Error::setAppCondition(const QString& appConditionNS, const QString
  */
 void Stanza::Error::setCode(int code)
 {
-	m_code = code;
+	d->code = code;
 }
 
 /**
@@ -204,7 +329,7 @@ void Stanza::Error::setCode(int code)
  */
 void Stanza::Error::setCondition(Condition condition)
 {
-	m_condition = condition;
+	d->condition = condition;
 }
 
 /**
@@ -212,7 +337,7 @@ void Stanza::Error::setCondition(Condition condition)
  */
 void Stanza::Error::setText(const QString& text)
 {
-	m_text = text;
+	d->text = text;
 }
 
 /**
@@ -220,7 +345,7 @@ void Stanza::Error::setText(const QString& text)
  */
 void Stanza::Error::setType(Type type)
 {
-	m_type = type;
+	d->type = type;
 }
 
 /**
@@ -231,194 +356,28 @@ void Stanza::Error::setType(Type type)
 void Stanza::Error::pushToDomElement(QDomElement element) const
 {
 	QDomElement eError = element.ownerDocument().createElement("error");
-	eError.setAttribute( "type", typeToString(m_type) );
-	if ( m_code > 0 ) {
-		eError.setAttribute("code", m_code);
+	eError.setAttribute( "type", Private::typeToString(d->type) );
+	if ( d->code > 0 ) {
+		eError.setAttribute("code", d->code);
 	}
 
-	QDomElement eCondition = element.ownerDocument().createElementNS( NS_STANZAS, conditionToString(m_condition) );
+	QDomElement eCondition = element.ownerDocument().createElementNS( NS_STANZAS, Private::conditionToString(d->condition) );
 	eError.appendChild(eCondition);
 
-	if ( !m_text.isEmpty() ) {
+	if ( !d->text.isEmpty() ) {
 		QDomElement eText = element.ownerDocument().createElementNS(NS_STANZAS, "text");
 		eError.appendChild(eText);
 
-		QDomText tText = element.ownerDocument().createTextNode(m_text);
+		QDomText tText = element.ownerDocument().createTextNode(d->text);
 		eText.appendChild(tText);
 	}
 
-	if ( !m_appConditionNS.isEmpty() && !m_appCondition.isEmpty() ) {
-		QDomElement eAppCond = element.ownerDocument().createElementNS(m_appConditionNS, m_appCondition);
+	if ( !d->appConditionNS.isEmpty() && !d->appCondition.isEmpty() ) {
+		QDomElement eAppCond = element.ownerDocument().createElementNS(d->appConditionNS, d->appCondition);
 		eError.appendChild(eAppCond);
 	}
 
 	element.appendChild(eError);
-}
-
-/**
- * Returns string representation of error-condition.
- */
-QString Stanza::Error::conditionToString(Condition errCondition)
-{
-	switch (errCondition) {
-		case BadRequest:
-			return "bad-request";
-		case Conflict:
-			return "conflict";
-		case FeatureNotImplemented:
-			return "feature-not-implemented";
-		case Forbidden:
-			return "forbidden";
-		case Gone:
-			return "gone";
-		case InternalServerError:
-			return "internal-server-error";
-		case NotAcceptable:
-			return "not-acceptable";
-		case NotAllowed:
-			return "not-allowed";
-		case NotAuthorized:
-			return "not-authorized";
-		case PaymentRequired:
-			return "payment-required";
-		case RecipientUnavailable:
-			return "recipient-unavailable";
-		case Redirect:
-			return "redirect";
-		case RegistrationRequired:
-			return "registration-required";
-		case RemoteServerNotFound:
-			return "remote-server-not-found";
-		case RemoteServerTimeout:
-			return "remote-server-timeout";
-		case ResourceConstraint:
-			return "resource-constraint";
-		case ServiceUnavailable:
-			return "service-unavailable";
-		case SubscriptionRequired:
-			return "subscription-required";
-		case UndefinedCondition:
-			return "undefined-condition";
-		case UnexpectedRequest:
-			return "unexpected-request";
-		default:
-			return QString();
-	}
-}
-
-/**
- * Returns string representation of error-type.
- */
-QString Stanza::Error::typeToString(Type errType)
-{
-	switch (errType) {
-		case Cancel:
-			return "cancel";
-		case Continue:
-			return "continue";
-		case Modify:
-			return "modify";
-		case Auth:
-			return "auth";
-		case Wait:
-			return "wait";
-		default:
-			return QString();
-	}
-}
-
-/**
- * Returns enum-value representation of error-condition string.
- */
-int Stanza::Error::stringToCondition(const QString& condition)
-{
-	if (condition == "bad-request") {
-		return BadRequest;
-	}
-	if (condition == "conflict") {
-		return Conflict;
-	}
-	if (condition == "feature-not-implemented") {
-		return FeatureNotImplemented;
-	}
-	if (condition == "forbidden") {
-		return Forbidden;
-	}
-	if (condition == "gone") {
-		return Gone;
-	}
-	if (condition == "internal-server-error") {
-		return InternalServerError;
-	}
-	if (condition == "item-not-found") {
-		return ItemNotFound;
-	}
-	if (condition == "jid-malformed") {
-		return JidMalformed;
-	}
-	if (condition == "not-acceptable") {
-		return NotAcceptable;
-	}
-	if (condition == "not-allowed") {
-		return NotAllowed;
-	}
-	if (condition == "not-authorized") {
-		return NotAuthorized;
-	}
-	if (condition == "payment-required") {
-		return PaymentRequired;
-	}
-	if (condition == "recipient-unavailable") {
-		return RecipientUnavailable;
-	}
-	if (condition == "redirect") {
-		return Redirect;
-	}
-	if (condition == "registration-required") {
-		return RegistrationRequired;
-	}
-	if (condition == "remote-server-not-found") {
-		return RemoteServerNotFound;
-	}
-	if (condition == "resource-constraint") {
-		return ResourceConstraint;
-	}
-	if (condition == "service-unavailable") {
-		return ServiceUnavailable;
-	}
-	if (condition == "subscription-required") {
-		return SubscriptionRequired;
-	}
-	if (condition == "undefined-condition") {
-		return UndefinedCondition;
-	}
-	if (condition == "unexpected-request") {
-		return UnexpectedRequest;
-	}
-	return -1;
-}
-
-/**
- * Returns enum-value representation of error-type string.
- */
-Stanza::Error::Type Stanza::Error::stringToType(const QString& type)
-{
-	if (type == "cancel") {
-		return Cancel;
-	}
-	if (type == "continue") {
-		return Continue;
-	}
-	if (type == "modify") {
-		return Modify;
-	}
-	if (type == "auth") {
-		return Auth;
-	}
-	if (type == "wait") {
-		return Wait;
-	}
-	return Cancel;
 }
 
 /**

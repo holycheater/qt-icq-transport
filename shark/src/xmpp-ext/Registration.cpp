@@ -20,12 +20,66 @@
 
 /* TODO: Implement Data Forms usage. */
 
-#include <QSharedData>
+#include <QList>
 
 #include "Registration.h"
 
 namespace XMPP {
 
+
+class Registration::Private
+{
+	public:
+		static QString fieldToString(Field name);
+		static int stringToField(const QString& name);
+
+		typedef struct {
+			int num;
+			const char* str;
+		} IntStringPair;
+
+		static IntStringPair fieldStringTable[];
+};
+Registration::Private::IntStringPair Registration::Private::fieldStringTable[] = {
+		{ Instructions	, "instructions" },
+		{ Username		, "username" },
+		{ Nick			, "nick" },
+		{ Password		, "password" },
+		{ Name			, "name" },
+		{ First			, "first" },
+		{ Last			, "last" },
+		{ Email			, "email" },
+		{ Address		, "address" },
+		{ City			, "city" },
+		{ State			, "state" },
+		{ Zip			, "zip" },
+		{ Phone			, "phone" },
+		{ Url			, "url" },
+		{ Date			, "date" },
+		{ Misc			, "misc" },
+		{ Text			, "text" },
+		{ 0, 0 }
+};
+
+QString Registration::Private::fieldToString(Field name)
+{
+	for (int i = 0; fieldStringTable[i].str; ++i) {
+		if (fieldStringTable[i].num == name) {
+			return fieldStringTable[i].str;
+		}
+	}
+	return QString();
+}
+
+int Registration::Private::stringToField(const QString& name)
+{
+	for (int i = 0; fieldStringTable[i].str; ++i) {
+		if (fieldStringTable[i].str == name) {
+			return fieldStringTable[i].num;
+		}
+	}
+	return -1;
+}
 
 /**
  * @class Registration
@@ -57,149 +111,88 @@ Registration::~Registration()
 }
 
 /**
- * Returns 'instructions' field text.
- *
- * @sa username(), password(), email()
+ * Returns a list of registration fields.
  */
-QString Registration::instructions() const
+QList<Registration::Field> Registration::fields() const
 {
-	return childElement().firstChildElement("instructions").text().trimmed();
+	QList<Field> list;
+
+	QDomNodeList childs = childElement().childNodes();
+	for (int i = 0; i < childs.size(); ++i) {
+		list << (Field)Private::stringToField( childs.item(i).nodeName() );
+	}
+
+	return list;
 }
 
 /**
- * Returns 'username' field text.
- *
- * @sa instructions(), password(), email()
+ * Returns @a field field text.
  */
-QString Registration::username() const
+QString Registration::getField(Field name) const
 {
-	return childElement().firstChildElement("username").text().trimmed();
+	return childElement().firstChildElement( Private::fieldToString(name) ).text().trimmed();
 }
 
 /**
- * Returns 'password' field text.
- *
- * @sa instructions(), username(), email()
+ * Returns true is field called @a name is present in the query.
+ * @note It doesn't depend if field is empty or not.
  */
-QString Registration::password() const
+bool Registration::hasField(Field name) const
 {
-	return childElement().firstChildElement("password").text().trimmed();
+	return !childElement().firstChildElement( Private::fieldToString(name) ).isNull();
 }
 
 /**
- * Returns 'email' field text.
- *
- * @sa instructions(), username(), password()
+ * Sets @a name field text to @a value
  */
-QString Registration::email() const
+void Registration::setField(Field name, const QString& value)
 {
-	return childElement().firstChildElement("email").text().trimmed();
-}
+	QString field = Private::fieldToString(name);
 
-/**
- * Sets 'instructions' field text to @a instructions
- */
-void Registration::setInstructions(const QString& instructions)
-{
-	childElement().removeChild( childElement().firstChildElement("instructions") );
-	QDomElement element = doc()->createElement("instructions");
+	childElement().removeChild( childElement().firstChildElement(field) );
+	QDomElement element = doc()->createElement(field);
 	childElement().appendChild(element);
 
-	QDomText text = doc()->createTextNode(instructions);
+	QDomText text = doc()->createTextNode(value);
 	element.appendChild(text);
 }
 
 /**
- * Sets up an empty 'instructions' field if @a present is true, removes 'instructions' field if @a present is false.
+ * Sets up an empty @a name field if @a present is true, removes @a name field if @a present is false.
  *
- * @note If @a present is true and 'instructions' field has some text, it becomes an empty element (i.e. internal text is removed).
+ * @note If @a present is true and @a name field has some text, it becomes an empty element (i.e. internal text is removed).
  */
-void Registration::setInstructions(bool present)
+void Registration::setField(Field name, bool present)
 {
-	childElement().removeChild( childElement().firstChildElement("instructions") );
+	QString field = Private::fieldToString(name);
+
+	childElement().removeChild( childElement().firstChildElement(field) );
 	if (present) {
-		QDomElement element = doc()->createElement("instructions");
+		QDomElement element = doc()->createElement(field);
 		childElement().appendChild(element);
 	}
 }
 
 /**
- * Sets 'username' field text to @a username
+ * Creates an empty \<registered/\> element if @a present is true, otherwise removes it.
  */
-void Registration::setUsername(const QString& username)
+void Registration::setRegistered(bool present)
 {
-	childElement().removeChild( childElement().firstChildElement("username") );
-	QDomElement element = doc()->createElement("username");
-	childElement().appendChild(element);
-
-	QDomText text = doc()->createTextNode(username);
-	element.appendChild(text);
-}
-
-/**
- * Sets up an empty 'username' field if @a present is true, removes 'username' field if @a present is false.
- *
- * @note If @a present is true and 'username' field has some text, it becomes an empty element (i.e. internal text is removed).
- */
-void Registration::setUsername(bool present)
-{
-	childElement().removeChild( childElement().firstChildElement("instructions") );
+	childElement().removeChild( childElement().firstChildElement("registered") );
 	if (present) {
-		QDomElement element = doc()->createElement("instructions");
+		QDomElement element = doc()->createElement("registered");
 		childElement().appendChild(element);
 	}
 }
 
 /**
- * Sets 'password' field text to @a password
+ * Creates an empty \<remove/\> element if @a present is true, otherwise removes it.
  */
-void Registration::setPassword(const QString& password)
+void Registration::setRemove(bool present)
 {
-	childElement().removeChild( childElement().firstChildElement("password") );
-	QDomElement element = doc()->createElement("password");
-	childElement().appendChild(element);
-
-	QDomText text = doc()->createTextNode(password);
-	element.appendChild(text);
-}
-
-/**
- * Sets up an empty 'password' field if @a present is true, removes 'password' field if @a present is false.
- *
- * @note If @a present is true and 'password' field has some text, it becomes an empty element (i.e. internal text is removed).
- */
-void Registration::setPassword(bool present)
-{
-	childElement().removeChild( childElement().firstChildElement("instructions") );
+	childElement().removeChild( childElement().firstChildElement("remove") );
 	if (present) {
-		QDomElement element = doc()->createElement("instructions");
-		childElement().appendChild(element);
-	}
-}
-
-/**
- * Sets 'email' field text to @a email
- */
-void Registration::setEmail(const QString& email)
-{
-	childElement().removeChild( childElement().firstChildElement("email") );
-	QDomElement element = doc()->createElement("email");
-	childElement().appendChild(element);
-
-	QDomText text = doc()->createTextNode(email);
-	element.appendChild(text);
-}
-
-/**
- * Sets up an empty 'email' field if @a present is true, removes 'email' field if @a present is false.
- *
- * @note If @a present is true and 'email' field has some text, it becomes an empty element (i.e. internal text is removed).
- */
-void Registration::setEmail(bool present)
-{
-	childElement().removeChild( childElement().firstChildElement("instructions") );
-	if (present) {
-		QDomElement element = doc()->createElement("instructions");
+		QDomElement element = doc()->createElement("remove");
 		childElement().appendChild(element);
 	}
 }

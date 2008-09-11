@@ -1,5 +1,3 @@
-INCLUDEPATH += $$PWD
-
 HEADERS += \
 	$$PWD/bytestream.h \
 	$$PWD/bsocket.h \

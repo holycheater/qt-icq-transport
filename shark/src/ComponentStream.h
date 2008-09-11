@@ -27,7 +27,7 @@
 
 #include <QObject>
 
-#include "core/Parser.h"
+#include "xmpp-core/Parser.h"
 
 class QDomDocument;
 

@@ -23,7 +23,7 @@
 #include <QSharedData>
 #include <QStringList>
 
-#include "core/Jid.h"
+#include "xmpp-core/Jid.h"
 #include "ServiceDiscovery.h"
 
 namespace XMPP

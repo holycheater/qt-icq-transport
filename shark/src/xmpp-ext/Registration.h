@@ -23,7 +23,7 @@
 
 #define NS_IQ_REGISTER "jabber:iq:register"
 
-#include "core/IQ.h"
+#include "xmpp-core/IQ.h"
 
 namespace XMPP {
 

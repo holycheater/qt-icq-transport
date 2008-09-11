@@ -24,12 +24,12 @@
 
 #include "ComponentStream.h"
 
-#include "core/IQ.h"
-#include "core/Jid.h"
-#include "core/Message.h"
-#include "core/Presence.h"
+#include "xmpp-core/IQ.h"
+#include "xmpp-core/Jid.h"
+#include "xmpp-core/Message.h"
+#include "xmpp-core/Presence.h"
 
-#include "core/Connector.h"
+#include "xmpp-core/Connector.h"
 #include "cutestuff/bytestream.h"
 
 #include <QtDebug>

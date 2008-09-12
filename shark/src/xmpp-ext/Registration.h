@@ -33,6 +33,8 @@ class Registration : public IQ
 	public:
 		enum Field { Instructions, Username, Nick, Password, Name, First, Last, Email, Address, City, State, Zip, Phone, Url, Date, Misc, Text };
 		Registration();
+		Registration(const IQ& other);
+		Registration(const Registration& other);
 		Registration(const QDomElement& element);
 		~Registration();
 

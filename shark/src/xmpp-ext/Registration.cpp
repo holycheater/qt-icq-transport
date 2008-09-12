@@ -21,6 +21,7 @@
 /* TODO: Implement Data Forms usage. */
 
 #include <QList>
+#include <QtDebug>
 
 #include "Registration.h"
 
@@ -96,6 +97,22 @@ Registration::Registration()
 }
 
 /**
+ * Constructs registration iq-stanza from IQ-object.
+ */
+Registration::Registration(const IQ& other)
+	: IQ(other)
+{
+}
+
+/**
+ * Constructs a deep copy of other registration-stanza.
+ */
+Registration::Registration(const Registration& other)
+	: IQ(other)
+{
+}
+
+/**
  * Constructs a registration stanza from stanza dom-element.
  */
 Registration::Registration(const QDomElement& element)
@@ -148,6 +165,8 @@ bool Registration::hasField(Field name) const
 void Registration::setField(Field name, const QString& value)
 {
 	QString field = Private::fieldToString(name);
+
+	qDebug() << "[reg]" << field << value;
 
 	childElement().removeChild( childElement().firstChildElement(field) );
 	QDomElement element = doc()->createElement(field);

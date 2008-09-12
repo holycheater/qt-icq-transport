@@ -31,7 +31,7 @@ namespace XMPP {
 class Registration : public IQ
 {
 	public:
-		enum Field { Instructions, Username, Nick, Password, Name, First, Last, Email, Address, City, State, Zip, Phone, Url, Date, Misc, Text };
+		enum Field { Instructions, Username, Nick, Password, Name, First, Last, Email, Address, City, State, Zip, Phone, Url, Date, Misc, Text, Registered, Remove };
 		Registration();
 		Registration(const IQ& other);
 		Registration(const Registration& other);
@@ -43,9 +43,6 @@ class Registration : public IQ
 		bool hasField(Field name) const;
 		void setField(Field name, const QString& value);
 		void setField(Field name, bool present = true);
-
-		void setRegistered(bool present = true);
-		void setRemove(bool present = true);
 	private:
 		class Private;
 };

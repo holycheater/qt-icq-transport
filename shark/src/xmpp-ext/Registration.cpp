@@ -21,7 +21,6 @@
 /* TODO: Implement Data Forms usage. */
 
 #include <QList>
-#include <QtDebug>
 
 #include "Registration.h"
 
@@ -59,6 +58,8 @@ Registration::Private::IntStringPair Registration::Private::fieldStringTable[] =
 		{ Date			, "date" },
 		{ Misc			, "misc" },
 		{ Text			, "text" },
+		{ Registered	, "registered" },
+		{ Remove		, "remove" },
 		{ 0, 0 }
 };
 
@@ -136,6 +137,10 @@ QList<Registration::Field> Registration::fields() const
 
 	QDomNodeList childs = childElement().childNodes();
 	for (int i = 0; i < childs.size(); ++i) {
+		if ( childs.item(i).namespaceURI() != NS_IQ_REGISTER ) {
+			// we don't count non-standard fields from something like jabber:x:data
+			continue;
+		}
 		list << (Field)Private::stringToField( childs.item(i).nodeName() );
 	}
 
@@ -166,8 +171,6 @@ void Registration::setField(Field name, const QString& value)
 {
 	QString field = Private::fieldToString(name);
 
-	qDebug() << "[reg]" << field << value;
-
 	childElement().removeChild( childElement().firstChildElement(field) );
 	QDomElement element = doc()->createElement(field);
 	childElement().appendChild(element);
@@ -188,30 +191,6 @@ void Registration::setField(Field name, bool present)
 	childElement().removeChild( childElement().firstChildElement(field) );
 	if (present) {
 		QDomElement element = doc()->createElement(field);
-		childElement().appendChild(element);
-	}
-}
-
-/**
- * Creates an empty \<registered/\> element if @a present is true, otherwise removes it.
- */
-void Registration::setRegistered(bool present)
-{
-	childElement().removeChild( childElement().firstChildElement("registered") );
-	if (present) {
-		QDomElement element = doc()->createElement("registered");
-		childElement().appendChild(element);
-	}
-}
-
-/**
- * Creates an empty \<remove/\> element if @a present is true, otherwise removes it.
- */
-void Registration::setRemove(bool present)
-{
-	childElement().removeChild( childElement().firstChildElement("remove") );
-	if (present) {
-		QDomElement element = doc()->createElement("remove");
 		childElement().appendChild(element);
 	}
 }

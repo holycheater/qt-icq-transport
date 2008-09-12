@@ -64,6 +64,7 @@ class Jid
 
 		bool compare(const Jid& other, bool compareResource = true) const;
 		bool operator==(const Jid& other) const;
+		bool operator!=(const Jid& other) const;
 
 		operator QString();
 	private:

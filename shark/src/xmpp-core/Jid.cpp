@@ -568,6 +568,11 @@ bool Jid::operator==(const Jid& other) const
 	return false;
 }
 
+bool Jid::operator!=(const Jid& other) const
+{
+	return !(*this == other);
+}
+
 Jid::operator QString()
 {
 	return full();

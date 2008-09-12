@@ -91,13 +91,11 @@ class Stanza::Error {
 
 		QString appCondition() const;
 		QString appConditionNS() const;
-		int code() const;
 		Condition condition() const;
 		QString text() const;
 		Type type() const;
 
 		void setAppCondition(const QString& appConditionNS, const QString& appCondition);
-		void setCode(int code);
 		void setCondition(Condition condition);
 		void setText(const QString& text);
 		void setType(Type type);

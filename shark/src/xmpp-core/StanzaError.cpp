@@ -31,7 +31,6 @@ namespace XMPP {
  * @brief Represents stanza error.
  *
  * A valid error must contain information about error type and error condition.
- * It can optionally contain error-code for backward compatibility.
  * It can have optional descriptive text and optional application-specific
  * condition within application-namespace.
  *
@@ -66,7 +65,6 @@ class Stanza::Error::Private : public QSharedData
 		static IntStringPair errorTypeTable[];
 		static IntStringPair errorCondTable[];
 
-		int code;
 		Condition condition;
 		Type type;
 
@@ -215,7 +213,6 @@ Stanza::Error Stanza::Error::fromStanza(const Stanza& stanza)
 
 	Error error;
 	error.d->type = (Type)Private::stringToType( eError.attribute("type") );
-	error.d->code = eError.attribute("code", 0).toInt();
 
 	QDomNodeList childs = eError.childNodes();
 	for ( int i = 0; i < childs.count(); ++i ) {
@@ -269,14 +266,6 @@ QString Stanza::Error::appConditionNS() const
 }
 
 /**
- * Returns error code.
- */
-int Stanza::Error::code() const
-{
-	return d->code;
-}
-
-/**
  * Returns stanza error condition.
  *
  * @sa Condition
@@ -317,14 +306,6 @@ void Stanza::Error::setAppCondition(const QString& appConditionNS, const QString
 }
 
 /**
- * Sets optional error-code number.
- */
-void Stanza::Error::setCode(int code)
-{
-	d->code = code;
-}
-
-/**
  * Sets error condition to @a condition.
  */
 void Stanza::Error::setCondition(Condition condition)
@@ -357,9 +338,6 @@ void Stanza::Error::pushToDomElement(QDomElement element) const
 {
 	QDomElement eError = element.ownerDocument().createElement("error");
 	eError.setAttribute( "type", Private::typeToString(d->type) );
-	if ( d->code > 0 ) {
-		eError.setAttribute("code", d->code);
-	}
 
 	QDomElement eCondition = element.ownerDocument().createElementNS( NS_STANZAS, Private::conditionToString(d->condition) );
 	eError.appendChild(eCondition);

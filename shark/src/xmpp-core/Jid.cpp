@@ -49,7 +49,7 @@ class StringPrepCache : public QObject
 				{
 				}
 
-				Result(const QString& s) : norm(new QString(s))
+				Result(const QString& s) : norm( new QString(s) )
 				{
 				}
 
@@ -67,8 +67,9 @@ class StringPrepCache : public QObject
 
 		static StringPrepCache *get_instance()
 		{
-			if(!instance)
+			if (!instance) {
 				instance = new StringPrepCache;
+			}
 			return instance;
 		}
 
@@ -90,109 +91,112 @@ StringPrepCache::~StringPrepCache()
 
 bool StringPrepCache::nodeprep(const QString& in, int maxbytes, QString *out)
 {
-	if(in.isEmpty())
-	{
-		if(out)
+	if ( in.isEmpty() ) {
+		if (out) {
 			*out = QString();
+		}
 		return true;
 	}
 
 	StringPrepCache *that = get_instance();
 
 	Result *r = that->nodeprep_table[in];
-	if(r)
-	{
-		if(!r->norm)
+	if (r) {
+		if (!r->norm) {
 			return false;
-		if(out)
+		}
+		 if (out) {
 			*out = *(r->norm);
+		 }
 		return true;
 	}
 
 	QByteArray cs = in.toUtf8();
 	cs.resize(maxbytes);
-	if(stringprep(cs.data(), maxbytes, (Stringprep_profile_flags)0, stringprep_xmpp_nodeprep) != 0)
-	{
+	if (stringprep(cs.data(), maxbytes, (Stringprep_profile_flags)0, stringprep_xmpp_nodeprep) != 0) {
 		that->nodeprep_table.insert(in, new Result);
 		return false;
 	}
 
 	QString norm = QString::fromUtf8(cs);
-	that->nodeprep_table.insert(in, new Result(norm));
-	if(out)
+	that->nodeprep_table.insert( in, new Result(norm) );
+	if (out) {
 		*out = norm;
+	}
 	return true;
 }
 
 bool StringPrepCache::nameprep(const QString& in, int maxbytes, QString *out)
 {
-	if(in.isEmpty())
-	{
-		if(out)
+	if ( in.isEmpty() ) {
+		if (out) {
 			*out = QString();
+		}
 		return true;
 	}
 
 	StringPrepCache *that = get_instance();
 
 	Result *r = that->nameprep_table[in];
-	if(r)
-	{
-		if(!r->norm)
+	if (r) {
+		if (!r->norm) {
 			return false;
-		if(out)
+		}
+		if (out) {
 			*out = *(r->norm);
+		}
 		return true;
 	}
 
 	QByteArray cs = in.toUtf8();
 	cs.resize(maxbytes);
-	if(stringprep(cs.data(), maxbytes, (Stringprep_profile_flags)0, stringprep_nameprep) != 0)
-	{
+	if (stringprep(cs.data(), maxbytes, (Stringprep_profile_flags)0, stringprep_nameprep) != 0) {
 		that->nameprep_table.insert(in, new Result);
 		return false;
 	}
 
 	QString norm = QString::fromUtf8(cs);
-	that->nameprep_table.insert(in, new Result(norm));
-	if(out)
+	that->nameprep_table.insert( in, new Result(norm) );
+	if (out) {
 		*out = norm;
+	}
 	return true;
 }
 
 bool StringPrepCache::resourceprep(const QString& in, int maxbytes, QString *out)
 {
-	if(in.isEmpty())
-	{
-		if(out)
+	if ( in.isEmpty() ) {
+		if (out) {
 			*out = QString();
+		}
 		return true;
 	}
 
 	StringPrepCache *that = get_instance();
 
 	Result *r = that->resourceprep_table[in];
-	if(r)
-	{
-		if(!r->norm)
+	if (r) {
+		if (!r->norm) {
 			return false;
-		if(out)
+		}
+		if (out) {
 			*out = *(r->norm);
+		}
 		return true;
 	}
 
 	QByteArray cs = in.toUtf8();
 	cs.resize(maxbytes);
-	if(stringprep(cs.data(), maxbytes, (Stringprep_profile_flags)0, stringprep_xmpp_resourceprep) != 0)
-	{
+	if (stringprep(cs.data(), maxbytes, (Stringprep_profile_flags)0, stringprep_xmpp_resourceprep) != 0) {
 		that->resourceprep_table.insert(in, new Result);
 		return false;
 	}
 
 	QString norm = QString::fromUtf8(cs);
-	that->resourceprep_table.insert(in, new Result(norm));
-	if(out)
+	that->resourceprep_table.insert( in, new Result(norm) );
+	if (out) {
 		*out = norm;
+	}
 	return true;
 }
 
@@ -204,6 +208,12 @@ class Jid::Private : public QSharedData
 	public:
 		Private();
 		Private(const Private& other);
+
+		void reset();
+
+		static bool validDomain(const QString& domain, QString *normalised = 0);
+		static bool validNode(const QString& node, QString *normalised = 0);
+		static bool validResource(const QString& resource, QString *normalised = 0);
 
 		QString node, domain, resource;
 		bool valid;
@@ -224,68 +234,136 @@ Jid::Private::Private(const Private& other)
 	resource = other.resource;
 }
 
-//----------------------------------------------------------------------------
-// Jid
-//----------------------------------------------------------------------------
+void Jid::Private::reset()
+{
+	domain.clear();
+	node.clear();
+	resource.clear();
+
+	valid = false;
+}
+
+bool Jid::Private::validDomain(const QString& domain, QString *normalised)
+{
+	return StringPrepCache::nameprep(domain, 1024, normalised);
+}
+
+bool Jid::Private::validNode(const QString& node, QString *normalised)
+{
+	return StringPrepCache::nodeprep(node, 1024, normalised);
+}
+
+bool Jid::Private::validResource(const QString& resource, QString *normalised)
+{
+	return StringPrepCache::resourceprep(resource, 1024, normalised);
+}
+
+
+/* ***************************************************************************
+ * XMPP::Jid
+ *************************************************************************** */
+
+/**
+ * @class Jid
+ * Represents jabber-id.
+ */
+
+/**
+ * Constructs jabber-id object.
+ */
 Jid::Jid()
 {
 	d = new Private;
 }
 
-Jid::~Jid()
-{
-}
-
+/**
+ * Constructs a deep copy of @a other.
+ */
 Jid::Jid(const Jid& other)
 	: d(other.d)
 {
 }
 
+/**
+ * Constructs a jabber-id object from string of type [user@]<domain>[/resource]
+ */
 Jid::Jid(const QString& str)
 {
 	d = new Private;
 	set(str);
 }
 
+/**
+ * Constructs a jabber-id object from string of type [user@]<domain>[/resource]
+ */
 Jid::Jid(const char *str)
 {
 	d = new Private;
 	set( QString(str) );
 }
 
+/**
+ * Destroys jabber-id object.
+ */
+Jid::~Jid()
+{
+}
+
+/**
+ * Assigns @a other to this object and return the reference to this.
+ * @note The data between objects becomes shared.
+ */
 Jid& Jid::operator=(const Jid& other)
 {
 	d = other.d;
 	return *this;
 }
 
+/**
+ * Assigns a string of type [user@]<domain>[/resource] to the jabber-id object.
+ */
 Jid& Jid::operator=(const QString& str)
 {
 	set(str);
 	return *this;
 }
 
+/**
+ * Assigns a string of type [user@]<domain>[/resource] to the jabber-id object.
+ */
 Jid& Jid::operator=(const char *str)
 {
 	set( QString(str) );
 	return *this;
 }
 
+/**
+ * Returns jabber-id domain string.
+ */
 QString Jid::domain() const
 {
 	return d->domain;
 }
 
+/**
+ * Returns jabber-id node (username) string.
+ */
 QString Jid::node() const
 {
 	return d->node;
 }
 
+/**
+ * Returns jabber-id resource string.
+ */
 QString Jid::resource() const
 {
 	return d->resource;
 }
 
+/**
+ * Returns jabber-id without resource part.
+ */
 QString Jid::bare() const
 {
 	QString bare = d->domain;
@@ -295,6 +373,9 @@ QString Jid::bare() const
 	return bare;
 }
 
+/**
+ * Returns full jabber-id (user@domain/resource).
+ */
 QString Jid::full() const
 {
 	QString full = d->domain;
@@ -307,111 +388,114 @@ QString Jid::full() const
 	return full;
 }
 
-void Jid::reset()
-{
-	d->domain.clear();
-	d->node.clear();
-	d->resource.clear();
-	d->valid = false;
-}
-
-void Jid::update()
-{
-	// do nothing
-}
-
-void Jid::set(const QString& s)
+/**
+ * Sets jabber-id to @a jid.
+ */
+void Jid::set(const QString& jid)
 {
 	QString rest, domain, node, resource;
-	QString norm_domain, norm_node, norm_resource;
-	int x = s.indexOf('/');
-	if(x != -1) {
-		rest = s.mid(0, x);
-		resource = s.mid(x+1);
-	}
-	else {
-		rest = s;
+	QString normalisedDomain, normalisedNode, normalisedResource;
+
+	int x = jid.indexOf('/');
+	if (x != -1) {
+		rest = jid.mid(0, x);
+		resource = jid.mid(x+1);
+	} else {
+		rest = jid;
 		resource = QString();
 	}
-	if(!validResource(resource, &norm_resource)) {
-		reset();
+	if( !Private::validResource(resource, &normalisedResource) ) {
+		d->reset();
 		return;
 	}
 
 	x = rest.indexOf('@');
-	if(x != -1) {
+	if (x != -1) {
 		node = rest.mid(0, x);
 		domain = rest.mid(x+1);
-	}
-	else {
+	} else {
 		node = QString();
 		domain = rest;
 	}
-	if(!validDomain(domain, &norm_domain) || !validNode(node, &norm_node)) {
-		reset();
+	if ( !Private::validDomain(domain, &normalisedDomain) || !Private::validNode(node, &normalisedNode) ) {
+		d->reset();
 		return;
 	}
 
 	d->valid = true;
-	d->domain = norm_domain;
-	d->node = norm_node;
-	d->resource = norm_resource;
-	update();
+	d->domain = normalisedDomain;
+	d->node = normalisedNode;
+	d->resource = normalisedResource;
 }
 
+/**
+ * Sets jabber-id to node@domain[/resource].
+ */
 void Jid::set(const QString& domain, const QString& node, const QString& resource)
 {
-	QString norm_domain, norm_node, norm_resource;
-	if(!validDomain(domain, &norm_domain) || !validNode(node, &norm_node) || !validResource(resource, &norm_resource)) {
-		reset();
+	QString normalisedDomain, normalisedNode, normalisedResource;
+	if ( !Private::validDomain(domain, &normalisedDomain) || !Private::validNode(node, &normalisedNode) || !Private::validResource(resource, &normalisedResource) ) {
+		d->reset();
 		return;
 	}
 	d->valid = true;
-	d->domain = norm_domain;
-	d->node = norm_node;
-	d->resource = norm_resource;
-	update();
+	d->domain = normalisedDomain;
+	d->node = normalisedNode;
+	d->resource = normalisedResource;
 }
 
+/**
+ * Sets jabber-id domain to @a domain.
+ */
 void Jid::setDomain(const QString& domain)
 {
-	if(!d->valid)
-		return;
-	QString norm;
-	if(!validDomain(domain, &norm)) {
-		reset();
+	if (!d->valid) {
 		return;
 	}
-	d->domain = norm;
-	update();
+	QString normalised;
+	if ( !Private::validDomain(domain, &normalised) ) {
+		d->reset();
+		return;
+	}
+	d->domain = normalised;
 }
 
+/**
+ * Sets jabber-id node to @a node.
+ */
 void Jid::setNode(const QString& node)
 {
-	if(!d->valid)
-		return;
-	QString norm;
-	if(!validNode(node, &norm)) {
-		reset();
+	if (!d->valid) {
 		return;
 	}
-	d->node = norm;
-	update();
+	QString normalised;
+	if ( !Private::validNode(node, &normalised) ) {
+		d->reset();
+		return;
+	}
+	d->node = normalised;
 }
 
+/**
+ * Sets jabber-id resource to @a resource.
+ */
 void Jid::setResource(const QString& resource)
 {
-	if(!d->valid)
-		return;
-	QString norm;
-	if(!validResource(resource, &norm)) {
-		reset();
+	if (!d->valid) {
 		return;
 	}
-	d->resource = norm;
-	update();
+	QString normalised;
+	if ( !Private::validResource(resource, &normalised) ) {
+		d->reset();
+		return;
+	}
+	d->resource = normalised;
 }
 
+/**
+ * Returns jabber-id with node set to @a node.
+ * If node is present, it's replaced to @a node, if not - it's prepended to jabber-id.
+ */
 Jid Jid::withNode(const QString& node) const
 {
 	Jid jid = *this;
@@ -419,6 +503,10 @@ Jid Jid::withNode(const QString& node) const
 	return jid;
 }
 
+/**
+ * Returns jabber-id with resource set to @a resource.
+ * If resource is present, it's replaced to @a resource, if not - it's appended to jabber-id.
+ */
 Jid Jid::withResource(const QString& resource) const
 {
 	Jid jid = *this;
@@ -426,24 +514,29 @@ Jid Jid::withResource(const QString& resource) const
 	return jid;
 }
 
-bool Jid::isNull() const
-{
-	return d->node.isEmpty() && d->domain.isEmpty() && d->resource.isEmpty();
-}
-
+/**
+ * Returns true if this Jid object is a valid jabber-id.
+ */
 bool Jid::isValid() const
 {
 	return d->valid;
 }
 
+/**
+ * Returns true if jabber-id is empty (i.e. node, domain and resource are empty).
+ */
 bool Jid::isEmpty() const
 {
 	return d->node.isEmpty() && d->domain.isEmpty() && d->resource.isEmpty();
 }
 
+/**
+ * Compares bare jabber-ids if @a compareResource is false, otherwise compares full jabber-ids.
+ * Returns true if this jabber-id is equal to @a other jabber-id.
+ */
 bool Jid::compare(const Jid& other, bool compareResource) const
 {
-	if ( isNull() && other.isNull() ) {
+	if ( isEmpty() && other.isEmpty() ) {
 		return true;
 	}
 
@@ -458,9 +551,12 @@ bool Jid::compare(const Jid& other, bool compareResource) const
 	return false;
 }
 
+/**
+ * Compares full jabber-ids.
+ */
 bool Jid::operator==(const Jid& other) const
 {
-	if ( isNull() && other.isNull() ) {
+	if ( isEmpty() && other.isEmpty() ) {
 		return true;
 	}
 	if ( !isValid() || !other.isValid() ) {
@@ -470,21 +566,6 @@ bool Jid::operator==(const Jid& other) const
 		return true;
 	}
 	return false;
-}
-
-bool Jid::validDomain(const QString& domain, QString *norm)
-{
-	return StringPrepCache::nameprep(domain, 1024, norm);
-}
-
-bool Jid::validNode(const QString& node, QString *norm)
-{
-	return StringPrepCache::nodeprep(node, 1024, norm);
-}
-
-bool Jid::validResource(const QString& resource, QString *norm)
-{
-	return StringPrepCache::resourceprep(resource, 1024, norm);
 }
 
 Jid::operator QString()

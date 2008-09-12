@@ -49,7 +49,6 @@ class Jid
 		void setNode(const QString& node);
 		void setResource(const QString& resource);
 
-		bool isNull() const;
 		QString domain() const;
 		QString node() const;
 		QString resource() const;
@@ -59,20 +58,15 @@ class Jid
 		Jid withNode(const QString &s) const;
 		Jid withResource(const QString &s) const;
 
+		bool isNull() const;
 		bool isValid() const;
 		bool isEmpty() const;
+
 		bool compare(const Jid& other, bool compareResource = true) const;
 		bool operator==(const Jid& other) const;
 
-		static bool validDomain(const QString &s, QString *norm=0);
-		static bool validNode(const QString &s, QString *norm=0);
-		static bool validResource(const QString &s, QString *norm=0);
-
 		operator QString();
 	private:
-		void reset();
-		void update();
-
 		class Private;
 		QSharedDataPointer<Private> d;
 };

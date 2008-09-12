@@ -54,6 +54,7 @@ class Stanza::Error::Private : public QSharedData
 
 		static QString conditionToString(int condition);
 		static QString typeToString(int type);
+		static int typeForCondition(int condition);
 		static int stringToCondition(const QString& condition);
 		static int stringToType(const QString& type);
 
@@ -62,8 +63,14 @@ class Stanza::Error::Private : public QSharedData
 			const char* str;
 		} IntStringPair;
 
+		typedef struct {
+			int first;
+			int second;
+		} IntPair;
+
 		static IntStringPair errorTypeTable[];
 		static IntStringPair errorCondTable[];
+		static IntPair typeCondTable[];
 
 		Condition condition;
 		Type type;
@@ -98,6 +105,8 @@ Stanza::Error::Private::IntStringPair Stanza::Error::Private::errorCondTable[] =
 		{ Forbidden				, "forbidden" },
 		{ Gone					, "gone" },
 		{ InternalServerError	, "internal-server-error" },
+		{ ItemNotFound			, "item-not-found" },
+		{ JidMalformed			, "jid-malformed" },
 		{ NotAcceptable			, "not-acceptable" },
 		{ NotAllowed			, "not-allowed" },
 		{ NotAuthorized			, "not-authorized" },
@@ -114,6 +123,32 @@ Stanza::Error::Private::IntStringPair Stanza::Error::Private::errorCondTable[] =
 		{ UnexpectedRequest		, "unexpected-request" },
 		{ 0, 0 }
 
+};
+
+Stanza::Error::Private::IntPair Stanza::Error::Private::typeCondTable[] = {
+		{ BadRequest			, Modify },
+		{ Conflict				, Cancel },
+		{ FeatureNotImplemented	, Cancel },
+		{ Forbidden				, Auth },
+		{ Gone					, Modify },
+		{ InternalServerError	, Wait },
+		{ ItemNotFound			, Cancel },
+		{ JidMalformed			, Modify },
+		{ NotAcceptable			, Modify },
+		{ NotAllowed			, Cancel },
+		{ NotAuthorized			, Auth },
+		{ PaymentRequired		, Auth },
+		{ RecipientUnavailable	, Wait },
+		{ Redirect				, Modify },
+		{ RegistrationRequired	, Auth },
+		{ RemoteServerNotFound	, Cancel },
+		{ RemoteServerTimeout	, Wait },
+		{ ResourceConstraint	, Wait },
+		{ ServiceUnavailable	, Cancel },
+		{ SubscriptionRequired	, Auth },
+		{ UndefinedCondition	, Wait },
+		{ UnexpectedRequest		, Wait },
+		{ 0, 0 }
 };
 
 QString Stanza::Error::Private::conditionToString(int condition)
@@ -134,6 +169,16 @@ QString Stanza::Error::Private::typeToString(int type)
 		}
 	}
 	return "cancel";
+}
+
+int Stanza::Error::Private::typeForCondition(int condition)
+{
+	for (int i = 0; typeCondTable[i].first; ++i) {
+		if ( typeCondTable[i].first == condition ) {
+			return typeCondTable[i].second;
+		}
+	}
+	return -1;
 }
 
 int Stanza::Error::Private::stringToCondition(const QString& condition)
@@ -170,6 +215,16 @@ Stanza::Error::Error()
 Stanza::Error::Error(const Error& other)
 	: d(other.d)
 {
+}
+
+/**
+ * Constructs stanza-error with given @a condition and (optionally) @a text.
+ */
+Stanza::Error::Error(Condition condition, const QString& text)
+	: d(new Private)
+{
+	setCondition(condition);
+	d->text = text;
 }
 
 /**
@@ -311,6 +366,10 @@ void Stanza::Error::setAppCondition(const QString& appConditionNS, const QString
 void Stanza::Error::setCondition(Condition condition)
 {
 	d->condition = condition;
+	int type = Private::typeForCondition(condition);
+	if (type != -1) {
+		d->type = (Type)type;
+	}
 }
 
 /**

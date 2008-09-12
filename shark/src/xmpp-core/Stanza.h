@@ -72,9 +72,9 @@ class Stanza
 
 class Stanza::Error {
 	public:
-		enum Type { Cancel, Continue, Modify, Auth, Wait };
+		enum Type { Cancel = 1, Continue, Modify, Auth, Wait };
 		enum Condition {
-			BadRequest, Conflict, FeatureNotImplemented, Forbidden, Gone,
+			BadRequest = 1, Conflict, FeatureNotImplemented, Forbidden, Gone,
 			InternalServerError, ItemNotFound, JidMalformed, NotAcceptable,
 			NotAllowed, NotAuthorized, PaymentRequired, RecipientUnavailable,
 			Redirect, RegistrationRequired, RemoteServerNotFound, RemoteServerTimeout,
@@ -84,6 +84,7 @@ class Stanza::Error {
 
 		Error();
 		Error(const Error& other);
+		Error(Condition condition, const QString& text = "");
 		Error(Type type, Condition condition, const QString& text = "");
 		Error(Type type, Condition condition, const QString& appConditionNS, const QString& appCondition, const QString& text = "");
 		static Error fromStanza(const Stanza& stanza);

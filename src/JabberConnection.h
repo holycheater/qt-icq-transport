@@ -25,6 +25,10 @@
 
 #include "ComponentStream.h"
 
+namespace XMPP {
+	class Registration;
+}
+
 class JabberConnection : public QObject
 {
 	Q_OBJECT
@@ -42,8 +46,16 @@ class JabberConnection : public QObject
 		void login();
 
 		void setUsername(const QString& username);
-		void setServer(const QString& host, quint16 port = 5222);
+		void setServer(const QString& host, quint16 port);
 		void setPassword(const QString& password);
+	signals:
+		void userUnregistered(const QString& jid);
+		void userRegistered(const QString& jid, const QString& uin, const QString& password);
+	private:
+		void process_discoinfo(const IQ& iq);
+		void process_discoitems(const IQ& iq);
+		void process_register_request(const IQ& iq);
+		void process_register_form(const XMPP::Registration& iq);
 	private slots:
 		void stream_error(const ComponentStream::Error&);
 		void stream_connected();

@@ -20,23 +20,30 @@
 
 #include "JabberConnection.h"
 
-#include "core/IQ.h"
-#include "core/Connector.h"
-#include "core/Jid.h"
+#include "xmpp-core/Message.h"
+#include "xmpp-core/IQ.h"
+#include "xmpp-core/Connector.h"
+#include "xmpp-core/Jid.h"
+#include "xmpp-ext/ServiceDiscovery.h"
+#include "xmpp-ext/Registration.h"
 
 #include <QCoreApplication>
+#include <QStringList>
 #include <QtDebug>
+
+#define NS_QUERY_ADHOC "http://jabber.org/protocol/commands"
+
+using namespace XMPP;
 
 class JabberConnection::Private {
 
 	public:
-		XMPP::Connector* connector;
-		XMPP::ComponentStream* stream;
-		XMPP::Jid jid;
+		Connector* connector;
+		ComponentStream* stream;
+		Jid jid;
+		DiscoInfo disco;
 		QString secret;
 };
-
-using namespace XMPP;
 
 JabberConnection::JabberConnection(QObject *parent)
 	: QObject(parent)
@@ -45,6 +52,9 @@ JabberConnection::JabberConnection(QObject *parent)
 
 	d->connector = new Connector;
 	d->stream = new ComponentStream(d->connector);
+
+	d->disco << DiscoInfo::Identity("gateway", "icq", "ICQ Transport");
+	d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC;
 
 	QObject::connect(d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
 	QObject::connect(d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
@@ -79,12 +89,119 @@ void JabberConnection::setPassword(const QString& password)
 	d->secret = password;
 }
 
+void JabberConnection::process_discoinfo(const IQ& iq)
+{
+	qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
+
+	IQ reply(iq);
+	reply.swapFromTo();
+	reply.setType(IQ::Result);
+
+	d->disco.pushToDomElement( reply.childElement() );
+	d->stream->sendStanza(reply);
+}
+
+void JabberConnection::process_discoitems(const IQ& iq)
+{
+	IQ reply(iq);
+	reply.swapFromTo();
+	reply.setType(IQ::Result);
+
+	d->stream->sendStanza(reply);
+}
+
+void JabberConnection::process_register_request(const IQ& iq)
+{
+	Registration regForm(iq);
+
+	regForm.swapFromTo();
+	regForm.setType(IQ::Result);
+
+	regForm.setField(Registration::Instructions, QString("Enter UIN and password"));
+	regForm.setField(Registration::Username);
+	regForm.setField(Registration::Password);
+
+	d->stream->sendStanza(regForm);
+}
+
+void JabberConnection::process_register_form(const Registration& iq)
+{
+	if ( iq.to() != d->jid ) {
+		Registration err(iq);
+		err.swapFromTo();
+		err.setError( Stanza::Error(Stanza::Error::FeatureNotImplemented) );
+		d->stream->sendStanza(err);
+		return;
+	}
+	if ( iq.hasField(Registration::Remove) ) {
+		if ( iq.fields().size() > 1 ) {
+			/* error, <remove/> is not the only child element */
+			Registration err(iq);
+			err.swapFromTo();
+			err.setError( Stanza::Error(Stanza::Error::BadRequest) );
+			d->stream->sendStanza(err);
+			return;
+		}
+		if ( iq.from().isEmpty() ) {
+			Registration err(iq);
+			err.swapFromTo();
+			err.setError( Stanza::Error(Stanza::Error::UnexpectedRequest) );
+			d->stream->sendStanza(err);
+			return;
+		}
+		Registration reply(iq);
+		reply.swapFromTo();
+		reply.clearChild();
+		reply.setType(IQ::Result);
+		d->stream->sendStanza(reply);
+		/* send unregister signal, slot should remove the user from the database */
+		emit userUnregistered( iq.from().bare() );
+		return;
+	}
+	if ( iq.getField(Registration::Username).isEmpty() || iq.getField(Registration::Password).isEmpty() ) {
+		Registration err(iq);
+		err.swapFromTo();
+		err.setError( Stanza::Error(Stanza::Error::NotAcceptable) );
+		d->stream->sendStanza(err);
+		return;
+	}
+
+	/* registration success */
+	IQ reply(iq);
+	reply.swapFromTo();
+	reply.clearChild();
+	reply.setType(IQ::Result);
+	d->stream->sendStanza(reply);
+	emit userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
+}
+
 void JabberConnection::stream_iq(const IQ& iq)
 {
+	if ( iq.childElement().nodeName() == "query" && iq.type() == "get" ) {
+		if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_INFO ) {
+			process_discoinfo(iq);
+			return;
+		}
+		if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_ITEMS ) {
+			process_discoitems(iq);
+			return;
+		}
+		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
+			process_register_request(iq);
+			return;
+		}
+	}
+	if ( iq.childElement().nodeName() == "query" && iq.type() == "set" ) {
+		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
+			process_register_form(iq);
+			return;
+		}
+	}
 }
 
 void JabberConnection::stream_message(const Message& msg)
 {
+	qDebug() << "message from" << msg.from() << "to" << msg.to() << "subject" << msg.subject();
 }
 
 void JabberConnection::stream_presence(const Presence& presence)
@@ -94,16 +211,10 @@ void JabberConnection::stream_presence(const Presence& presence)
 void JabberConnection::stream_connected()
 {
 	qDebug() << "signed on";
-	IQ query;
-	query.setType(IQ::Get);
-	query.setFrom("icq.dragonfly");
-	query.setTo("dragonfly");
-	query.setChildElement("query", "http://jabber.org/protocol/disco#info");
-	//d->stream->sendStanza(query);
 }
 
 void JabberConnection::stream_error(const ComponentStream::Error& err)
 {
-	qDebug() << "Stream error! Condition:" << err.type();
+	qDebug() << "Stream error! Condition:" << err.conditionString();
 	qApp->quit();
 }

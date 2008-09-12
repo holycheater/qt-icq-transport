@@ -102,6 +102,14 @@ const QDomElement& IQ::childElement() const
 }
 
 /**
+ * Clears IQ query child elements, making it an empty element.
+ */
+void IQ::clearChild()
+{
+	doc()->documentElement().removeChild(m_element);
+}
+
+/**
  * Sets info/query child element to @a name with xmlns @a ns
  * @param name	element name
  * @param ns	element namespace

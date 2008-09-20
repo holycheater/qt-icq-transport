@@ -49,6 +49,8 @@ class vCard
 
 		operator IQ() const;
 
+		bool isEmpty() const;
+
 		QString fullName() const;
 
 		QString givenName() const;

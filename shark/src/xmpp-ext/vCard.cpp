@@ -39,6 +39,8 @@ class vCard::Private : public QSharedData
 
 		void toDomElement(QDomElement& element) const;
 
+		inline bool isEmpty() const;
+
 		QString fullname;
 		QString nGiven, nMiddle, nFamily, nPrefix, nSuffix;
 		QString nickname;
@@ -340,6 +342,33 @@ void vCard::Private::toDomElement(QDomElement& element) const
 	}
 }
 
+inline bool vCard::Private::isEmpty() const
+{
+	if ( !fullname.isEmpty() || !nGiven.isEmpty() || !nMiddle.isEmpty() || !nFamily.isEmpty() || !nPrefix.isEmpty() || !nSuffix.isEmpty() ) {
+		return false;
+	}
+
+	if ( !nickname.isEmpty() || !birthday.isNull() || !aCountry.isEmpty() || !aRegion.isEmpty() || !aCity.isEmpty() || !aPostal.isEmpty() || !aStreet.isEmpty() ) {
+		return false;
+	}
+
+	if ( !phone.isEmpty() || !email.isEmpty() || !tzoffset.isEmpty() ) {
+		return false;
+	}
+
+	if ( !lat.isEmpty() && !lon.isEmpty() ) {
+		return false;
+	}
+	if ( !title.isEmpty() || !role.isEmpty() || !orgName.isEmpty() || !orgUnit.isEmpty() ) {
+		return false;
+	}
+	if ( !url.isEmpty() || !desc.isEmpty() || !jid.isEmpty() ) {
+		return false;
+	}
+
+	return true;
+}
+
 vCard::vCard()
 	: d(new Private)
 {
@@ -383,6 +412,11 @@ void vCard::toDomElement(QDomElement& element) const
 vCard::operator IQ() const
 {
 	return toIQ();
+}
+
+bool vCard::isEmpty() const
+{
+	return d->isEmpty();
 }
 
 QString vCard::fullName() const

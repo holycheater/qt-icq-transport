@@ -22,8 +22,6 @@
 #define ICQPROTOCOL_H_
 
 #include "types/icqTypes.h"
-#include "types/icqFlapBuffer.h"
-#include "types/icqSnacBuffer.h"
 
 #include <QByteArray>
 #include <QHostInfo>
@@ -39,6 +37,9 @@ class SSIManager;
 
 class Contact;
 class Message;
+class Buffer;
+class FlapBuffer;
+class SnacBuffer;
 
 class Connection: public QObject
 {
@@ -65,6 +66,9 @@ class Connection: public QObject
 				quint16 port = DEFAULT_PORT,
 				QObject *parent = 0);
 		virtual ~Connection();
+
+		void contactAdd(const QString& uin);
+		void contactDel(const QString& uin);
 
 		/* current connection status (disconnected/connecting/connected) */
 		int connectionStatus() const;
@@ -136,21 +140,6 @@ class Connection: public QObject
 
 		void sendMetaRequest(Word type);
 		void sendMetaRequest(Word type, Buffer& data);
-	private:
-		/* SNAC(xx,01) */
-		void handle_error(SnacBuffer& snac);
-	private slots:
-		void connectToServer(const QHostInfo& host);
-		void incomingData();
-		void sendKeepAlive();
-
-		void slot_connected();
-		void slot_disconnected();
-		void slot_lookupFailed();
-		void slot_connectionTimeout();
-
-		void slot_signedOn();
-		void slot_signedOff();
 	private:
 		class Private;
 		Private *d;

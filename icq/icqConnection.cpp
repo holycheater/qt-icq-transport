@@ -19,117 +19,24 @@
  */
 
 #include "icqConnection.h"
+#include "icqConnection_p.h"
 
-#include "managers/icqLoginManager.h"
-#include "managers/icqRateManager.h"
-#include "managers/icqSsiManager.h"
-#include "managers/icqMessageManager.h"
-#include "managers/icqMetaInfoManager.h"
-#include "managers/icqUserInfoManager.h"
+#include "types/icqFlapBuffer.h"
+#include "types/icqSnacBuffer.h"
 
 #include <QTcpSocket>
 #include <QTimer>
 #include <QtDebug>
 
-namespace ICQ {
+namespace ICQ
+{
+
 
 /**
  * @class Connection
  * @brief This class manages connection to the ICQ server.
  * @details Details here.
  */
-
-
-class Connection::Private
-{
-	public:
-		Private(Connection* parent);
-		~Private();
-
-		Word flapSequence();
-		Word snacRequest() { return ++m_snacRequest; };
-
-		int connectionStatus() const { return m_connectionStatus; }
-		void setConnectionStatus(int status);
-
-		LoginManager 	*loginManager;
-		RateManager 	*rateManager;
-		SSIManager 		*ssiManager;
-		UserInfoManager *userInfoManager;
-		MessageManager 	*msgManager;
-		MetaInfoManager *metaManager;
-
-		QString uin;
-		QString password;
-		QString server;
-		quint16 port;
-
-		QTcpSocket *socket;
-
-		Word onlineStatus;
-
-		int lookupId;
-
-		QTimer *connectTimer;
-		QTimer *keepAliveTimer;
-		QTimer *lookupTimer;
-	private:
-		Connection *q;
-		Word m_snacRequest;
-		Word m_flapSequence;
-		int m_connectionStatus;
-};
-
-Connection::Private::Private(Connection* parent)
-{
-	m_connectionStatus = Connection::Disconnected;
-
-	rateManager = new RateManager(parent);
-	ssiManager = new SSIManager(parent);
-
-	socket = new QTcpSocket(parent);
-
-	onlineStatus = Online;
-
-	m_flapSequence = 0;
-	m_snacRequest = 0;
-	q = parent;
-
-	QObject::connect( socket, SIGNAL( readyRead() ), q, SLOT( incomingData() ) );
-	QObject::connect( q, SIGNAL( readyRead() ), q, SLOT( incomingData() ) );
-	QObject::connect( q, SIGNAL( signedOff() ), q, SLOT( slot_signedOff() ) );
-
-	QObject::connect( socket, SIGNAL( connected() ), q, SLOT( slot_connected() ) );
-	QObject::connect( socket, SIGNAL( disconnected() ), q, SLOT( slot_disconnected() ) );
-}
-
-Connection::Private::~Private()
-{
-	delete rateManager;
-	delete ssiManager;
-	delete socket;
-}
-
-Word Connection::Private::flapSequence()
-{
-	if ( m_flapSequence >= 0x8000 ) {
-		m_flapSequence = 0;
-	}
-	return ++m_flapSequence;
-}
-
-void Connection::Private::setConnectionStatus(int status)
-{
-	if ( m_connectionStatus == status ) {
-		return;
-	}
-
-	if ( m_connectionStatus == Connection::Connecting ) {
-		loginManager->deleteLater(); // so, login manager is deleted if we go offline or online.
-	}
-
-	m_connectionStatus = status;
-}
 
 /**
  * Constructs ICQ connection object.
@@ -168,6 +75,15 @@ Connection::Connection(const QString& uin, const QString& password, const QStrin
 Connection::~Connection()
 {
 	delete d;
+}
+
+void Connection::contactAdd(const QString& uin)
+{
+	/*TODO*/
+}
+void Connection::contactDel(const QString& uin)
+{
+	/*TODO*/
 }
 
 /**
@@ -228,24 +144,6 @@ void Connection::connectToHost(const QString& hostname, quint16 port)
 void Connection::connectToHost(const QHostAddress& host, quint16 port)
 {
 	d->socket->connectToHost(host, port);
-}
-
-/**
- * Starts connecting to server by given DNS lookup result. Throws an error if dns lookup fails.
- * @param host			DNS lookup result
- */
-void Connection::connectToServer(const QHostInfo& host)
-{
-	if ( host.error() != QHostInfo::NoError ) {
-		qCritical() << "[ICQ::Connection] Lookup failed:" << host.errorString();
-		return;
-	}
-	QHostAddress address = host.addresses().value(0);
-	qDebug() << "[ICQ::Connection] Found address:" << address.toString();
-	d->socket->connectToHost(address, d->port);
-
-	d->lookupTimer->stop();
-	delete d->lookupTimer;
 }
 
 /**
@@ -503,173 +401,6 @@ void Connection::sendMetaRequest(Word type)
 void Connection::sendMetaRequest(Word type, Buffer& data)
 {
 	d->metaManager->sendMetaRequest(type, data);
-}
-
-/* << SNAC(xx,01) - error handling */
-void Connection::handle_error(SnacBuffer& snac)
-{
-	QString errmsg = "errCode " + QString::number(snac.getWord(), 16);
-	TlvChain tlvs = snac.readAll();
-	if ( tlvs.hasTlv(0x08) ) {
-		errmsg += " subcode" + tlvs.getTlvData(0x08).toHex();
-	}
-	qDebug() << "[ICQ::Connection] ERROR!!" << "family" << snac.family() << errmsg;
-}
-
-void Connection::incomingData()
-{
-	if ( d->socket->bytesAvailable() < FLAP_HEADER_SIZE ) {
-		qDebug() << "[ICQ::Connection] Not enough data for a header in the socket";
-		return; // we don't have a header at this point
-	}
-
-	FlapBuffer flap = FlapBuffer::fromRawData( d->socket->peek(FLAP_HEADER_SIZE) );
-
-	if (flap.flapDataSize() > (d->socket->bytesAvailable() - FLAP_HEADER_SIZE) ) {
-		qDebug() << "[ICQ::Connection] Not enough data for a packet" << flap.flapDataSize() << d->socket->bytesAvailable();
-		return; // we don't need an incomplete packet
-	}
-
-	d->socket->seek(FLAP_HEADER_SIZE);
-
-	flap.setData( d->socket->read( flap.flapDataSize() ) );
-/*
-	qDebug()
-		<< "[ICQ::Connection] << flap"
-		<< "channel" << flap.channel()
-		<< "sequence" << QByteArray::number(flap.sequence(), 16)
-		<< "size" << flap.size();
-	qDebug() << "[ICQ::Connection] << flap data" << flap.data().remove(0, FLAP_HEADER_SIZE).toHex();*/
-
-	if ( flap.channel() == FlapBuffer::CloseChannel ) {
-		d->socket->disconnectFromHost();
-	}
-
-	if ( flap.channel() == FlapBuffer::KeepAliveChannel ) {
-		qDebug() << "[ICQ::Connection] Keep-alive received";
-	}
-	if ( connectionStatus() == Connected) {
-		d->keepAliveTimer->stop();
-		d->keepAliveTimer->start();
-	}
-
-	/* now we emit an incoming flap signal, which will be catched by various
-	 * services (login manager, rate manager, etc) */
-	emit incomingFlap(flap);
-
-	if ( flap.channel() == FlapBuffer::DataChannel && flap.pos() == 0 ) { // pos == 0 means that flap wasn't touched by flap handlers.
-		SnacBuffer snac = flap;
-
-		qDebug()
-			<< "[ICQ::Connection] << snac head: family" << QByteArray::number(snac.family(), 16)
-			<< "subtype" << QByteArray::number(snac.subtype(), 16)
-			<< "flags" << QByteArray::number(snac.flags(), 16)
-			<< "requestid" << QByteArray::number(snac.requestId(), 16)
-			<< "len" << snac.size();
-
-		if ( snac.flags() & 0x8000 ) {
-			Word unknownSize = snac.getWord();
-			snac.seek(sizeof(Word)+unknownSize);
-		}
-
-		// read out motd
-		if ( snac.family() == sfGeneric && snac.subtype() == 0x13 ) {
-			snac.seekEnd();
-		}
-
-		/* ignore SNAC(01,21) */
-		if ( snac.family() == 0x01 && snac.subtype() == 0x21 ) {
-			snac.seekEnd();
-		}
-
-		if ( snac.subtype() == 0x01 ) {
-			handle_error(snac);
-		}
-
-		emit incomingSnac(snac);
-
-		if ( (snac.pos() + 1) < snac.dataSize() ) {
-			qDebug() << "[ICQ::Connection]" << (snac.pos() + 1) << snac.dataSize() << "unhandled snac" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
-		}
-	}
-
-	if ( d->socket->bytesAvailable() > 0 ) {
-		emit readyRead();
-	}
-}
-
-void Connection::sendKeepAlive()
-{
-	qDebug() << "[ICQ::Connection] Keep-alive sent";
-	write ( FlapBuffer(FlapBuffer::KeepAliveChannel) );
-}
-
-void Connection::slot_disconnected()
-{
-	d->socket->close();
-	qDebug() << "[ICQ::Connection] Disconnected";
-
-	if ( connectionStatus() == Connected ) {
-		d->setConnectionStatus(Disconnected);
-		emit signedOff();
-	}
-}
-
-void Connection::slot_connected()
-{
-	qDebug() << "[ICQ::Connection] Connected to" << d->socket->peerName() << "port" << d->socket->peerPort();
-}
-
-void Connection::slot_lookupFailed()
-{
-	QHostInfo::abortHostLookup(d->lookupId);
-	d->lookupTimer->deleteLater();
-	d->setConnectionStatus(Disconnected);
-
-	qDebug() << "[Error] Host lookup timeout";
-
-	emit statusChanged(Offline);
-}
-
-void Connection::slot_connectionTimeout()
-{
-	qWarning() << "[error]" << "connection timed out";
-	d->connectTimer->deleteLater();
-	d->socket->disconnectFromHost();
-	d->setConnectionStatus(Disconnected);
-
-	emit statusChanged(Offline);
-}
-
-void Connection::slot_signedOn()
-{
-	delete d->connectTimer;
-
-	d->keepAliveTimer = new QTimer(this);
-	d->keepAliveTimer->setInterval(KEEP_ALIVE_INTERVAL);
-
-	QObject::connect( d->keepAliveTimer, SIGNAL( timeout() ), this, SLOT( sendKeepAlive() ) );
-	d->keepAliveTimer->start();
-
-	d->userInfoManager = new UserInfoManager(this);
-	d->msgManager = new MessageManager(this);
-	d->metaManager = new MetaInfoManager(this);
-	QObject::connect(d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->msgManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );
-
-	d->msgManager->requestOfflineMessages();
-
-	d->setConnectionStatus(Connected);
-	setOnlineStatus(d->onlineStatus);
-}
-
-void Connection::slot_signedOff()
-{
-	delete d->keepAliveTimer;
-	emit statusChanged(Offline);
-
-	delete d->userInfoManager;
-	delete d->msgManager;
-	delete d->metaManager;
 }
 
 /**

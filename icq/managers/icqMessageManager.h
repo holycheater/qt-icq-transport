@@ -22,7 +22,7 @@
 #define ICQMESSAGEMANAGER_H_
 
 #include "icqConnection.h"
-#include "icqMessage.h"
+#include "types/icqMessage.h"
 
 #include <QObject>
 

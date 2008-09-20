@@ -22,7 +22,7 @@
 #define SSIMANAGER_H_
 
 #include "icqConnection.h"
-#include "icqSnacBuffer.h"
+#include "types/icqSnacBuffer.h"
 
 #include <QObject>
 #include <QString>

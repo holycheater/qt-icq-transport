@@ -21,7 +21,7 @@
 #include "icqLoginManager.h"
 #include "icqRateManager.h"
 #include "icqSsiManager.h"
-#include "icqTlv.h"
+#include "types/icqTlv.h"
 
 #include <QCryptographicHash>
 #include <QString>

@@ -20,12 +20,12 @@
 
 #include "icqConnection.h"
 
-#include "icqLoginManager.h"
-#include "icqRateManager.h"
-#include "icqSsiManager.h"
-#include "icqMessageManager.h"
-#include "icqMetaInfoManager.h"
-#include "icqUserInfoManager.h"
+#include "managers/icqLoginManager.h"
+#include "managers/icqRateManager.h"
+#include "managers/icqSsiManager.h"
+#include "managers/icqMessageManager.h"
+#include "managers/icqMetaInfoManager.h"
+#include "managers/icqUserInfoManager.h"
 
 #include <QTcpSocket>
 #include <QTimer>

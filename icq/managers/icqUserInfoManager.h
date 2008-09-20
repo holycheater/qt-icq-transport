@@ -22,8 +22,8 @@
 #define ICQUSERINFOMANAGER_H_
 
 #include "icqConnection.h"
-#include "icqSnacBuffer.h"
-#include "icqUserInfo.h"
+#include "types/icqSnacBuffer.h"
+#include "types/icqUserInfo.h"
 
 #include <QObject>
 #include <QString>

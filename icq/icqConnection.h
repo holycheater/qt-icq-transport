@@ -21,9 +21,9 @@
 #ifndef ICQPROTOCOL_H_
 #define ICQPROTOCOL_H_
 
-#include "icqTypes.h"
-#include "icqFlapBuffer.h"
-#include "icqSnacBuffer.h"
+#include "types/icqTypes.h"
+#include "types/icqFlapBuffer.h"
+#include "types/icqSnacBuffer.h"
 
 #include <QByteArray>
 #include <QHostInfo>

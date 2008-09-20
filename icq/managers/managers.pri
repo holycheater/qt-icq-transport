@@ -1,16 +1,15 @@
-INCLUDEPATH += $$PWD
-DEPENDPATH += $$PWD
+HEADERS += \
+	$$PWD/icqLoginManager.h \
+	$$PWD/icqMessageManager.h \
+	$$PWD/icqMetaInfoManager.h \
+	$$PWD/icqRateManager.h \
+	$$PWD/icqSsiManager.h \
+	$$PWD/icqUserInfoManager.h
 
-HEADERS += icqLoginManager.h \
-	icqMessageManager.h \
-	icqMetaInfoManager.h \
-	icqRateManager.h \
-	icqSsiManager.h \
-	icqUserInfoManager.h
-
-SOURCES += icqLoginManager.cpp \
-	icqMessageManager.cpp \
-	icqMetaInfoManager.cpp \
-	icqRateManager.cpp \
-	icqSsiManager.cpp \
-	icqUserInfoManager.cpp
+SOURCES += \
+	$$PWD/icqLoginManager.cpp \
+	$$PWD/icqMessageManager.cpp \
+	$$PWD/icqMetaInfoManager.cpp \
+	$$PWD/icqRateManager.cpp \
+	$$PWD/icqSsiManager.cpp \
+	$$PWD/icqUserInfoManager.cpp

@@ -1,25 +1,24 @@
-INCLUDEPATH += $$PWD
-DEPENDPATH += $$PWD
+HEADERS += \
+	$$PWD/icqBuffer.h \
+	$$PWD/icqContact.h \
+	$$PWD/icqFlapBuffer.h \
+	$$PWD/icqGuid.h \
+	$$PWD/icqMessage.h \
+	$$PWD/icqRateClass.h \
+	$$PWD/icqSnacBuffer.h \
+	$$PWD/icqTlvChain.h \
+	$$PWD/icqTlv.h \
+	$$PWD/icqTypes.h \
+	$$PWD/icqUserInfo.h
 
-HEADERS += icqBuffer.h \
-	icqContact.h \
-	icqFlapBuffer.h \
-	icqGuid.h \
-	icqMessage.h \
-	icqRateClass.h \
-	icqSnacBuffer.h \
-	icqTlvChain.h \
-	icqTlv.h \
-	icqTypes.h \
-	icqUserInfo.h
-
-SOURCES += icqBuffer.cpp \
-	icqContact.cpp \
-	icqFlapBuffer.cpp \
-	icqGuid.cpp \
-	icqMessage.cpp \
-	icqRateClass.cpp \
-	icqSnacBuffer.cpp \
-	icqTlvChain.cpp \
-	icqTlv.cpp \
-	icqUserInfo.cpp
+SOURCES += \
+	$$PWD/icqBuffer.cpp \
+	$$PWD/icqContact.cpp \
+	$$PWD/icqFlapBuffer.cpp \
+	$$PWD/icqGuid.cpp \
+	$$PWD/icqMessage.cpp \
+	$$PWD/icqRateClass.cpp \
+	$$PWD/icqSnacBuffer.cpp \
+	$$PWD/icqTlvChain.cpp \
+	$$PWD/icqTlv.cpp \
+	$$PWD/icqUserInfo.cpp

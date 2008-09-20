@@ -19,8 +19,8 @@
  */
 
 #include "icqSsiManager.h"
-#include "icqTlvChain.h"
-#include "icqContact.h"
+#include "types/icqTlvChain.h"
+#include "types/icqContact.h"
 
 #include <QByteArray>
 #include <QDateTime>

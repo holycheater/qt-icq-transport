@@ -21,10 +21,11 @@
 #ifndef ICQRATEMANAGER_H_
 #define ICQRATEMANAGER_H_
 
-#include "icqTypes.h"
 #include "icqConnection.h"
-#include "icqRateClass.h"
-#include "icqSnacBuffer.h"
+
+#include "types/icqTypes.h"
+#include "types/icqRateClass.h"
+#include "types/icqSnacBuffer.h"
 
 #include <QList>
 #include <QByteArray>

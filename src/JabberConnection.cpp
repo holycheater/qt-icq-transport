@@ -24,11 +24,15 @@
 #include "xmpp-core/IQ.h"
 #include "xmpp-core/Connector.h"
 #include "xmpp-core/Jid.h"
+
 #include "xmpp-ext/ServiceDiscovery.h"
 #include "xmpp-ext/Registration.h"
+#include "xmpp-ext/vCard.h"
 
 #include <QCoreApplication>
 #include <QStringList>
+#include <QUrl>
+
 #include <QtDebug>
 
 #define NS_QUERY_ADHOC "http://jabber.org/protocol/commands"
@@ -41,6 +45,7 @@ class JabberConnection::Private {
 		Connector* connector;
 		ComponentStream* stream;
 		Jid jid;
+		vCard vcard;
 		DiscoInfo disco;
 		QString secret;
 };
@@ -54,7 +59,11 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->stream = new ComponentStream(d->connector);
 
 	d->disco << DiscoInfo::Identity("gateway", "icq", "ICQ Transport");
-	d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC;
+	d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP;
+
+	d->vcard.setFullName("ICQ Transport");
+	d->vcard.setDescription("Qt ICQ Transport");
+	d->vcard.setUrl( QUrl("http://github.com/holycheater") );
 
 	QObject::connect(d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
 	QObject::connect(d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
@@ -177,7 +186,7 @@ void JabberConnection::process_register_form(const Registration& iq)
 
 void JabberConnection::stream_iq(const IQ& iq)
 {
-	if ( iq.childElement().nodeName() == "query" && iq.type() == "get" ) {
+	if ( iq.childElement().tagName() == "query" && iq.type() == "get" ) {
 		if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_INFO ) {
 			process_discoinfo(iq);
 			return;
@@ -191,7 +200,33 @@ void JabberConnection::stream_iq(const IQ& iq)
 			return;
 		}
 	}
-	if ( iq.childElement().nodeName() == "query" && iq.type() == "set" ) {
+	if ( iq.childElement().tagName() == "vCard" && iq.type() == "get" ) {
+		if ( iq.childElement().namespaceURI() != NS_VCARD_TEMP ) {
+			IQ reply(iq);
+			reply.swapFromTo();
+			reply.setError(Stanza::Error::BadRequest);
+
+			d->stream->sendStanza(reply);
+			return;
+		}
+		if ( d->vcard.isEmpty() ) {
+			IQ reply(iq);
+			reply.swapFromTo();
+			reply.setError(Stanza::Error::ItemNotFound);
+
+			d->stream->sendStanza(reply);
+			return;
+		}
+
+		IQ reply(iq);
+		reply.swapFromTo();
+		reply.setType(IQ::Result);
+		d->vcard.toIQ(reply);
+
+		d->stream->sendStanza(reply);
+		return;
+	}
+	if ( iq.childElement().tagName() == "query" && iq.type() == "set" ) {
 		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
 			process_register_form(iq);
 			return;

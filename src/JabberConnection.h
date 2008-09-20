@@ -38,6 +38,7 @@ class JabberConnection : public QObject
 	typedef XMPP::Message Message;
 	typedef XMPP::Presence Presence;
 	typedef XMPP::ComponentStream ComponentStream;
+	typedef XMPP::Registration Registration;
 
 	public:
 		JabberConnection(QObject *parent = 0);
@@ -55,7 +56,7 @@ class JabberConnection : public QObject
 		void process_discoinfo(const IQ& iq);
 		void process_discoitems(const IQ& iq);
 		void process_register_request(const IQ& iq);
-		void process_register_form(const XMPP::Registration& iq);
+		void process_register_form(const Registration& iq);
 	private slots:
 		void stream_error(const ComponentStream::Error&);
 		void stream_connected();

@@ -573,7 +573,7 @@ bool Jid::operator!=(const Jid& other) const
 	return !(*this == other);
 }
 
-Jid::operator QString()
+Jid::operator QString() const
 {
 	return full();
 }

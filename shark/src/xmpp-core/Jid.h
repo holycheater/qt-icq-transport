@@ -66,7 +66,7 @@ class Jid
 		bool operator==(const Jid& other) const;
 		bool operator!=(const Jid& other) const;
 
-		operator QString();
+		operator QString() const;
 	private:
 		class Private;
 		QSharedDataPointer<Private> d;

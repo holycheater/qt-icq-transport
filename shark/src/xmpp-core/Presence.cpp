@@ -99,6 +99,11 @@ QString Presence::status() const
 	return doc()->documentElement().firstChildElement("show").text();
 }
 
+Presence::Type Presence::type() const
+{
+	return stringToType( doc()->documentElement().attribute("type") );
+}
+
 /**
  * Sets presence priority to @a priority. Valid range is from -128 to 128
  */
@@ -191,6 +196,35 @@ QString Presence::typeToString(Type type)
 			return QString();
 			break;
 	}
+}
+
+Presence::Type Presence::stringToType(const QString& type)
+{
+	if ( type.isEmpty() ) {
+		return Available;
+	}
+	if (type == "unavailable") {
+		return Unavailable;
+	}
+	if (type == "subscribe") {
+		return Subscribe;
+	}
+	if (type == "subscribed") {
+		return Subscribed;
+	}
+	if (type == "unsubscribe") {
+		return Unsubscribe;
+	}
+	if (type == "unsubscribed") {
+		return Unsubscribed;
+	}
+	if (type == "probe") {
+		return Probe;
+	}
+	if (type == "error") {
+		return Error;
+	}
+	return Error;
 }
 
 /**

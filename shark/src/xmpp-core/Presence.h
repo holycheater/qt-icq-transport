@@ -29,7 +29,7 @@ namespace XMPP {
 class Presence : public Stanza
 {
 	public:
-		enum Type { Unavailable, Subscribe, Subscribed, Unsubscribe, Unsubscribed, Probe, Error };
+		enum Type { Available, Unavailable, Subscribe, Subscribed, Unsubscribe, Unsubscribed, Probe, Error };
 		enum Show { Chat, Away, NotAvailable, DoNotDisturb };
 
 		Presence();
@@ -41,6 +41,7 @@ class Presence : public Stanza
 		int priority() const;
 		QString show() const;
 		QString status() const;
+		Type type() const;
 
 		void setPriority(int priority);
 		void setShow(Show showState);
@@ -49,6 +50,7 @@ class Presence : public Stanza
 		void setType(Type type);
 	private:
 		static QString typeToString(Type type);
+		static Type stringToType(const QString& type);
 };
 
 }

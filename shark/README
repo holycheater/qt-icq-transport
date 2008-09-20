@@ -12,6 +12,7 @@ Description
   Shark is an XMPP Library which borrowed some code from Iris.
   Features implemented:
   - XEP-0030 (Feature Discovery)
+  - XEP-0054 (vcard-temp)
   - XEP-0077 (In-Band Registration)
   - XEP-0114 (Jabber Component Protocol)
 

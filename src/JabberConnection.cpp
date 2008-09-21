@@ -20,10 +20,11 @@
 
 #include "JabberConnection.h"
 
-#include "xmpp-core/Message.h"
-#include "xmpp-core/IQ.h"
 #include "xmpp-core/Connector.h"
+#include "xmpp-core/IQ.h"
 #include "xmpp-core/Jid.h"
+#include "xmpp-core/Message.h"
+#include "xmpp-core/Presence.h"
 
 #include "xmpp-ext/ServiceDiscovery.h"
 #include "xmpp-ext/Registration.h"
@@ -98,6 +99,42 @@ void JabberConnection::setPassword(const QString& password)
 	d->secret = password;
 }
 
+void JabberConnection::sendSubscribe(const Jid& user, const QString& uin)
+{
+	Presence subscribe;
+
+	subscribe.setType(Presence::Subscribe);
+	subscribe.setFrom(user);
+	subscribe.setTo( d->jid.withNode(uin) );
+}
+
+void JabberConnection::sendSubscribed(const Jid& user, const QString& uin)
+{
+	Presence subscribed;
+
+	subscribed.setType(Presence::Subscribed);
+	subscribed.setFrom(user);
+	subscribed.setTo( d->jid.withNode(uin) );
+}
+
+void JabberConnection::sendUnsubscribe(const Jid& user, const QString& uin)
+{
+	Presence unsubscribe;
+
+	unsubscribe.setType(Presence::Unsubscribe);
+	unsubscribe.setFrom(user);
+	unsubscribe.setTo( d->jid.withNode(uin) );
+}
+
+void JabberConnection::sendUnsubscribed(const Jid& user, const QString& uin)
+{
+	Presence unsubscribed;
+
+	unsubscribed.setType(Presence::Unsubscribed);
+	unsubscribed.setFrom(user);
+	unsubscribed.setTo( d->jid.withNode(uin) );
+}
+
 void JabberConnection::process_discoinfo(const IQ& iq)
 {
 	qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
@@ -163,6 +200,22 @@ void JabberConnection::process_register_form(const Registration& iq)
 		reply.clearChild();
 		reply.setType(IQ::Result);
 		d->stream->sendStanza(reply);
+
+		Presence removeSubscription;
+		removeSubscription.setTo( iq.from().bare() );
+		removeSubscription.setType(Presence::Unsubscribe);
+		d->stream->sendStanza(removeSubscription);
+
+		Presence removeAuth;
+		removeAuth.setTo( iq.from().bare() );
+		removeAuth.setType(Presence::Unsubscribed);
+		d->stream->sendStanza(removeAuth);
+
+		Presence logout;
+		logout.setTo( iq.from().bare() );
+		logout.setType(Presence::Unavailable);
+		d->stream->sendStanza(logout);
+
 		/* send unregister signal, slot should remove the user from the database */
 		emit userUnregistered( iq.from().bare() );
 		return;
@@ -181,6 +234,14 @@ void JabberConnection::process_register_form(const Registration& iq)
 	reply.clearChild();
 	reply.setType(IQ::Result);
 	d->stream->sendStanza(reply);
+
+	/* subscribe for user presence */
+	Presence presence;
+	presence.setFrom(d->jid);
+	presence.setTo( iq.from().bare() );
+	presence.setType(Presence::Subscribe);
+	d->stream->sendStanza(presence);
+
 	emit userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
 }
 
@@ -241,15 +302,42 @@ void JabberConnection::stream_message(const Message& msg)
 
 void JabberConnection::stream_presence(const Presence& presence)
 {
+	/* approve subscription to gateway */
+	if (presence.type() == Presence::Subscribe && presence.to() == d->jid) {
+		Presence approve;
+		approve.setType(Presence::Subscribed);
+		approve.setTo( presence.from() );
+		approve.setFrom(d->jid);
+
+		d->stream->sendStanza(approve);
+		return;
+	}
+	if ( presence.type() == Presence::Subscribe && presence.to().domain() == d->jid.domain() && !presence.to().node().isEmpty() ) {
+		emit userAdd(presence.from(), presence.to().node() );
+	}
+	if ( presence.type() == Presence::Unsubscribe && presence.to().domain() == d->jid.domain() && !presence.to().node().isEmpty() ) {
+		emit userDel(presence.from(), presence.to().node() );
+	}
+
+	if ( presence.type() == Presence::Available ) {
+		qDebug() << "[JC] User Online:" << presence.from();
+		emit userOnline( presence.from() );
+		return;
+	}
+	if ( presence.type() == Presence::Unavailable ) {
+		qDebug() << "[JC] User Offline:" << presence.from();
+		emit userOffline( presence.from() );
+		return;
+	}
 }
 
 void JabberConnection::stream_connected()
 {
-	qDebug() << "signed on";
+	qDebug() << "[JC] Component signed on";
 }
 
 void JabberConnection::stream_error(const ComponentStream::Error& err)
 {
-	qDebug() << "Stream error! Condition:" << err.conditionString();
+	qDebug() << "[JC] Stream error! Condition:" << err.conditionString();
 	qApp->quit();
 }

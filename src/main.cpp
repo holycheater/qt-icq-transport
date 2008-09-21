@@ -19,9 +19,11 @@
  */
 
 #include "JabberConnection.h"
+#include "GatewayTask.h"
 
 #include <QCoreApplication>
 #include <QtCrypto>
+#include <QtSql>
 #include <QtDebug>
 
 int main(int argc, char **argv)
@@ -30,11 +32,23 @@ int main(int argc, char **argv)
 
 	QCoreApplication app(argc, argv);
 
+	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+	db.setDatabaseName(":memory:");
+
+	GatewayTask gw;
+	gw.setDatabaseLink(db);
+
 	// TODO: Read username/secret/server from config-file
 	JabberConnection conn;
 	conn.setUsername("icq.dragonfly");
 	conn.setServer("192.168.10.10", 5555);
 	conn.setPassword("jaba");
+
+	QObject::connect(&conn, SIGNAL( userRegistered(QString,QString,QString) ), &gw, SLOT( processRegister(QString,QString,QString) ) );
+	QObject::connect(&conn, SIGNAL( userUnregistered(QString) ), &gw, SLOT( processUnregister(QString) ) );
+	QObject::connect(&conn, SIGNAL( userOnline(Jid) ), &gw, SLOT( processLogin(Jid) ) );
+	QObject::connect(&conn, SIGNAL( userOffline(Jid) ), &gw, SLOT( processLogout(Jid) ) );
+
 	conn.login();
 
 	return app.exec();

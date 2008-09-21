@@ -23,21 +23,37 @@
 
 #include <QObject>
 
+namespace XMPP {
+	class Jid;
+}
+
+class QSqlDatabase;
+
 class GatewayTask : public QObject
 {
 	Q_OBJECT
 
+	typedef XMPP::Jid Jid;
+
 	public:
-		GatewayTask();
-		~GatewayTask();
+		GatewayTask(QObject *parent = 0);
+		virtual ~GatewayTask();
+
+		void setDatabaseLink(const QSqlDatabase& sql);
 	public slots:
-		void processRegister();
-		void processUnregister();
-		void processLogin();
-		void processLogout();
-		void processContactAdd();
-		void processContactDel();
+		void processRegister(const QString& user, const QString& uin, const QString& password);
+		void processUnregister(const QString& user);
+		void processLogin(const Jid& user);
+		void processLogout(const Jid& user);
+		void processContactAdd(const Jid& user, const QString& uin);
+		void processContactDel(const Jid& user, const QString& uin);
 		void processSendMessage();
+	signals:
+		void contactAdded(const Jid& user, const QString& uin);
+		void contactDeleted(const Jid& user, const QString& uin);
+	private:
+		class Private;
+		Private *d;
 };
 
 #endif /* GATEWAYTASK_H_ */

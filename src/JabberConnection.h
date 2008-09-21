@@ -26,6 +26,7 @@
 #include "ComponentStream.h"
 
 namespace XMPP {
+	class Jid;
 	class Registration;
 }
 
@@ -39,6 +40,7 @@ class JabberConnection : public QObject
 	typedef XMPP::Presence Presence;
 	typedef XMPP::ComponentStream ComponentStream;
 	typedef XMPP::Registration Registration;
+	typedef XMPP::Jid Jid;
 
 	public:
 		JabberConnection(QObject *parent = 0);
@@ -49,9 +51,20 @@ class JabberConnection : public QObject
 		void setUsername(const QString& username);
 		void setServer(const QString& host, quint16 port);
 		void setPassword(const QString& password);
+	public slots:
+		void sendSubscribe(const Jid& user, const QString& node);
+		void sendSubscribed(const Jid& user, const QString& node);
+		void sendUnsubscribe(const Jid& user, const QString& node);
+		void sendUnsubscribed(const Jid& user, const QString& node);
+
+		// void sendMessage(const Jid& from, const Jid& to, const QString& message);
 	signals:
 		void userUnregistered(const QString& jid);
 		void userRegistered(const QString& jid, const QString& uin, const QString& password);
+		void userOnline(const Jid& jid);
+		void userOffline(const Jid& jid);
+		void userAdd(const Jid& jid, const QString& uin);
+		void userDel(const Jid& jid, const QString& uin);
 	private:
 		void process_discoinfo(const IQ& iq);
 		void process_discoitems(const IQ& iq);

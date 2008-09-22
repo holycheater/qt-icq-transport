@@ -10,14 +10,17 @@
 #include "managers/icqMessageManager.h"
 #include "managers/icqMetaInfoManager.h"
 
+#include <QObject>
 #include <QTcpSocket>
 #include <QTimer>
 
 namespace ICQ {
 
 
-class Connection::Private
+class Connection::Private : public QObject
 {
+	Q_OBJECT
+
 	public:
 		Private(Connection* parent);
 		~Private();

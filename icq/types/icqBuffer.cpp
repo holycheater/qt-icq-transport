@@ -22,100 +22,104 @@
 
 #include <QtEndian>
 
-ICQ::Buffer::Buffer()
+namespace ICQ
+{
+
+
+Buffer::Buffer()
 {
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::Buffer::Buffer(const QByteArray& data)
+Buffer::Buffer(const QByteArray& data)
 {
 	m_Buffer.setData(data);
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::Buffer::Buffer(const Buffer& buffer)
+Buffer::Buffer(const Buffer& buffer)
 {
 	m_Buffer.setData( buffer.m_Buffer.data() );
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::Buffer::~Buffer()
+Buffer::~Buffer()
 {
 	m_Buffer.close();
 }
 
-ICQ::Buffer& ICQ::Buffer::addByte(Byte data)
+Buffer& Buffer::addByte(Byte data)
 {
 	m_Buffer.write( (char*)&data, sizeof(Byte) );
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::addWord(Word data)
+Buffer& Buffer::addWord(Word data)
 {
 	data = qToBigEndian(data);
 	m_Buffer.write( (char*)&data, sizeof(Word) );
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::addDWord(DWord data)
+Buffer& Buffer::addDWord(DWord data)
 {
 	data = qToBigEndian(data);
 	m_Buffer.write( (char*)&data, sizeof(DWord) );
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::addLEWord(Word data)
+Buffer& Buffer::addLEWord(Word data)
 {
 	m_Buffer.write( (char*)&data, sizeof(Word) );
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::addLEDWord(DWord data)
+Buffer& Buffer::addLEDWord(DWord data)
 {
 	m_Buffer.write( (char*)&data, sizeof(DWord) );
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::addData(const Buffer& buffer)
+Buffer& Buffer::addData(const Buffer& buffer)
 {
 	m_Buffer.write( buffer.data() );
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::addData(const QByteArray& data)
+Buffer& Buffer::addData(const QByteArray& data)
 {
 	m_Buffer.write(data);
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::addData(const QString& data)
+Buffer& Buffer::addData(const QString& data)
 {
 	m_Buffer.write( data.toLocal8Bit() );
 
 	return *this;
 }
 
-bool ICQ::Buffer::atEnd() const
+bool Buffer::atEnd() const
 {
 	return m_Buffer.atEnd();
 }
 
-ICQ::Word ICQ::Buffer::bytesAvailable() const
+Word Buffer::bytesAvailable() const
 {
 	return m_Buffer.bytesAvailable();
 }
 
-void ICQ::Buffer::close()
+void Buffer::close()
 {
 	m_Buffer.close();
 }
 
-QByteArray ICQ::Buffer::data() const
+QByteArray Buffer::data() const
 {
 	return m_Buffer.data();
 }
 
-ICQ::Byte ICQ::Buffer::getByte()
+Byte Buffer::getByte()
 {
 	Byte data;
 	m_Buffer.read( (char *)&data, sizeof(Byte) );
@@ -123,12 +127,12 @@ ICQ::Byte ICQ::Buffer::getByte()
 	return data;
 }
 
-QByteArray ICQ::Buffer::getBlock(Word blockSize)
+QByteArray Buffer::getBlock(Word blockSize)
 {
 	return m_Buffer.read(blockSize);
 }
 
-ICQ::Word ICQ::Buffer::getWord()
+Word Buffer::getWord()
 {
 	Word data;
 	m_Buffer.read( (char *)&data, sizeof(Word) );
@@ -137,7 +141,7 @@ ICQ::Word ICQ::Buffer::getWord()
 	return data;
 }
 
-ICQ::DWord ICQ::Buffer::getDWord()
+DWord Buffer::getDWord()
 {
 	DWord data;
 	m_Buffer.read( (char *)&data, sizeof(DWord) );
@@ -146,7 +150,7 @@ ICQ::DWord ICQ::Buffer::getDWord()
 	return data;
 }
 
-ICQ::Word ICQ::Buffer::getLEWord()
+Word Buffer::getLEWord()
 {
 	Word data;
 	m_Buffer.read( (char *)&data, sizeof(Word) );
@@ -154,7 +158,7 @@ ICQ::Word ICQ::Buffer::getLEWord()
 	return data;
 }
 
-ICQ::DWord ICQ::Buffer::getLEDWord()
+DWord Buffer::getLEDWord()
 {
 	DWord data;
 	m_Buffer.read( (char *)&data, sizeof(DWord) );
@@ -162,7 +166,7 @@ ICQ::DWord ICQ::Buffer::getLEDWord()
 	return data;
 }
 
-void ICQ::Buffer::open()
+void Buffer::open()
 {
 	if ( m_Buffer.isOpen() ) {
 		m_Buffer.close();
@@ -170,66 +174,69 @@ void ICQ::Buffer::open()
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::Word ICQ::Buffer::pos() const
+Word Buffer::pos() const
 {
 	return m_Buffer.pos();
 }
 
-QByteArray ICQ::Buffer::read(Word maxSize)
+QByteArray Buffer::read(Word maxSize)
 {
 	return m_Buffer.read(maxSize);
 }
 
-QByteArray ICQ::Buffer::readAll()
+QByteArray Buffer::readAll()
 {
 	return m_Buffer.readAll();
 }
 
-bool ICQ::Buffer::seek(Word pos)
+bool Buffer::seek(Word pos)
 {
 	return m_Buffer.seek(pos);
 }
 
-void ICQ::Buffer::seekEnd()
+void Buffer::seekEnd()
 {
 	m_Buffer.seek( m_Buffer.size() - 1 );
 }
 
-bool ICQ::Buffer::seekForward(Word count)
+bool Buffer::seekForward(Word count)
 {
 	return m_Buffer.seek( m_Buffer.pos() + count );
 }
 
-bool ICQ::Buffer::seekBackward(Word count)
+bool Buffer::seekBackward(Word count)
 {
 	return m_Buffer.seek( m_Buffer.pos() - count );
 }
 
-void ICQ::Buffer::setData(const QByteArray& data)
+void Buffer::setData(const QByteArray& data)
 {
 	m_Buffer.close();
 	m_Buffer.setData(data);
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::Word ICQ::Buffer::size() const
+Word Buffer::size() const
 {
 	return m_Buffer.size();
 }
 
-ICQ::Buffer::operator QByteArray() const
+Buffer::operator QByteArray() const
 {
 	return data();
 }
 
-ICQ::Buffer& ICQ::Buffer::operator=(const Buffer& other)
+Buffer& Buffer::operator=(const Buffer& other)
 {
 	setData( other.m_Buffer.data() );
 	return *this;
 }
 
-ICQ::Buffer& ICQ::Buffer::operator=(const QByteArray& data)
+Buffer& Buffer::operator=(const QByteArray& data)
 {
 	setData(data);
 	return *this;
 }
+
+
+} /* end of namespace ICQ */

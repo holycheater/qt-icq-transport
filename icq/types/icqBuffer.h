@@ -114,6 +114,7 @@ class Buffer
 		QBuffer m_Buffer;
 };
 
+
 }
 
 #endif /* ICQBUFFER_H_ */

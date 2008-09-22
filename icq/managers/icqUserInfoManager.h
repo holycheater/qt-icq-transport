@@ -50,7 +50,7 @@ class UserInfoManager : public QObject
 		void handle_user_online_notification(SnacBuffer& snac); // SNAC(03,0B)
 		void handle_user_offline_notification(SnacBuffer& snac); // SNAC(03,0C)
 	private slots:
-		void incomingSnac(ICQ::SnacBuffer& snac);
+		void incomingSnac(SnacBuffer& snac);
 	private:
 		class Private;
 		Private *d;

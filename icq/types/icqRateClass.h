@@ -83,7 +83,7 @@ class RateClass : public QObject
 		DWord currentLevel() const;
 		DWord maxLevel() const;
 	signals:
-		void dataReady(ICQ::SnacBuffer* packet);
+		void dataReady(SnacBuffer* packet);
 	private:
 		DWord calcNewLevel(int timeDiff) const;
 		void setupTimer();

@@ -30,7 +30,6 @@
 namespace ICQ
 {
 
-
 class Contact;
 
 class SSIManager: public QObject
@@ -57,11 +56,11 @@ class SSIManager: public QObject
 		DWord lastChangeTime() const;
 		void setLastChangeTime(DWord time);
 	signals:
-		void newGroup(ICQ::Contact* contact);
-		void newBuddy(ICQ::Contact *contact);
-		void newIgnore(ICQ::Contact *contact);
-		void newVisible(ICQ::Contact *contact);
-		void newInvisible(ICQ::Contact *contact);
+		void newGroup(Contact* contact);
+		void newBuddy(Contact *contact);
+		void newIgnore(Contact *contact);
+		void newVisible(Contact *contact);
+		void newInvisible(Contact *contact);
 	private:
 		void recv_ssi_parameters(SnacBuffer& snac); // 13,03
 		void recv_ssi_contact(SnacBuffer& snac); // 13,06
@@ -69,7 +68,7 @@ class SSIManager: public QObject
 
 		QList<Contact> listOfType(Word type) const;
 	private slots:
-		void incomingSnac(ICQ::SnacBuffer& snac);
+		void incomingSnac(SnacBuffer& snac);
 	private:
 		class Private;
 		Private *d;

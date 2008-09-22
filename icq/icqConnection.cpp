@@ -123,13 +123,13 @@ QString Connection::userId() const
  */
 void Connection::connectToHost(const QString& hostname, quint16 port)
 {
-	qDebug() << "[ICQ::Connection] Looking up hostname" << hostname;
+	qDebug() << "[ICQ:Connection] Looking up hostname" << hostname;
 
 	d->lookupId = QHostInfo::lookupHost(hostname, this, SLOT( connectToServer(QHostInfo) ) );
 
 	d->lookupTimer = new QTimer(this);
 	d->lookupTimer->setSingleShot(true);
-	QObject::connect( d->lookupTimer, SIGNAL( timeout() ), this, SLOT( slot_lookupFailed() ) );
+	QObject::connect( d->lookupTimer, SIGNAL( timeout() ), d, SLOT( slot_lookupFailed() ) );
 	d->lookupTimer->start(10000);
 
 	d->port = port;
@@ -291,7 +291,7 @@ void Connection::signOn(QString& uin, QString& password, QString& server)
 
 	d->connectTimer = new QTimer(this);
 	d->connectTimer->setSingleShot(true);
-	QObject::connect( d->connectTimer, SIGNAL( timeout() ), this, SLOT( slot_connectionTimeout() ) );
+	QObject::connect( d->connectTimer, SIGNAL( timeout() ), d, SLOT( slot_connectionTimeout() ) );
 
 	d->loginManager = new LoginManager(this);
 	d->loginManager->login(uin, password, server);
@@ -342,8 +342,8 @@ void Connection::writeForced(FlapBuffer* flap)
 {
 	flap->setSequence( d->flapSequence() );
 
-	// qDebug() << "[ICQ::Connection] >> flap channel" << flap->channel() << "len" << flap->size() << "sequence" << QByteArray::number(flap->sequence(), 16);
-	// qDebug() << "[ICQ::Connection] >> flap data" << flap->data().toHex().toUpper();
+	// qDebug() << "[ICQ:Connection] >> flap channel" << flap->channel() << "len" << flap->size() << "sequence" << QByteArray::number(flap->sequence(), 16);
+	// qDebug() << "[ICQ:Connection] >> flap data" << flap->data().toHex().toUpper();
 	d->socket->write( flap->data() );
 }
 
@@ -358,7 +358,7 @@ void Connection::writeForced(SnacBuffer* snac)
 
 	writeForced( dynamic_cast<FlapBuffer*>(snac) );
 
-	qDebug() << "[ICQ::Connection] >>"
+	qDebug() << "[ICQ:Connection] >>"
 		<< "snac head: family"
 		<< QByteArray::number(snac->family(),16)
 		<< "subtype" << QByteArray::number(snac->subtype(),16)
@@ -371,7 +371,7 @@ void Connection::writeForced(SnacBuffer* snac)
  */
 void Connection::signOff()
 {
-	qDebug() << "[ICQ::Connection] Signing off";
+	qDebug() << "[ICQ:Connection] Signing off";
 	write( FlapBuffer(FlapBuffer::CloseChannel) );
 
 	d->socket->disconnectFromHost();

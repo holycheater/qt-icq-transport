@@ -20,21 +20,25 @@
 
 #include "icqTlvChain.h"
 
-ICQ::TlvChain::TlvChain()
+namespace ICQ
+{
+
+
+TlvChain::TlvChain()
 {
 }
 
-ICQ::TlvChain::TlvChain(const Buffer& data)
+TlvChain::TlvChain(const Buffer& data)
 {
 	*this = data;
 }
 
-ICQ::TlvChain::TlvChain(const QByteArray& data)
+TlvChain::TlvChain(const QByteArray& data)
 {
 	*this = Buffer(data);
 }
 
-ICQ::TlvChain& ICQ::TlvChain::addTlv(const Tlv& tlv)
+TlvChain& TlvChain::addTlv(const Tlv& tlv)
 {
 	if ( m_tlvList.contains( tlv.type() ) ) {
 		m_tlvList.remove( tlv.type() );
@@ -43,7 +47,7 @@ ICQ::TlvChain& ICQ::TlvChain::addTlv(const Tlv& tlv)
 	return *this;
 }
 
-ICQ::TlvChain& ICQ::TlvChain::addTlv(Word type, const QByteArray& data)
+TlvChain& TlvChain::addTlv(Word type, const QByteArray& data)
 {
 	if ( m_tlvList.contains(type) ) {
 		m_tlvList.remove(type);
@@ -52,7 +56,7 @@ ICQ::TlvChain& ICQ::TlvChain::addTlv(Word type, const QByteArray& data)
 	return *this;
 }
 
-ICQ::Tlv& ICQ::TlvChain::addTlv(Word type)
+Tlv& TlvChain::addTlv(Word type)
 {
 	if ( m_tlvList.contains(type) ) {
 		m_tlvList.remove(type);
@@ -60,7 +64,7 @@ ICQ::Tlv& ICQ::TlvChain::addTlv(Word type)
 	return *(m_tlvList.insert( type, Tlv(type) ));
 }
 
-QByteArray ICQ::TlvChain::data() const
+QByteArray TlvChain::data() const
 {
 	QByteArray tlvChain;
 	QHash<Word, Tlv>::const_iterator it = m_tlvList.constBegin();
@@ -71,32 +75,32 @@ QByteArray ICQ::TlvChain::data() const
 	return tlvChain;
 }
 
-ICQ::Tlv ICQ::TlvChain::getTlv(Word type) const
+Tlv TlvChain::getTlv(Word type) const
 {
 	return m_tlvList.value(type);
 }
 
-QByteArray ICQ::TlvChain::getTlvData(Word type) const
+QByteArray TlvChain::getTlvData(Word type) const
 {
 	return getTlv(type).m_Buffer.data();
 }
 
-bool ICQ::TlvChain::hasTlv(Word type) const
+bool TlvChain::hasTlv(Word type) const
 {
 	return m_tlvList.contains(type);
 }
 
-const QHash<ICQ::Word, ICQ::Tlv>& ICQ::TlvChain::list() const
+const QHash<Word, Tlv>& TlvChain::list() const
 {
 	return m_tlvList;
 }
 
-void ICQ::TlvChain::removeTlv(Word type)
+void TlvChain::removeTlv(Word type)
 {
 	m_tlvList.remove(type);
 }
 
-ICQ::TlvChain& ICQ::TlvChain::operator=(const Buffer& buffer)
+TlvChain& TlvChain::operator=(const Buffer& buffer)
 {
 	Buffer tmpBuffer = buffer;
 	while ( tmpBuffer.bytesAvailable() > 0 ) {
@@ -108,25 +112,25 @@ ICQ::TlvChain& ICQ::TlvChain::operator=(const Buffer& buffer)
 	return *this;
 }
 
-ICQ::TlvChain& ICQ::TlvChain::operator=(const QByteArray& data)
+TlvChain& TlvChain::operator=(const QByteArray& data)
 {
-	operator=( ICQ::Buffer(data) );
+	operator=( Buffer(data) );
 	return *this;
 }
 
-ICQ::TlvChain& ICQ::TlvChain::operator<<(const Tlv& tlv)
+TlvChain& TlvChain::operator<<(const Tlv& tlv)
 {
 	addTlv(tlv);
 	return *this;
 }
 
-ICQ::TlvChain& ICQ::TlvChain::operator<<(const QByteArray& data)
+TlvChain& TlvChain::operator<<(const QByteArray& data)
 {
 	*this << Tlv(data);
 	return *this;
 }
 
-ICQ::TlvChain& ICQ::TlvChain::operator<<(const TlvChain& other)
+TlvChain& TlvChain::operator<<(const TlvChain& other)
 {
 	QHash<Word, Tlv>::const_iterator it = other.m_tlvList.constBegin(), itEnd = other.m_tlvList.constEnd();
 	while ( it != itEnd ) {
@@ -135,3 +139,6 @@ ICQ::TlvChain& ICQ::TlvChain::operator<<(const TlvChain& other)
 	}
 	return *this;
 }
+
+
+} /* end of namespace ICQ */

@@ -58,7 +58,7 @@ class RateManager: public QObject
 		void requestRates();
 	public slots:
 		/* this slot sends data to socket */
-		void dataAvailable(ICQ::SnacBuffer* snac);
+		void dataAvailable(SnacBuffer* snac);
 	private:
 		/* find rate class for the packet */
 		RateClass* findRateClass(const SnacBuffer* snac) const;
@@ -72,7 +72,7 @@ class RateManager: public QObject
 		/* snac (01,0a) handler */
 		void recv_rates_update(SnacBuffer& reply);
 	private slots:
-		void incomingSnac(ICQ::SnacBuffer& snac);
+		void incomingSnac(SnacBuffer& snac);
 	private:
 		class Private;
 		Private* d;

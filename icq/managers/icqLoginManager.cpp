@@ -116,7 +116,7 @@ void LoginManager::recv_auth_reply(SnacBuffer& reply)
 	reply.seekEnd();
 
 	if ( list.hasTlv(0x08) ) {
-		qCritical() << "[ICQ::LoginManager] Error during authentication:" << list.getTlvData(0x08).toHex();
+		qCritical() << "[LoginManager] Error during authentication:" << list.getTlvData(0x08).toHex();
 		d->link->signOff();
 		return;
 	}

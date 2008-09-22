@@ -22,7 +22,11 @@
 
 #include <QTextCodec>
 
-class ICQ::Message::Private : public QSharedData
+namespace ICQ
+{
+
+
+class Message::Private : public QSharedData
 {
 	public:
 		Private();
@@ -43,7 +47,7 @@ class ICQ::Message::Private : public QSharedData
 		Encoding encoding;
 };
 
-ICQ::Message::Private::Private()
+Message::Private::Private()
 	: QSharedData()
 {
 	channel = 0;
@@ -54,7 +58,7 @@ ICQ::Message::Private::Private()
 	encoding = UserDefined;
 }
 
-ICQ::Message::Private::Private(const Private& other)
+Message::Private::Private(const Private& other)
 	: QSharedData(other)
 {
 	channel = other.channel;
@@ -72,92 +76,92 @@ ICQ::Message::Private::Private(const Private& other)
 	encoding = other.encoding;
 }
 
-ICQ::Message::Message()
+Message::Message()
 {
 	d = new Private;
 }
 
-ICQ::Message::Message(const Message& other)
+Message::Message(const Message& other)
 	: d(other.d)
 {
 }
 
-ICQ::Message& ICQ::Message::operator=(const Message& other)
+Message& Message::operator=(const Message& other)
 {
 	d = other.d;
 	return *this;
 }
 
-ICQ::Message::~Message()
+Message::~Message()
 {
 }
 
-ICQ::Byte ICQ::Message::channel() const
+Byte Message::channel() const
 {
 	return d->channel;
 }
 
-void ICQ::Message::setChannel(Byte channel)
+void Message::setChannel(Byte channel)
 {
 	d->channel = channel;
 }
 
-ICQ::Byte ICQ::Message::flags() const
+Byte Message::flags() const
 {
 	return d->flags;
 }
 
-void ICQ::Message::setFlags(Byte flags)
+void Message::setFlags(Byte flags)
 {
 	d->flags = flags;
 }
 
-QByteArray ICQ::Message::icbmCookie() const
+QByteArray Message::icbmCookie() const
 {
 	return d->icbmCookie;
 }
 
-void ICQ::Message::setIcbmCookie(const QByteArray& cookie)
+void Message::setIcbmCookie(const QByteArray& cookie)
 {
 	d->icbmCookie = cookie;
 }
 
-QString ICQ::Message::receiver() const
+QString Message::receiver() const
 {
 	return d->receiver;
 }
 
-void ICQ::Message::setReceiver(DWord uin)
+void Message::setReceiver(DWord uin)
 {
 	d->receiver = QString::number(uin);
 }
 
-void ICQ::Message::setReceiver(const QString& uin)
+void Message::setReceiver(const QString& uin)
 {
 	d->receiver = uin;
 }
 
-QString ICQ::Message::sender() const
+QString Message::sender() const
 {
 	return d->sender;
 }
 
-void ICQ::Message::setSender(DWord uin)
+void Message::setSender(DWord uin)
 {
 	d->sender = QString::number(uin);
 }
 
-void ICQ::Message::setSender(const QString& uin)
+void Message::setSender(const QString& uin)
 {
 	d->sender = uin;
 }
 
-QByteArray ICQ::Message::text() const
+QByteArray Message::text() const
 {
 	return d->text;
 }
 
-QString ICQ::Message::text(QTextCodec *codec) const
+QString Message::text(QTextCodec *codec) const
 {
 	switch ( d->encoding )
 	{
@@ -197,32 +201,35 @@ QString ICQ::Message::text(QTextCodec *codec) const
 	return QString();
 }
 
-void ICQ::Message::setText(const QByteArray& text)
+void Message::setText(const QByteArray& text)
 {
 	d->text = text;
 }
 
-QDateTime ICQ::Message::timestamp() const
+QDateTime Message::timestamp() const
 {
 	return d->timestamp;
 }
 
-void ICQ::Message::setTimestamp(QDateTime timestamp)
+void Message::setTimestamp(QDateTime timestamp)
 {
 	d->timestamp = timestamp;
 }
 
-void ICQ::Message::setTimestamp(DWord timestamp_t)
+void Message::setTimestamp(DWord timestamp_t)
 {
 	d->timestamp = QDateTime::fromTime_t(timestamp_t);
 }
 
-ICQ::Byte ICQ::Message::type() const
+Byte Message::type() const
 {
 	return d->type;
 }
 
-void ICQ::Message::setType(Byte type)
+void Message::setType(Byte type)
 {
 	d->type = type;
 }
+
+
+} /* end of namespace ICQ */

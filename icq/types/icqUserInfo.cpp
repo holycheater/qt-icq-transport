@@ -25,7 +25,11 @@
 #include <QHostAddress>
 #include <QSet>
 
-class ICQ::UserInfo::Private : public QSharedData
+namespace ICQ
+{
+
+
+class UserInfo::Private : public QSharedData
 {
 	public:
 		Private();
@@ -68,7 +72,7 @@ class ICQ::UserInfo::Private : public QSharedData
 		QSet<Word> tlvSet;
 };
 
-ICQ::UserInfo::Private::Private()
+UserInfo::Private::Private()
 	: QSharedData()
 {
 	classFlags 			= 0;
@@ -89,7 +93,7 @@ ICQ::UserInfo::Private::Private()
 
 	idleTime			= 0;
 }
-ICQ::UserInfo::Private::Private(const Private& other)
+UserInfo::Private::Private(const Private& other)
 	: QSharedData(other)
 {
 	userId = other.userId;
@@ -119,27 +123,27 @@ ICQ::UserInfo::Private::Private(const Private& other)
 	tlvSet = other.tlvSet;
 }
 
-ICQ::UserInfo::UserInfo()
+UserInfo::UserInfo()
 {
 	d = new Private;
 }
 
-ICQ::UserInfo::UserInfo(const UserInfo& other)
+UserInfo::UserInfo(const UserInfo& other)
 	: d(other.d)
 {
 }
 
-ICQ::UserInfo& ICQ::UserInfo::operator=(const UserInfo& other)
+UserInfo& UserInfo::operator=(const UserInfo& other)
 {
 	d = other.d;
 	return *this;
 }
 
-ICQ::UserInfo::~UserInfo()
+UserInfo::~UserInfo()
 {
 }
 
-ICQ::UserInfo ICQ::UserInfo::fromBuffer(Buffer& buffer)
+UserInfo UserInfo::fromBuffer(Buffer& buffer)
 {
 	UserInfo info;
 
@@ -197,7 +201,7 @@ ICQ::UserInfo ICQ::UserInfo::fromBuffer(Buffer& buffer)
 	return info;
 }
 
-void ICQ::UserInfo::mergeFrom(const UserInfo& info)
+void UserInfo::mergeFrom(const UserInfo& info)
 {
 	if ( info.hasTlv(0x01) ) {
 		d->classFlags = info.d->classFlags;
@@ -248,7 +252,7 @@ void ICQ::UserInfo::mergeFrom(const UserInfo& info)
 	}
 }
 
-void ICQ::UserInfo::updateFromTlv(Tlv& tlv)
+void UserInfo::updateFromTlv(Tlv& tlv)
 {
 	switch ( tlv.type() ) {
 		case 0x01:
@@ -269,97 +273,100 @@ void ICQ::UserInfo::updateFromTlv(Tlv& tlv)
 	}
 }
 
-QString ICQ::UserInfo::userId() const
+QString UserInfo::userId() const
 {
 	return d->userId;
 }
 
-ICQ::DWord ICQ::UserInfo::classFlags() const
+DWord UserInfo::classFlags() const
 {
 	return d->classFlags;
 }
 
-QDateTime ICQ::UserInfo::signOnTime() const
+QDateTime UserInfo::signOnTime() const
 {
 	return QDateTime::fromTime_t(d->signOnTime);
 }
 
-QDateTime ICQ::UserInfo::registerTime() const
+QDateTime UserInfo::registerTime() const
 {
 	return QDateTime::fromTime_t(d->registerTime);
 }
 
-ICQ::Word ICQ::UserInfo::onlineStatus() const
+Word UserInfo::onlineStatus() const
 {
 	return d->onlineStatus;
 }
 
-ICQ::Word ICQ::UserInfo::statusFlags() const
+Word UserInfo::statusFlags() const
 {
 	return d->statusFlags;
 }
 
-QString ICQ::UserInfo::externalIP() const
+QString UserInfo::externalIP() const
 {
 	return QHostAddress(d->externalIP).toString();
 }
 
-QString ICQ::UserInfo::internalIP() const
+QString UserInfo::internalIP() const
 {
 	return QHostAddress(d->dcInternalIP).toString();
 }
 
-ICQ::DWord ICQ::UserInfo::dcPort() const
+DWord UserInfo::dcPort() const
 {
 	return d->dcPort;
 }
 
-ICQ::Byte ICQ::UserInfo::dcType() const
+Byte UserInfo::dcType() const
 {
 	return d->dcType;
 }
 
-ICQ::Word ICQ::UserInfo::dcVersion() const
+Word UserInfo::dcVersion() const
 {
 	return d->dcVersion;
 }
 
-ICQ::DWord ICQ::UserInfo::dcAuthCookie() const
+DWord UserInfo::dcAuthCookie() const
 {
 	return d->dcAuthCookie;
 }
 
-ICQ::DWord ICQ::UserInfo::clientFeatures() const
+DWord UserInfo::clientFeatures() const
 {
 	return d->clientFeatures;
 }
 
-QDateTime ICQ::UserInfo::lastInfoUpdateTime() const
+QDateTime UserInfo::lastInfoUpdateTime() const
 {
 	return QDateTime::fromTime_t(d->lastInfoUpdateTime);
 }
 
-ICQ::Word ICQ::UserInfo::idleTime() const
+Word UserInfo::idleTime() const
 {
 	return d->idleTime;
 }
 
-const QList<ICQ::Guid> ICQ::UserInfo::capabilities() const
+const QList<Guid> UserInfo::capabilities() const
 {
 	return d->capabilities;
 }
 
-bool ICQ::UserInfo::hasCapability(Guid capability) const
+bool UserInfo::hasCapability(Guid capability) const
 {
 	return d->capabilities.contains(capability);
 }
 
-bool ICQ::UserInfo::hasCapability(int capId) const
+bool UserInfo::hasCapability(int capId) const
 {
 	return d->capabilities.contains( Capabilities[capId] );
 }
 
-bool ICQ::UserInfo::hasTlv(Word tlvType) const
+bool UserInfo::hasTlv(Word tlvType) const
 {
 	return d->tlvSet.contains(tlvType);
 }
+
+
+} /* end of namespace ICQ */

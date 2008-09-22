@@ -29,7 +29,7 @@ namespace ICQ
 {
 
 
-class Tlv : public ICQ::Buffer
+class Tlv : public Buffer
 {
 	public:
 		Tlv();

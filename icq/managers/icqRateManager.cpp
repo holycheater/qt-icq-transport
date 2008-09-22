@@ -26,34 +26,38 @@
 
 #include <QtDebug>
 
-class ICQ::RateManager::Private
+namespace ICQ
+{
+
+
+class RateManager::Private
 {
 	public:
 		QList<RateClass*> classList;
 		Connection* link;
 };
 
-ICQ::RateManager::RateManager(Connection* parent)
+RateManager::RateManager(Connection* parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->link = parent;
-	QObject::connect(d->link, SIGNAL( incomingSnac(ICQ::SnacBuffer&) ), this, SLOT( incomingSnac(ICQ::SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
-ICQ::RateManager::~RateManager()
+RateManager::~RateManager()
 {
 	qDeleteAll(d->classList);
 	delete d;
 }
 
-void ICQ::RateManager::addClass(RateClass* rc)
+void RateManager::addClass(RateClass* rc)
 {
-	QObject::connect( rc, SIGNAL( dataReady(ICQ::SnacBuffer*) ), this, SLOT( dataAvailable(ICQ::SnacBuffer*) ) );
+	QObject::connect( rc, SIGNAL( dataReady(SnacBuffer*) ), this, SLOT( dataAvailable(SnacBuffer*) ) );
 	d->classList.append(rc);
 }
 
-bool ICQ::RateManager::canSend(const SnacBuffer& snac) const
+bool RateManager::canSend(const SnacBuffer& snac) const
 {
 	RateClass *rc = findRateClass(&snac);
 	if ( rc ) {
@@ -63,36 +67,36 @@ bool ICQ::RateManager::canSend(const SnacBuffer& snac) const
 			return false;
 		}
 	} else {
-		//qDebug() << "[ICQ::RateManager] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
+		//qDebug() << "[RateManager] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
 		return true;
 	}
 }
 
-void ICQ::RateManager::enqueue(const SnacBuffer& packet)
+void RateManager::enqueue(const SnacBuffer& packet)
 {
 	SnacBuffer *p = new SnacBuffer(packet);
 	RateClass *rc = findRateClass(p);
 
 	if ( rc ) {
-		qDebug() << "[ICQ::RateManager] Enqueuing a packet" << p->channel() << "snac family" << p->family() << "subtype" << p->subtype();
+		qDebug() << "[RateManager] Enqueuing a packet" << p->channel() << "snac family" << p->family() << "subtype" << p->subtype();
 		rc->enqueue(p);
 	} else {
 		dataAvailable(p);
 	}
 }
 
-void ICQ::RateManager::requestRates()
+void RateManager::requestRates()
 {
-	d->link->snacRequest(ICQ::sfGeneric, 0x06);
+	d->link->snacRequest(0x01, 0x06);
 }
 
-void ICQ::RateManager::dataAvailable(ICQ::SnacBuffer* packet)
+void RateManager::dataAvailable(SnacBuffer* packet)
 {
 	d->link->write(*packet);
 	delete packet; // delete packet after writing it to the buffer
 }
 
-ICQ::RateClass* ICQ::RateManager::findRateClass(const SnacBuffer* packet) const
+RateClass* RateManager::findRateClass(const SnacBuffer* packet) const
 {
 	RateClass *rc = 0L;
 	if ( d->classList.size() == 0 ) {
@@ -112,7 +116,7 @@ ICQ::RateClass* ICQ::RateManager::findRateClass(const SnacBuffer* packet) const
 	return rc;
 }
 
-ICQ::RateClass* ICQ::RateManager::findRateClass(Word rateClassId) const
+RateClass* RateManager::findRateClass(Word rateClassId) const
 {
 	RateClass *rc = 0L;
 	if ( d->classList.size() == 0 ) {
@@ -135,7 +139,7 @@ ICQ::RateClass* ICQ::RateManager::findRateClass(Word rateClassId) const
 
 /* << SNAC (01,07) - SRV_RATE_LIMIT_INFO
  * >> SNAC (01,08) - CLI_RATES_ACK */
-void ICQ::RateManager::recv_server_rates(SnacBuffer& reply)
+void RateManager::recv_server_rates(SnacBuffer& reply)
 {
 
 	Word rateCount = reply.getWord();
@@ -171,7 +175,7 @@ void ICQ::RateManager::recv_server_rates(SnacBuffer& reply)
 
 		RateClass *rc = findRateClass(rateClassId);
 		if ( !rc ) {
-			qCritical() << "[ICQ::RateManager]" << "[Critical Error]" << "rate class not found" << rateClassId;
+			qCritical() << "[RateManager]" << "[Critical Error]" << "rate class not found" << rateClassId;
 			continue;
 		}
 
@@ -187,12 +191,12 @@ void ICQ::RateManager::recv_server_rates(SnacBuffer& reply)
 }
 
 /* << SNAC (01,0A) - SRV_RATE_LIMIT_WARN */
-void ICQ::RateManager::recv_rates_update(SnacBuffer& reply)
+void RateManager::recv_rates_update(SnacBuffer& reply)
 {
 	Word msgCode = reply.getWord();
 	Word classId = reply.getWord();
 
-	qWarning() << "[ICQ::RateManager] Received SRV_RATE_LIMIT_WARN. Msg code" << msgCode << "Rate class id" << classId;
+	qWarning() << "[RateManager] Received SRV_RATE_LIMIT_WARN. Msg code" << msgCode << "Rate class id" << classId;
 	RateClass *rc = findRateClass(classId);
 	if ( rc ) {
 		rc
@@ -211,12 +215,15 @@ void ICQ::RateManager::recv_rates_update(SnacBuffer& reply)
 	}
 }
 
-void ICQ::RateManager::incomingSnac(ICQ::SnacBuffer& snac)
+void RateManager::incomingSnac(SnacBuffer& snac)
 {
-	if ( snac.family() == ICQ::sfGeneric && snac.subtype() == 0x07 ) {
+	if ( snac.family() == 0x01 && snac.subtype() == 0x07 ) {
 		recv_server_rates(snac);
 	}
-	if ( snac.family() == ICQ::sfGeneric && snac.subtype() == 0x0A ) {
+	if ( snac.family() == 0x01 && snac.subtype() == 0x0A ) {
 		recv_rates_update(snac);
 	}
 }
+
+
+} /* end of namespace ICQ */

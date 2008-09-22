@@ -76,7 +76,7 @@ class UserInfo
 		const QList<Guid> capabilities() const;
 
 		bool hasCapability(Guid capability) const;
-		/* check for capability by Id (as defined in ICQ.h ICQ::Capability enum) */
+		/* check for capability by Id (as defined in ICQ.h Capability enum) */
 		bool hasCapability(int capId) const;
 
 		bool hasTlv(Word tlvType) const;

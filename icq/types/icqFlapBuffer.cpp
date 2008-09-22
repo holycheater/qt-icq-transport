@@ -20,60 +20,64 @@
 
 #include "icqFlapBuffer.h"
 
-ICQ::FlapBuffer::FlapBuffer(const Buffer& data)
+namespace ICQ
+{
+
+
+FlapBuffer::FlapBuffer(const Buffer& data)
 {
 	*this = data;
 }
 
-ICQ::FlapBuffer::FlapBuffer(Byte channel)
+FlapBuffer::FlapBuffer(Byte channel)
 {
 	m_channel = channel;
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::FlapBuffer::FlapBuffer(const QByteArray& data, Byte channel)
+FlapBuffer::FlapBuffer(const QByteArray& data, Byte channel)
 {
 	m_Buffer.setData(data);
 	m_channel = channel;
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::FlapBuffer& ICQ::FlapBuffer::addTlv(Tlv tlv)
+FlapBuffer& FlapBuffer::addTlv(Tlv tlv)
 {
 	m_Buffer.write( tlv.data() );
 	return *this;
 }
 
-ICQ::FlapBuffer& ICQ::FlapBuffer::addTlv(Buffer tlv)
+FlapBuffer& FlapBuffer::addTlv(Buffer tlv)
 {
 	m_Buffer.write( tlv.data() );
 	return *this;
 }
 
-ICQ::FlapBuffer& ICQ::FlapBuffer::addTlv(Word type, const QByteArray& data)
+FlapBuffer& FlapBuffer::addTlv(Word type, const QByteArray& data)
 {
 	addTlv( Tlv(type, data) );
 	return *this;
 }
 
-ICQ::FlapBuffer& ICQ::FlapBuffer::addTlv(Word type, const QString& data)
+FlapBuffer& FlapBuffer::addTlv(Word type, const QString& data)
 {
 	addTlv( Tlv( type, data.toLocal8Bit() ) );
 	return *this;
 }
 
-ICQ::FlapBuffer& ICQ::FlapBuffer::addTlvChain(TlvChain tlvChain)
+FlapBuffer& FlapBuffer::addTlvChain(TlvChain tlvChain)
 {
 	m_Buffer.write( tlvChain.data() );
 	return *this;
 }
 
-ICQ::Byte ICQ::FlapBuffer::channel() const
+Byte FlapBuffer::channel() const
 {
 	return m_channel;
 }
 
-QByteArray ICQ::FlapBuffer::data() const
+QByteArray FlapBuffer::data() const
 {
 	QByteArray flap;
 	flap += flapHeader();
@@ -82,12 +86,12 @@ QByteArray ICQ::FlapBuffer::data() const
 	return flap;
 }
 
-ICQ::Word ICQ::FlapBuffer::flapDataSize() const
+Word FlapBuffer::flapDataSize() const
 {
 	return m_flapSize;
 }
 
-QByteArray ICQ::FlapBuffer::flapHeader() const
+QByteArray FlapBuffer::flapHeader() const
 {
 	Buffer header;
 	header.addByte(0x2A);
@@ -98,7 +102,7 @@ QByteArray ICQ::FlapBuffer::flapHeader() const
 	return header.data();
 }
 
-ICQ::FlapBuffer ICQ::FlapBuffer::fromRawData(const QByteArray& data)
+FlapBuffer FlapBuffer::fromRawData(const QByteArray& data)
 {
 	Buffer tmpBuf(data);
 	tmpBuf.getByte(); // 0x2A
@@ -106,32 +110,32 @@ ICQ::FlapBuffer ICQ::FlapBuffer::fromRawData(const QByteArray& data)
 	FlapBuffer buf( tmpBuf.getByte() );
 	buf.m_sequence = tmpBuf.getWord();
 	buf.m_flapSize = tmpBuf.getWord();
-	buf.setData( data.mid(ICQ::FLAP_HEADER_SIZE, buf.m_flapSize) );
+	buf.setData( data.mid(FLAP_HEADER_SIZE, buf.m_flapSize) );
 
 	return buf;
 }
 
-ICQ::FlapBuffer ICQ::FlapBuffer::fromRawData(const char *data, Word datalen)
+FlapBuffer FlapBuffer::fromRawData(const char *data, Word datalen)
 {
 	return fromRawData( QByteArray::fromRawData(data, datalen) );
 }
 
-void ICQ::FlapBuffer::setChannel(Byte channel)
+void FlapBuffer::setChannel(Byte channel)
 {
 	m_channel = channel;
 }
 
-void ICQ::FlapBuffer::setSequence(Word sequence)
+void FlapBuffer::setSequence(Word sequence)
 {
 	m_sequence = sequence;
 }
 
-ICQ::Word ICQ::FlapBuffer::sequence() const
+Word FlapBuffer::sequence() const
 {
 	return m_sequence;
 }
 
-ICQ::FlapBuffer& ICQ::FlapBuffer::operator=(const Buffer& other)
+FlapBuffer& FlapBuffer::operator=(const Buffer& other)
 {
 	Buffer tmpBuf = other;
 
@@ -145,7 +149,10 @@ ICQ::FlapBuffer& ICQ::FlapBuffer::operator=(const Buffer& other)
 	return *this;
 }
 
-ICQ::FlapBuffer& ICQ::FlapBuffer::operator=(const QByteArray& data)
+FlapBuffer& FlapBuffer::operator=(const QByteArray& data)
 {
 	return *this = Buffer(data);
 }
+
+
+} /* end of namespace ICQ */

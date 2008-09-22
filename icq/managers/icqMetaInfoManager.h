@@ -40,11 +40,11 @@ class MetaInfoManager : public QObject
 		void sendMetaRequest(Word type);
 		void sendMetaRequest(Word type, Buffer& metadata);
 	signals:
-		void metaInfoAvailable(ICQ::Word type, ICQ::Buffer& data);
+		void metaInfoAvailable(Word type, Buffer& data);
 	private:
 		void handle_meta_info(SnacBuffer& snac);
 	private slots:
-		void incomingSnac(ICQ::SnacBuffer& snac);
+		void incomingSnac(SnacBuffer& snac);
 	private:
 		class Private;
 		Private *d;

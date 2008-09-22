@@ -27,7 +27,7 @@ namespace ICQ
 {
 
 
-class SnacBuffer: public ICQ::FlapBuffer
+class SnacBuffer: public FlapBuffer
 {
 	public:
 		SnacBuffer(Word family, Word subtype);

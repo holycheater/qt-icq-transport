@@ -27,7 +27,11 @@
 
 #include <QtDebug>
 
-class ICQ::RateClass::Private : public QSharedData
+namespace ICQ
+{
+
+
+class RateClass::Private : public QSharedData
 {
 	public:
 		Private();
@@ -50,14 +54,14 @@ class ICQ::RateClass::Private : public QSharedData
 		DWord maxLevel;
 };
 
-ICQ::RateClass::Private::Private()
+RateClass::Private::Private()
 	: QSharedData()
 {
 	bWaitingToSend = false;
 	rateTimer.start();
 }
 
-ICQ::RateClass::Private::Private(const Private& other)
+RateClass::Private::Private(const Private& other)
 	: QSharedData(other)
 {
 	memberSnacs = other.memberSnacs;
@@ -83,62 +87,62 @@ ICQ::RateClass::Private::Private(const Private& other)
 	maxLevel = other.maxLevel;
 }
 
-ICQ::RateClass::Private::~Private()
+RateClass::Private::~Private()
 {
 	qDeleteAll(packetQueue);
 }
 
-ICQ::RateClass::RateClass(QObject *parent)
+RateClass::RateClass(QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
 }
 
-ICQ::RateClass::RateClass(Word classId, QObject *parent)
+RateClass::RateClass(Word classId, QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->classId = classId;
 }
 
-ICQ::RateClass::RateClass(const RateClass& other)
+RateClass::RateClass(const RateClass& other)
 	: QObject( other.parent() ), d(other.d)
 {
 
 }
 
-ICQ::RateClass& ICQ::RateClass::operator=(const RateClass& other)
+RateClass& RateClass::operator=(const RateClass& other)
 {
 	d = other.d;
 	return *this;
 }
 
-ICQ::RateClass::~RateClass()
+RateClass::~RateClass()
 {
 }
 
-void ICQ::RateClass::addMember(const SnacBuffer& snac)
+void RateClass::addMember(const SnacBuffer& snac)
 {
 	addMember( snac.family(), snac.subtype() );
 }
 
-void ICQ::RateClass::addMember(Word family, Word subtype)
+void RateClass::addMember(Word family, Word subtype)
 {
 	d->memberSnacs.append( qMakePair(family, subtype) );
 }
 
-void ICQ::RateClass::enqueue(SnacBuffer* packet)
+void RateClass::enqueue(SnacBuffer* packet)
 {
 	d->packetQueue.enqueue(packet);
 	setupTimer();
 }
 
-bool ICQ::RateClass::isMember(const SnacBuffer& snac) const
+bool RateClass::isMember(const SnacBuffer& snac) const
 {
 	return isMember( snac.family(), snac.subtype() );
 }
 
-bool ICQ::RateClass::isMember(Word family, Word subtype) const
+bool RateClass::isMember(Word family, Word subtype) const
 {
 	QList< QPair<Word, Word> >::const_iterator it;
 	QList< QPair<Word, Word> >::const_iterator itEnd = d->memberSnacs.constEnd();
@@ -150,7 +154,7 @@ bool ICQ::RateClass::isMember(Word family, Word subtype) const
 	return false;
 }
 
-int ICQ::RateClass::timeToNextSend() const
+int RateClass::timeToNextSend() const
 {
 	int timeDiff = d->rateTimer.elapsed();
 	DWord newLevel = calcNewLevel(timeDiff);
@@ -167,13 +171,13 @@ int ICQ::RateClass::timeToNextSend() const
 	return 0;
 }
 
-void ICQ::RateClass::updateRateInfo()
+void RateClass::updateRateInfo()
 {
 	d->currentLevel = calcNewLevel( d->rateTimer.elapsed() );
 	d->rateTimer.restart();
 }
 
-ICQ::DWord ICQ::RateClass::calcNewLevel(int timeDiff) const
+DWord RateClass::calcNewLevel(int timeDiff) const
 {
 	/* NewLevel = (Window - 1)/Window * OldLevel + 1/Window * CurrentTimeDiff
 	 * is the same as the code below. It was made so because of problems with precision
@@ -183,7 +187,7 @@ ICQ::DWord ICQ::RateClass::calcNewLevel(int timeDiff) const
 	return newLevel;
 }
 
-void ICQ::RateClass::setupTimer()
+void RateClass::setupTimer()
 {
 	if ( !d->bWaitingToSend ) {
 		d->bWaitingToSend = true;
@@ -197,7 +201,7 @@ void ICQ::RateClass::setupTimer()
 	}
 }
 
-void ICQ::RateClass::slot_send()
+void RateClass::slot_send()
 {
 	// hey, we don't need to send anything
 	if ( d->packetQueue.isEmpty() ) {
@@ -213,90 +217,93 @@ void ICQ::RateClass::slot_send()
 	}
 }
 
-ICQ::RateClass* ICQ::RateClass::setClassId(Word classId)
+RateClass* RateClass::setClassId(Word classId)
 {
 	d->classId = classId;
 	return this;
 }
 
-ICQ::RateClass* ICQ::RateClass::setWindowSize(DWord windowSize)
+RateClass* RateClass::setWindowSize(DWord windowSize)
 {
 	d->windowSize = windowSize;
 	return this;
 }
 
-ICQ::RateClass* ICQ::RateClass::setClearLevel(DWord clearLevel)
+RateClass* RateClass::setClearLevel(DWord clearLevel)
 {
 	d->clearLevel = clearLevel;
 	return this;
 }
 
-ICQ::RateClass* ICQ::RateClass::setAlertLevel(DWord alertLevel)
+RateClass* RateClass::setAlertLevel(DWord alertLevel)
 {
 	d->alertLevel = alertLevel;
 	return this;
 }
 
-ICQ::RateClass* ICQ::RateClass::setLimitLevel(DWord limitLevel)
+RateClass* RateClass::setLimitLevel(DWord limitLevel)
 {
 	d->limitLevel = limitLevel;
 	return this;
 }
 
-ICQ::RateClass* ICQ::RateClass::setDisconnectLevel(DWord disconnectLevel)
+RateClass* RateClass::setDisconnectLevel(DWord disconnectLevel)
 {
 	d->disconnectLevel = disconnectLevel;
 	return this;
 }
 
-ICQ::RateClass* ICQ::RateClass::setCurrentLevel(DWord currentLevel)
+RateClass* RateClass::setCurrentLevel(DWord currentLevel)
 {
 	d->currentLevel = currentLevel;
 	return this;
 }
 
-ICQ::RateClass* ICQ::RateClass::setMaxLevel(DWord maxLevel)
+RateClass* RateClass::setMaxLevel(DWord maxLevel)
 {
 	d->maxLevel = maxLevel;
 	return this;
 }
 
-ICQ::Word ICQ::RateClass::classId() const
+Word RateClass::classId() const
 {
 	return d->classId;
 }
 
-ICQ::DWord ICQ::RateClass::windowSize() const
+DWord RateClass::windowSize() const
 {
 	return d->windowSize;
 }
 
-ICQ::DWord ICQ::RateClass::clearLevel() const
+DWord RateClass::clearLevel() const
 {
 	return d->clearLevel;
 }
 
-ICQ::DWord ICQ::RateClass::alertLevel() const
+DWord RateClass::alertLevel() const
 {
 	return d->alertLevel;
 }
 
-ICQ::DWord ICQ::RateClass::limitLevel() const
+DWord RateClass::limitLevel() const
 {
 	return d->limitLevel;
 }
 
-ICQ::DWord ICQ::RateClass::disconnectLevel() const
+DWord RateClass::disconnectLevel() const
 {
 	return d->disconnectLevel;
 }
 
-ICQ::DWord ICQ::RateClass::currentLevel() const
+DWord RateClass::currentLevel() const
 {
 	return d->currentLevel;
 }
 
-ICQ::DWord ICQ::RateClass::maxLevel() const
+DWord RateClass::maxLevel() const
 {
 	return d->maxLevel;
 }
+
+
+} /* end of namespace ICQ */

@@ -20,7 +20,11 @@
 
 #include "icqSnacBuffer.h"
 
-ICQ::SnacBuffer::SnacBuffer(Word family, Word subtype)
+namespace ICQ
+{
+
+
+SnacBuffer::SnacBuffer(Word family, Word subtype)
 {
 	setChannel(DataChannel);
 	m_family = family;
@@ -31,7 +35,7 @@ ICQ::SnacBuffer::SnacBuffer(Word family, Word subtype)
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::SnacBuffer::SnacBuffer(Word family, Word subtype, const QByteArray& data)
+SnacBuffer::SnacBuffer(Word family, Word subtype, const QByteArray& data)
 {
 	m_family = family;
 	m_subtype = subtype;
@@ -42,12 +46,12 @@ ICQ::SnacBuffer::SnacBuffer(Word family, Word subtype, const QByteArray& data)
 	setData(data);
 }
 
-ICQ::SnacBuffer::SnacBuffer(const FlapBuffer& flap)
+SnacBuffer::SnacBuffer(const FlapBuffer& flap)
 {
 	*this = flap;
 }
 
-QByteArray ICQ::SnacBuffer::data() const
+QByteArray SnacBuffer::data() const
 {
 	Buffer tmpBuf;
 
@@ -63,79 +67,79 @@ QByteArray ICQ::SnacBuffer::data() const
 	return tmpBuf.data();
 }
 
-ICQ::Word ICQ::SnacBuffer::dataSize() const
+Word SnacBuffer::dataSize() const
 {
 	return m_Buffer.size();
 }
 
-ICQ::Word ICQ::SnacBuffer::family() const
+Word SnacBuffer::family() const
 {
 	return m_family;
 }
 
-ICQ::Word ICQ::SnacBuffer::subtype() const
+Word SnacBuffer::subtype() const
 {
 	return m_subtype;
 }
 
-ICQ::Word ICQ::SnacBuffer::flags() const
+Word SnacBuffer::flags() const
 {
 	return m_flags;
 }
 
-ICQ::DWord ICQ::SnacBuffer::requestId() const
+DWord SnacBuffer::requestId() const
 {
 	return m_requestId;
 }
 
-void ICQ::SnacBuffer::setFamily(Word family)
+void SnacBuffer::setFamily(Word family)
 {
 	m_family = family;
 }
 
-void ICQ::SnacBuffer::setSubtype(Word subtype)
+void SnacBuffer::setSubtype(Word subtype)
 {
 	m_subtype = subtype;
 }
 
-void ICQ::SnacBuffer::setFlags(Word flags)
+void SnacBuffer::setFlags(Word flags)
 {
 	m_flags = flags;
 }
 
-void ICQ::SnacBuffer::setRequestId(DWord requestId)
+void SnacBuffer::setRequestId(DWord requestId)
 {
 	m_requestId = requestId;
 }
 
-ICQ::Word ICQ::SnacBuffer::size() const
+Word SnacBuffer::size() const
 {
-	return m_Buffer.size() + ICQ::SNAC_HEADER_SIZE;
+	return m_Buffer.size() + SNAC_HEADER_SIZE;
 }
 
-ICQ::SnacBuffer& ICQ::SnacBuffer::operator=(const Buffer& other)
+SnacBuffer& SnacBuffer::operator=(const Buffer& other)
 {
 	Buffer tmpBuf = other;
 
 	tmpBuf.getByte(); // 0x2A
 	setChannel( tmpBuf.getByte() );
 	setSequence( tmpBuf.getWord() );
-	ICQ::Word size = tmpBuf.getWord();
+	Word size = tmpBuf.getWord();
 
 	m_family = tmpBuf.getWord();
 	m_subtype = tmpBuf.getWord();
 	m_flags = tmpBuf.getWord();
 	m_requestId = tmpBuf.getWord();
 
-	setData( tmpBuf.read(size - ICQ::SNAC_HEADER_SIZE) );
+	setData( tmpBuf.read(size - SNAC_HEADER_SIZE) );
 
 	return *this;
 }
 
-ICQ::SnacBuffer& ICQ::SnacBuffer::operator=(const FlapBuffer& other)
+SnacBuffer& SnacBuffer::operator=(const FlapBuffer& other)
 {
 	QByteArray data = other.data();
-	data.remove(0, ICQ::FLAP_HEADER_SIZE);
+	data.remove(0, FLAP_HEADER_SIZE);
 	Buffer tmpBuf(data);
 
 	setChannel( other.channel() );
@@ -151,7 +155,7 @@ ICQ::SnacBuffer& ICQ::SnacBuffer::operator=(const FlapBuffer& other)
 	return *this;
 }
 
-ICQ::SnacBuffer& ICQ::SnacBuffer::operator=(const SnacBuffer& other)
+SnacBuffer& SnacBuffer::operator=(const SnacBuffer& other)
 {
 
 	m_family = other.m_family;
@@ -164,7 +168,7 @@ ICQ::SnacBuffer& ICQ::SnacBuffer::operator=(const SnacBuffer& other)
 	return *this;
 }
 
-ICQ::SnacBuffer& ICQ::SnacBuffer::operator=(const QByteArray& other)
+SnacBuffer& SnacBuffer::operator=(const QByteArray& other)
 {
 	Buffer tmpBuf = other;
 
@@ -183,3 +187,5 @@ ICQ::SnacBuffer& ICQ::SnacBuffer::operator=(const QByteArray& other)
 	return *this;
 }
 
+
+} /* end of namespace ICQ */

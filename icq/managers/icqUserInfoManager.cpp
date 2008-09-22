@@ -23,31 +23,34 @@
 #include <QHash>
 #include <QtDebug>
 
-class ICQ::UserInfoManager::Private {
+namespace ICQ {
+
+
+class UserInfoManager::Private {
 	public:
 		QHash<QString, UserInfo> userInfoList;
 		UserInfo ownInfo;
 		Connection *link;
 };
 
-ICQ::UserInfoManager::UserInfoManager(Connection *parent)
+UserInfoManager::UserInfoManager(Connection *parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(ICQ::SnacBuffer&) ), this, SLOT( incomingSnac(ICQ::SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
 
 	QObject::connect(this, SIGNAL( statusChanged(int) ), d->link, SIGNAL( statusChanged(int) ) );
 	QObject::connect(this, SIGNAL( userOnline(QString) ), d->link, SIGNAL( userOnline(QString) ) );
 	QObject::connect(this, SIGNAL( userOffline(QString) ), d->link, SIGNAL( userOffline(QString) ) );
 }
 
-ICQ::UserInfoManager::~UserInfoManager()
+UserInfoManager::~UserInfoManager()
 {
 }
 
-void ICQ::UserInfoManager::handle_own_user_info(SnacBuffer& snac)
+void UserInfoManager::handle_own_user_info(SnacBuffer& snac)
 {
 	UserInfo info = UserInfo::fromBuffer(snac);
 	if ( info.hasTlv(0x06) && info.onlineStatus() != d->ownInfo.onlineStatus() ) {
@@ -57,7 +60,7 @@ void ICQ::UserInfoManager::handle_own_user_info(SnacBuffer& snac)
 }
 
 /* << SNAC(03,0B) - SRV_USER_ONLINE */
-void ICQ::UserInfoManager::handle_user_online_notification(SnacBuffer& snac)
+void UserInfoManager::handle_user_online_notification(SnacBuffer& snac)
 {
 	while ( ! snac.atEnd() ) {
 		UserInfo info = UserInfo::fromBuffer(snac);
@@ -73,7 +76,7 @@ void ICQ::UserInfoManager::handle_user_online_notification(SnacBuffer& snac)
 }
 
 /* << SNAC(03,0C) - SRV_USER_OFFLINE */
-void ICQ::UserInfoManager::handle_user_offline_notification(SnacBuffer& snac)
+void UserInfoManager::handle_user_offline_notification(SnacBuffer& snac)
 {
 	while ( ! snac.atEnd() ) {
 		UserInfo info = UserInfo::fromBuffer(snac);
@@ -81,7 +84,7 @@ void ICQ::UserInfoManager::handle_user_offline_notification(SnacBuffer& snac)
 	}
 }
 
-void ICQ::UserInfoManager::incomingSnac(ICQ::SnacBuffer& snac)
+void UserInfoManager::incomingSnac(SnacBuffer& snac)
 {
 	if ( snac.family() == 0x01 && snac.subtype() == 0x0F ) {
 		handle_own_user_info(snac);
@@ -93,3 +96,6 @@ void ICQ::UserInfoManager::incomingSnac(ICQ::SnacBuffer& snac)
 		}
 	}
 }
+
+
+} /* end of namespace ICQ */

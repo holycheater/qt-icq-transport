@@ -20,30 +20,34 @@
 
 #include "icqTlv.h"
 
-ICQ::Tlv::Tlv()
+namespace ICQ
+{
+
+
+Tlv::Tlv()
 {
 	m_type = 0x0;
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::Tlv::Tlv(Word type)
+Tlv::Tlv(Word type)
 {
 	m_type = type;
 	m_Buffer.open(QBuffer::ReadWrite);
 }
 
-ICQ::Tlv::Tlv(Word type, const QByteArray& data)
+Tlv::Tlv(Word type, const QByteArray& data)
 {
 	m_type = type;
 	setData(data);
 }
 
-ICQ::Tlv::Tlv(const QByteArray& data)
+Tlv::Tlv(const QByteArray& data)
 {
 	operator=( Buffer(data) );
 }
 
-QByteArray ICQ::Tlv::data() const
+QByteArray Tlv::data() const
 {
 	Buffer tlvData;
 
@@ -54,7 +58,7 @@ QByteArray ICQ::Tlv::data() const
 	return tlvData;
 }
 
-ICQ::Tlv ICQ::Tlv::fromBuffer(Buffer& buffer)
+Tlv Tlv::fromBuffer(Buffer& buffer)
 {
 	Word type = buffer.getWord();
 	Word len = buffer.getWord();
@@ -62,17 +66,17 @@ ICQ::Tlv ICQ::Tlv::fromBuffer(Buffer& buffer)
 	return Tlv(type, data);
 }
 
-void ICQ::Tlv::setType(Word type)
+void Tlv::setType(Word type)
 {
 	m_type = type;
 }
 
-ICQ::Word ICQ::Tlv::type() const
+Word Tlv::type() const
 {
 	return m_type;
 }
 
-ICQ::Tlv& ICQ::Tlv::operator=(const Tlv& buffer)
+Tlv& Tlv::operator=(const Tlv& buffer)
 {
 	m_type = buffer.type();
 	setData( buffer.m_Buffer.data() );
@@ -80,7 +84,7 @@ ICQ::Tlv& ICQ::Tlv::operator=(const Tlv& buffer)
 	return *this;
 }
 
-ICQ::Tlv& ICQ::Tlv::operator=(const Buffer& buffer)
+Tlv& Tlv::operator=(const Buffer& buffer)
 {
 	Buffer tmpBuf(buffer);
 	m_type = tmpBuf.getWord();
@@ -91,7 +95,10 @@ ICQ::Tlv& ICQ::Tlv::operator=(const Buffer& buffer)
 	return *this;
 }
 
-ICQ::Tlv& ICQ::Tlv::operator=(const QByteArray& data)
+Tlv& Tlv::operator=(const QByteArray& data)
 {
 	return *this = Buffer(data);
 }
+
+
+} /* end of namespace ICQ */

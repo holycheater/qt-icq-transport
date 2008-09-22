@@ -21,28 +21,32 @@
 
 #include "icqGuid.h"
 
-ICQ::Guid::Guid()
+namespace ICQ
+{
+
+
+Guid::Guid()
 {
 	m_data = QByteArray(16, '\0');
 }
 
-ICQ::Guid::Guid(const char* data)
+Guid::Guid(const char* data)
 {
 	initData( QString(data) );
 }
 
-ICQ::Guid::Guid(const QByteArray& data)
+Guid::Guid(const QByteArray& data)
 	: m_data(data)
 {
 	initData( QString(data) );
 }
 
-ICQ::Guid::Guid(const QString& data)
+Guid::Guid(const QString& data)
 {
 	initData(data);
 }
 
-void ICQ::Guid::initData(const QString& data)
+void Guid::initData(const QString& data)
 {
 	//get rid of the const
 	QString d(data);
@@ -54,17 +58,17 @@ void ICQ::Guid::initData(const QString& data)
 	}
 }
 
-const QByteArray ICQ::Guid::data() const
+const QByteArray Guid::data() const
 {
 	return m_data;
 }
 
-void ICQ::Guid::setData(const QByteArray& data)
+void Guid::setData(const QByteArray& data)
 {
 	m_data = data;
 }
 
-bool ICQ::Guid::isZero() const
+bool Guid::isZero() const
 {
 	for (int i = 0; i < m_data.length(); i++) {
 		if ( m_data.at(i) != '\0' ) {
@@ -74,12 +78,12 @@ bool ICQ::Guid::isZero() const
 	return true;
 }
 
-bool ICQ::Guid::isValid() const
+bool Guid::isValid() const
 {
 	return m_data.size() == 16;
 }
 
-bool ICQ::Guid::isEqual(const Guid& rhs, int n) const
+bool Guid::isEqual(const Guid& rhs, int n) const
 {
 	if( n > 16 ) {
 		n = 16;
@@ -87,7 +91,7 @@ bool ICQ::Guid::isEqual(const Guid& rhs, int n) const
 	return m_data.left(n) == rhs.m_data.left(n);
 }
 
-const QString ICQ::Guid::toString() const
+const QString Guid::toString() const
 {
 	QString uuid = m_data.toHex().toUpper();
 
@@ -99,18 +103,21 @@ const QString ICQ::Guid::toString() const
 	return uuid;
 }
 
-ICQ::Guid& ICQ::Guid::operator=(const QByteArray& data)
+Guid& Guid::operator=(const QByteArray& data)
 {
 	m_data = data;
 	return *this;
 }
 
-bool ICQ::Guid::operator==(const Guid& rhs) const
+bool Guid::operator==(const Guid& rhs) const
 {
 	return m_data == rhs.m_data;
 }
 
-ICQ::Guid::operator QByteArray() const
+Guid::operator QByteArray() const
 {
 	return m_data;
 }
+
+
+} /* end of namespace ICQ */

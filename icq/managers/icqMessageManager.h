@@ -22,13 +22,14 @@
 #define ICQMESSAGEMANAGER_H_
 
 #include "icqConnection.h"
-#include "types/icqMessage.h"
 
 #include <QObject>
 
 namespace ICQ
 {
 
+class TlvChain;
+class Message;
 
 class MessageManager : public QObject
 {
@@ -41,7 +42,7 @@ class MessageManager : public QObject
 		void requestOfflineMessages();
 		void sendMessage(const Message& msg);
 	signals:
-		void incomingMessage(const ICQ::Message&);
+		void incomingMessage(const Message&);
 	private:
 		Message handle_channel_1_msg(TlvChain& chain);
 		Message handle_channel_2_msg(TlvChain& chain);
@@ -49,8 +50,8 @@ class MessageManager : public QObject
 		void handle_incoming_message(SnacBuffer& snac);
 		void handle_offline_message(Buffer& data);
 	private slots:
-		void incomingMetaInfo(ICQ::Word type, ICQ::Buffer& data);
-		void incomingSnac(ICQ::SnacBuffer& snac);
+		void incomingMetaInfo(Word type, Buffer& data);
+		void incomingSnac(SnacBuffer& snac);
 	private:
 		class Private;
 		Private *d;

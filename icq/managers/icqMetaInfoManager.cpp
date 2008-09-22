@@ -20,29 +20,36 @@
 
 #include "icqMetaInfoManager.h"
 
-class ICQ::MetaInfoManager::Private
+#include "types/icqSnacBuffer.h"
+#include "types/icqTlvChain.h"
+
+namespace ICQ
+{
+
+
+class MetaInfoManager::Private
 {
 	public:
 		Connection *link;
 		Word metaSequence;
 };
 
-ICQ::MetaInfoManager::MetaInfoManager(Connection *parent)
+MetaInfoManager::MetaInfoManager(Connection *parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->link = parent;
 	d->metaSequence = 0;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(ICQ::SnacBuffer&) ), this, SLOT( incomingSnac(ICQ::SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
-ICQ::MetaInfoManager::~MetaInfoManager()
+MetaInfoManager::~MetaInfoManager()
 {
 	delete d;
 }
 
-void ICQ::MetaInfoManager::sendMetaRequest(Word type)
+void MetaInfoManager::sendMetaRequest(Word type)
 {
 	Tlv tlv(0x01); // ENCAPSULATED_METADATA
 	tlv.addLEWord(8); // data chunk size (tlv size - 2 )
@@ -55,7 +62,7 @@ void ICQ::MetaInfoManager::sendMetaRequest(Word type)
 	d->link->write(snac);
 }
 
-void ICQ::MetaInfoManager::sendMetaRequest(Word type, Buffer& metadata)
+void MetaInfoManager::sendMetaRequest(Word type, Buffer& metadata)
 {
 	Tlv tlv(0x01); // ENCAPSULATED_METADATA
 	tlv.addLEWord( metadata.size() + 8 ); // data chunk size (tlv size - 2 )
@@ -69,7 +76,7 @@ void ICQ::MetaInfoManager::sendMetaRequest(Word type, Buffer& metadata)
 	d->link->write(snac);
 }
 
-void ICQ::MetaInfoManager::handle_meta_info(SnacBuffer& snac)
+void MetaInfoManager::handle_meta_info(SnacBuffer& snac)
 {
 	Tlv metaReply = Tlv::fromBuffer(snac);
 	metaReply.seekForward( sizeof(Word) ); // data chunk size = tlv_length - 2
@@ -84,9 +91,12 @@ void ICQ::MetaInfoManager::handle_meta_info(SnacBuffer& snac)
 	emit metaInfoAvailable(type, data);
 }
 
-void ICQ::MetaInfoManager::incomingSnac(ICQ::SnacBuffer& snac)
+void MetaInfoManager::incomingSnac(SnacBuffer& snac)
 {
 	if ( snac.family() == 0x15 && snac.subtype() == 0x03 ) {
 		handle_meta_info(snac);
 	}
 }
+
+
+} /* end of namespace ICQ */

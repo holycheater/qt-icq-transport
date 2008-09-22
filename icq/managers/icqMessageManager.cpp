@@ -20,34 +20,42 @@
 
 #include "icqMessageManager.h"
 
+#include "types/icqMessage.h"
+#include "types/icqSnacBuffer.h"
+#include "types/icqTlvChain.h"
+
 #include <QDateTime>
 
-class ICQ::MessageManager::Private {
+namespace ICQ
+{
+
+
+class MessageManager::Private {
 	public:
 		Connection *link;
 };
 
-ICQ::MessageManager::MessageManager(Connection *parent)
+MessageManager::MessageManager(Connection *parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(ICQ::SnacBuffer&) ), this, SLOT( incomingSnac(ICQ::SnacBuffer&) ) );
-	QObject::connect(this, SIGNAL( incomingMessage(const ICQ::Message&) ), d->link, SIGNAL( incomingMessage(const ICQ::Message&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect(this, SIGNAL( incomingMessage(const Message&) ), d->link, SIGNAL( incomingMessage(const Message&) ) );
 }
 
-ICQ::MessageManager::~MessageManager()
+MessageManager::~MessageManager()
 {
 	delete d;
 }
 
-void ICQ::MessageManager::requestOfflineMessages()
+void MessageManager::requestOfflineMessages()
 {
 	d->link->sendMetaRequest(0x3C);
 }
 
-void ICQ::MessageManager::sendMessage(const Message& msg)
+void MessageManager::sendMessage(const Message& msg)
 {
 	SnacBuffer snac(0x04,0x06);
 
@@ -63,7 +71,7 @@ void ICQ::MessageManager::sendMessage(const Message& msg)
 
 }
 
-ICQ::Message ICQ::MessageManager::handle_channel_1_msg(TlvChain& chain)
+Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 {
 	Message msg;
 
@@ -93,7 +101,7 @@ ICQ::Message ICQ::MessageManager::handle_channel_1_msg(TlvChain& chain)
 	return msg;
 }
 
-ICQ::Message ICQ::MessageManager::handle_channel_2_msg(TlvChain& chain)
+Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 {
 	Message msg;
 
@@ -145,7 +153,7 @@ ICQ::Message ICQ::MessageManager::handle_channel_2_msg(TlvChain& chain)
 	return msg;
 }
 
-ICQ::Message ICQ::MessageManager::handle_channel_4_msg(TlvChain& chain)
+Message MessageManager::handle_channel_4_msg(TlvChain& chain)
 {
 	Message msg;
 
@@ -165,7 +173,7 @@ ICQ::Message ICQ::MessageManager::handle_channel_4_msg(TlvChain& chain)
 	return msg;
 }
 
-void ICQ::MessageManager::handle_incoming_message(SnacBuffer& snac)
+void MessageManager::handle_incoming_message(SnacBuffer& snac)
 {
 	QByteArray icbmCookie = snac.read(8); // msg-id cookie
 	Word msgChannel = snac.getWord();
@@ -213,7 +221,7 @@ void ICQ::MessageManager::handle_incoming_message(SnacBuffer& snac)
 	emit incomingMessage(msg);
 }
 
-void ICQ::MessageManager::handle_offline_message(Buffer& data)
+void MessageManager::handle_offline_message(Buffer& data)
 {
 	DWord senderUin = data.getLEDWord();
 
@@ -246,7 +254,7 @@ void ICQ::MessageManager::handle_offline_message(Buffer& data)
 	emit incomingMessage(msg);
 }
 
-void ICQ::MessageManager::incomingMetaInfo(ICQ::Word type, ICQ::Buffer& data)
+void MessageManager::incomingMetaInfo(Word type, Buffer& data)
 {
 	if ( type == 0x41 ) { // offline message block
 		handle_offline_message(data);
@@ -255,9 +263,12 @@ void ICQ::MessageManager::incomingMetaInfo(ICQ::Word type, ICQ::Buffer& data)
 	}
 }
 
-void ICQ::MessageManager::incomingSnac(ICQ::SnacBuffer& snac)
+void MessageManager::incomingSnac(SnacBuffer& snac)
 {
 	if ( snac.family() == 0x04 && snac.subtype() == 0x07 ) {
 		handle_incoming_message(snac);
 	}
 }
+
+
+} /* end of namespace ICQ */

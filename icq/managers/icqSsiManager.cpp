@@ -29,7 +29,11 @@
 
 #include <QtDebug>
 
-class ICQ::SSIManager::Private
+namespace ICQ
+{
+
+
+class SSIManager::Private
 {
 	public:
 		Connection *link;
@@ -44,52 +48,52 @@ class ICQ::SSIManager::Private
 		Word maxIgnored;
 };
 
-ICQ::SSIManager::SSIManager(Connection* parent)
+SSIManager::SSIManager(Connection* parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(ICQ::SnacBuffer&) ), this, SLOT( incomingSnac(ICQ::SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
 
-	QObject::connect(this, SIGNAL( newGroup(ICQ::Contact*) ), d->link, SIGNAL( ssiNewGroup(ICQ::Contact*) ) );
-	QObject::connect(this, SIGNAL( newBuddy(ICQ::Contact*) ), d->link, SIGNAL( ssiNewBuddy(ICQ::Contact*) ) );
-	QObject::connect(this, SIGNAL( newVisible(ICQ::Contact*) ), d->link, SIGNAL( ssiNewVisible(ICQ::Contact*) ) );
-	QObject::connect(this, SIGNAL( newInvisible(ICQ::Contact*) ), d->link, SIGNAL( ssiNewInvisible(ICQ::Contact*) ) );
-	QObject::connect(this, SIGNAL( newIgnore(ICQ::Contact*) ), d->link, SIGNAL( ssiNewIgnore(ICQ::Contact*) ) );
+	QObject::connect(this, SIGNAL( newGroup(Contact*) ), d->link, SIGNAL( ssiNewGroup(Contact*) ) );
+	QObject::connect(this, SIGNAL( newBuddy(Contact*) ), d->link, SIGNAL( ssiNewBuddy(Contact*) ) );
+	QObject::connect(this, SIGNAL( newVisible(Contact*) ), d->link, SIGNAL( ssiNewVisible(Contact*) ) );
+	QObject::connect(this, SIGNAL( newInvisible(Contact*) ), d->link, SIGNAL( ssiNewInvisible(Contact*) ) );
+	QObject::connect(this, SIGNAL( newIgnore(Contact*) ), d->link, SIGNAL( ssiNewIgnore(Contact*) ) );
 }
 
-ICQ::SSIManager::~SSIManager()
+SSIManager::~SSIManager()
 {
 	delete d;
 }
 
-inline QList<ICQ::Contact> ICQ::SSIManager::contactList() const
+inline QList<Contact> SSIManager::contactList() const
 {
 	return listOfType(Contact::Buddy);
 }
 
-inline QList<ICQ::Contact> ICQ::SSIManager::groupList() const
+inline QList<Contact> SSIManager::groupList() const
 {
 	return listOfType(Contact::Group);
 }
 
-inline QList<ICQ::Contact> ICQ::SSIManager::visibleList() const
+inline QList<Contact> SSIManager::visibleList() const
 {
 	return listOfType(Contact::Visible);
 }
 
-inline QList<ICQ::Contact> ICQ::SSIManager::invisibleList() const
+inline QList<Contact> SSIManager::invisibleList() const
 {
 	return listOfType(Contact::Invisible);
 }
 
-inline QList<ICQ::Contact> ICQ::SSIManager::ignoreList() const
+inline QList<Contact> SSIManager::ignoreList() const
 {
 	return listOfType(Contact::Ignore);
 }
 
-QList<ICQ::Contact> ICQ::SSIManager::listOfType(Word type) const
+QList<Contact> SSIManager::listOfType(Word type) const
 {
 	QList<Contact>::const_iterator it, itEnd = d->ssiList.constEnd();
 	QList<Contact> list;
@@ -102,11 +106,11 @@ QList<ICQ::Contact> ICQ::SSIManager::listOfType(Word type) const
 }
 
 /* >> SNAC(13,05) - CLI_SSI_CHECKOUT */
-void ICQ::SSIManager::checkContactList()
+void SSIManager::checkContactList()
 {
 	/* send out SNAC(13,05) - check ssi-items */
 
-	SnacBuffer snac(ICQ::sfSSI, 0x05);
+	SnacBuffer snac(0x13, 0x05);
 	snac.addDWord( d->lastUpdate );
 	snac.addWord( d->ssiList.size() );
 
@@ -114,28 +118,28 @@ void ICQ::SSIManager::checkContactList()
 }
 
 /* >> SNAC(13,02) - CLI_SSI_RIGHTS_REQUEST */
-void ICQ::SSIManager::requestParameters()
+void SSIManager::requestParameters()
 {
-	d->link->snacRequest(ICQ::sfSSI, 0x02);
+	d->link->snacRequest(0x13, 0x02);
 }
 
-ICQ::Word ICQ::SSIManager::size() const
+Word SSIManager::size() const
 {
 	return d->ssiList.size();
 }
 
-ICQ::DWord ICQ::SSIManager::lastChangeTime() const
+DWord SSIManager::lastChangeTime() const
 {
 	return d->lastUpdate;
 }
 
-void ICQ::SSIManager::setLastChangeTime(DWord time)
+void SSIManager::setLastChangeTime(DWord time)
 {
 	d->lastUpdate = time;
 }
 
 /* << SNAC(13,03) - SRV_SSI_RIGHTS_REPLY */
-void ICQ::SSIManager::recv_ssi_parameters(SnacBuffer& reply)
+void SSIManager::recv_ssi_parameters(SnacBuffer& reply)
 {
 	TlvChain chain(reply);
 	reply.seekEnd();
@@ -149,7 +153,7 @@ void ICQ::SSIManager::recv_ssi_parameters(SnacBuffer& reply)
 }
 
 /* << SNAC(13,06) - SRV_SSIxREPLY */
-void ICQ::SSIManager::recv_ssi_contact(SnacBuffer& reply)
+void SSIManager::recv_ssi_contact(SnacBuffer& reply)
 {
 	reply.getByte(); // ssi version - 0x00
 
@@ -191,12 +195,12 @@ void ICQ::SSIManager::recv_ssi_contact(SnacBuffer& reply)
 	contactList();
 
 	/* SNAC(13,07) */
-	d->link->snacRequest(ICQ::sfSSI, 0x07);
+	d->link->snacRequest(0x13, 0x07);
 }
 
 /* << SNAC(13,0F) - SRV_SSI_UPxTOxDATE
  * >> SNAC(13,07) - CLI_SSI_ACTIVATE */
-void ICQ::SSIManager::recv_ssi_uptodate(SnacBuffer& reply)
+void SSIManager::recv_ssi_uptodate(SnacBuffer& reply)
 {
 	DWord modTime = reply.getDWord();
 	Word listSize = reply.getWord();
@@ -205,9 +209,9 @@ void ICQ::SSIManager::recv_ssi_uptodate(SnacBuffer& reply)
 	qDebug() << "[SSI Manager] CL is up-to-date";
 }
 
-void ICQ::SSIManager::incomingSnac(SnacBuffer& snac)
+void SSIManager::incomingSnac(SnacBuffer& snac)
 {
-	if ( snac.family() != ICQ::sfSSI ) {
+	if ( snac.family() != 0x13 ) {
 		return;
 	}
 
@@ -225,3 +229,5 @@ void ICQ::SSIManager::incomingSnac(SnacBuffer& snac)
 			break;
 	}
 }
+
+} /* end of namespace ICQ */

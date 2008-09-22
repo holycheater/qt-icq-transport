@@ -5,6 +5,7 @@ namespace ICQ
 
 
 Connection::Private::Private(Connection* parent)
+	: QObject(parent)
 {
 	m_connectionStatus = Connection::Disconnected;
 
@@ -19,12 +20,12 @@ Connection::Private::Private(Connection* parent)
 	m_snacRequest = 0;
 	q = parent;
 
-	QObject::connect( socket, SIGNAL( readyRead() ), q, SLOT( incomingData() ) );
-	QObject::connect( q, SIGNAL( readyRead() ), q, SLOT( incomingData() ) );
-	QObject::connect( q, SIGNAL( signedOff() ), q, SLOT( slot_signedOff() ) );
+	QObject::connect( socket, SIGNAL( readyRead() ), SLOT( incomingData() ) );
+	QObject::connect( q, SIGNAL( readyRead() ), SLOT( incomingData() ) );
+	QObject::connect( q, SIGNAL( signedOff() ), SLOT( slot_signedOff() ) );
 
-	QObject::connect( socket, SIGNAL( connected() ), q, SLOT( slot_connected() ) );
-	QObject::connect( socket, SIGNAL( disconnected() ), q, SLOT( slot_disconnected() ) );
+	QObject::connect( socket, SIGNAL( connected() ), SLOT( slot_connected() ) );
+	QObject::connect( socket, SIGNAL( disconnected() ), SLOT( slot_disconnected() ) );
 }
 
 Connection::Private::~Private()
@@ -58,11 +59,11 @@ void Connection::Private::setConnectionStatus(int status)
 void Connection::Private::connectToServer(const QHostInfo& host)
 {
 	if ( host.error() != QHostInfo::NoError ) {
-		qCritical() << "[ICQ::Connection] Lookup failed:" << host.errorString();
+		qCritical() << "[ICQ:Connection] Lookup failed:" << host.errorString();
 		return;
 	}
 	QHostAddress address = host.addresses().value(0);
-	qDebug() << "[ICQ::Connection] Found address:" << address.toString();
+	qDebug() << "[ICQ:Connection] Found address:" << address.toString();
 	socket->connectToHost(address, port);
 
 	lookupTimer->stop();
@@ -77,20 +78,20 @@ void Connection::Private::handle_error(SnacBuffer& snac)
 	if ( tlvs.hasTlv(0x08) ) {
 		errmsg += " subcode" + tlvs.getTlvData(0x08).toHex();
 	}
-	qDebug() << "[ICQ::Connection] ERROR!!" << "family" << snac.family() << errmsg;
+	qDebug() << "[ICQ:Connection] ERROR!!" << "family" << snac.family() << errmsg;
 }
 
 void Connection::Private::incomingData()
 {
 	if ( socket->bytesAvailable() < FLAP_HEADER_SIZE ) {
-		qDebug() << "[ICQ::Connection] Not enough data for a header in the socket";
+		qDebug() << "[ICQ:Connection] Not enough data for a header in the socket";
 		return; // we don't have a header at this point
 	}
 
 	FlapBuffer flap = FlapBuffer::fromRawData( socket->peek(FLAP_HEADER_SIZE) );
 
 	if (flap.flapDataSize() > (socket->bytesAvailable() - FLAP_HEADER_SIZE) ) {
-		qDebug() << "[ICQ::Connection] Not enough data for a packet" << flap.flapDataSize() << socket->bytesAvailable();
+		qDebug() << "[ICQ:Connection] Not enough data for a packet" << flap.flapDataSize() << socket->bytesAvailable();
 		return; // we don't need an incomplete packet
 	}
 
@@ -99,18 +100,18 @@ void Connection::Private::incomingData()
 	flap.setData( socket->read( flap.flapDataSize() ) );
 /*
 	qDebug()
-		<< "[ICQ::Connection] << flap"
+		<< "[ICQ:Connection] << flap"
 		<< "channel" << flap.channel()
 		<< "sequence" << QByteArray::number(flap.sequence(), 16)
 		<< "size" << flap.size();
-	qDebug() << "[ICQ::Connection] << flap data" << flap.data().remove(0, FLAP_HEADER_SIZE).toHex();*/
+	qDebug() << "[ICQ:Connection] << flap data" << flap.data().remove(0, FLAP_HEADER_SIZE).toHex();*/
 
 	if ( flap.channel() == FlapBuffer::CloseChannel ) {
 		socket->disconnectFromHost();
 	}
 
 	if ( flap.channel() == FlapBuffer::KeepAliveChannel ) {
-		qDebug() << "[ICQ::Connection] Keep-alive received";
+		qDebug() << "[ICQ:Connection] Keep-alive received";
 	}
 	if ( connectionStatus() == Connected) {
 		keepAliveTimer->stop();
@@ -125,7 +126,7 @@ void Connection::Private::incomingData()
 		SnacBuffer snac = flap;
 
 		qDebug()
-			<< "[ICQ::Connection] << snac head: family" << QByteArray::number(snac.family(), 16)
+			<< "[ICQ:Connection] << snac head: family" << QByteArray::number(snac.family(), 16)
 			<< "subtype" << QByteArray::number(snac.subtype(), 16)
 			<< "flags" << QByteArray::number(snac.flags(), 16)
 			<< "requestid" << QByteArray::number(snac.requestId(), 16)
@@ -153,7 +154,7 @@ void Connection::Private::incomingData()
 		emit q->incomingSnac(snac);
 
 		if ( (snac.pos() + 1) < snac.dataSize() ) {
-			qDebug() << "[ICQ::Connection]" << (snac.pos() + 1) << snac.dataSize() << "unhandled snac" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
+			qDebug() << "[ICQ:Connection]" << (snac.pos() + 1) << snac.dataSize() << "unhandled snac" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
 		}
 	}
 
@@ -164,14 +165,14 @@ void Connection::Private::incomingData()
 
 void Connection::Private::sendKeepAlive()
 {
-	qDebug() << "[ICQ::Connection] Keep-alive sent";
+	qDebug() << "[ICQ:Connection] Keep-alive sent";
 	q->write ( FlapBuffer(FlapBuffer::KeepAliveChannel) );
 }
 
 void Connection::Private::slot_disconnected()
 {
 	socket->close();
-	qDebug() << "[ICQ::Connection] Disconnected";
+	qDebug() << "[ICQ:Connection] Disconnected";
 
 	if ( connectionStatus() == Connected ) {
 		setConnectionStatus(Disconnected);
@@ -181,7 +182,7 @@ void Connection::Private::slot_disconnected()
 
 void Connection::Private::slot_connected()
 {
-	qDebug() << "[ICQ::Connection] Connected to" << socket->peerName() << "port" << socket->peerPort();
+	qDebug() << "[ICQ:Connection] Connected to" << socket->peerName() << "port" << socket->peerPort();
 }
 
 void Connection::Private::slot_lookupFailed()
@@ -212,7 +213,7 @@ void Connection::Private::slot_signedOn()
 	keepAliveTimer = new QTimer(q);
 	keepAliveTimer->setInterval(KEEP_ALIVE_INTERVAL);
 
-	QObject::connect( keepAliveTimer, SIGNAL( timeout() ), q, SLOT( sendKeepAlive() ) );
+	QObject::connect( keepAliveTimer, SIGNAL( timeout() ), SLOT( sendKeepAlive() ) );
 	keepAliveTimer->start();
 
 	userInfoManager = new UserInfoManager(q);

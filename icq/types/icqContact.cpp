@@ -20,14 +20,18 @@
 
 #include "icqContact.h"
 
-ICQ::Contact::Contact()
+namespace ICQ
+{
+
+
+Contact::Contact()
 {
 	m_groupId = 0;
 	m_itemId = 0;
 	m_type = 0xFFFF;
 }
 
-ICQ::Contact::Contact(const QString& name, Word groupId, Word itemId, Word type, const TlvChain& data)
+Contact::Contact(const QString& name, Word groupId, Word itemId, Word type, const TlvChain& data)
 {
 	m_name = name;
 	m_groupId = groupId;
@@ -36,66 +40,66 @@ ICQ::Contact::Contact(const QString& name, Word groupId, Word itemId, Word type,
 	m_data = data;
 }
 
-ICQ::Contact::~Contact()
+Contact::~Contact()
 {
 }
 
-QString ICQ::Contact::name() const
+QString Contact::name() const
 {
 	return m_name;
 }
 
-ICQ::Word ICQ::Contact::groupId() const
+Word Contact::groupId() const
 {
 	return m_groupId;
 }
 
-ICQ::Word ICQ::Contact::id() const
+Word Contact::id() const
 {
 	return m_itemId;
 }
 
-ICQ::Word ICQ::Contact::type() const
+Word Contact::type() const
 {
 	return m_type;
 }
 
-const ICQ::TlvChain& ICQ::Contact::tlvChain() const
+const TlvChain& Contact::tlvChain() const
 {
 	return m_data;
 }
 
-void ICQ::Contact::setName(const QString& name)
+void Contact::setName(const QString& name)
 {
 	m_name = name;
 }
 
-void ICQ::Contact::setGroupId(Word id)
+void Contact::setGroupId(Word id)
 {
 	m_groupId = id;
 }
 
-void ICQ::Contact::setItemId(Word id)
+void Contact::setItemId(Word id)
 {
 	m_itemId = id;
 }
 
-void ICQ::Contact::setType(Word type)
+void Contact::setType(Word type)
 {
 	m_type = type;
 }
 
-void ICQ::Contact::setTlvChain(const TlvChain& chain)
+void Contact::setTlvChain(const TlvChain& chain)
 {
 	m_data = chain;
 }
 
-bool ICQ::Contact::awaitingAuth() const
+bool Contact::awaitingAuth() const
 {
 	return m_data.hasTlv(0x0066);
 }
 
-void ICQ::Contact::setAwaitingAuth(bool awaitingAuth)
+void Contact::setAwaitingAuth(bool awaitingAuth)
 {
 	if ( awaitingAuth == false ) {
 		m_data.removeTlv(0x0066);
@@ -104,7 +108,7 @@ void ICQ::Contact::setAwaitingAuth(bool awaitingAuth)
 	}
 }
 
-QString ICQ::Contact::displayName() const
+QString Contact::displayName() const
 {
 	if ( m_type == 0 ) {
 		return m_data.getTlvData(0x0131);
@@ -112,14 +116,14 @@ QString ICQ::Contact::displayName() const
 	return m_name;
 }
 
-void ICQ::Contact::setDisplayName(const QString& name)
+void Contact::setDisplayName(const QString& name)
 {
 	if ( m_type == 0 ) {
 		m_data.addTlv(0x0131).addData(name);
 	}
 }
 
-bool ICQ::Contact::operator==(const Contact& other) const
+bool Contact::operator==(const Contact& other) const
 {
 	if ( m_name == other.m_name && m_groupId == other.m_groupId && m_itemId == other.m_itemId && m_type == other.m_type ) {
 		return true;
@@ -127,7 +131,7 @@ bool ICQ::Contact::operator==(const Contact& other) const
 	return false;
 }
 
-ICQ::Contact::operator QByteArray() const
+Contact::operator QByteArray() const
 {
 	Buffer result;
 
@@ -143,3 +147,6 @@ ICQ::Contact::operator QByteArray() const
 
 	return result;
 }
+
+
+} /* end of namespace ICQ */

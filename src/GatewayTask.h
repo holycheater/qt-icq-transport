@@ -47,10 +47,16 @@ class GatewayTask : public QObject
 		void processLogout(const Jid& user);
 		void processContactAdd(const Jid& user, const QString& uin);
 		void processContactDel(const Jid& user, const QString& uin);
-		void processSendMessage();
+		void processSendMessage(const Jid& user, const QString& uin, const QString& message);
+
+		void processGatewayOnline();
+		void processShutdown();
 	signals:
 		void contactAdded(const Jid& user, const QString& uin);
 		void contactDeleted(const Jid& user, const QString& uin);
+
+		void onlineNotifyFor(const Jid& user);
+		void offlineNotifyFor(const Jid& user);
 	private:
 		class Private;
 		Private *d;

@@ -71,6 +71,7 @@ JabberConnection::JabberConnection(QObject *parent)
 	QObject::connect(d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
 	QObject::connect(d->stream, SIGNAL( error(ComponentStream::Error) ), SLOT( stream_error(ComponentStream::Error) ) );
 	QObject::connect(d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
+	QObject::connect(d->stream, SIGNAL( connected() ), SIGNAL( connected() ) );
 }
 
 JabberConnection::~JabberConnection()
@@ -106,6 +107,8 @@ void JabberConnection::sendSubscribe(const Jid& user, const QString& uin)
 	subscribe.setType(Presence::Subscribe);
 	subscribe.setFrom(user);
 	subscribe.setTo( d->jid.withNode(uin) );
+
+	d->stream->sendStanza(subscribe);
 }
 
 void JabberConnection::sendSubscribed(const Jid& user, const QString& uin)
@@ -115,6 +118,8 @@ void JabberConnection::sendSubscribed(const Jid& user, const QString& uin)
 	subscribed.setType(Presence::Subscribed);
 	subscribed.setFrom(user);
 	subscribed.setTo( d->jid.withNode(uin) );
+
+	d->stream->sendStanza(subscribed);
 }
 
 void JabberConnection::sendUnsubscribe(const Jid& user, const QString& uin)
@@ -124,6 +129,8 @@ void JabberConnection::sendUnsubscribe(const Jid& user, const QString& uin)
 	unsubscribe.setType(Presence::Unsubscribe);
 	unsubscribe.setFrom(user);
 	unsubscribe.setTo( d->jid.withNode(uin) );
+
+	d->stream->sendStanza(unsubscribe);
 }
 
 void JabberConnection::sendUnsubscribed(const Jid& user, const QString& uin)
@@ -133,6 +140,43 @@ void JabberConnection::sendUnsubscribed(const Jid& user, const QString& uin)
 	unsubscribed.setType(Presence::Unsubscribed);
 	unsubscribed.setFrom(user);
 	unsubscribed.setTo( d->jid.withNode(uin) );
+
+	d->stream->sendStanza(unsubscribed);
+}
+
+void JabberConnection::sendOnlinePresence(const Jid& recipient)
+{
+	Presence presence;
+	presence.setFrom(d->jid);
+	presence.setTo(recipient);
+
+	d->stream->sendStanza(presence);
+}
+
+void JabberConnection::sendOfflinePresence(const Jid& recipient)
+{
+	Presence presence;
+	presence.setFrom(d->jid);
+	presence.setTo(recipient);
+	presence.setType(Presence::Unavailable);
+
+	d->stream->sendStanza(presence);
+}
+
+/**
+ * Message send slot from legacy user to jabber-user.
+ * @param senderUin		ICQ message sender's uin.
+ * @param recipient		Jabber user recipient's jabber-id.
+ * @param message		Message itself.
+ */
+void JabberConnection::sendMessage(const QString& senderUin, const Jid& recipient, const QString& message)
+{
+	Message msg;
+	msg.setFrom( d->jid.withNode(senderUin) );
+	msg.setTo(recipient);
+	msg.setBody(message);
+
+	d->stream->sendStanza(msg);
 }
 
 void JabberConnection::process_discoinfo(const IQ& iq)

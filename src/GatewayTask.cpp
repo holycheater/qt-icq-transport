@@ -35,37 +35,58 @@
 class GatewayTask::Private
 {
 	public:
-		QList<ICQ::Connection> icqLinks;
+		Private(GatewayTask *parent);
+		~Private();
+
+		QList<ICQ::Connection*> icqConnections;
 
 		/* Jabber-ID-to-ICQ-Connection hash-table. */
 		QHash<QString, ICQ::Connection*> onlineUsers;
 
 		QSqlDatabase db;
+
+		GatewayTask *q;
+
+		bool online;
 };
 
-GatewayTask::GatewayTask(QObject *parent)
-	: QObject(parent), d(new Private)
+GatewayTask::Private::Private(GatewayTask *parent)
 {
+	q = parent;
+}
+
+GatewayTask::Private::~Private()
+{
+	db.close();
+
+	onlineUsers.clear();
+	qDeleteAll(icqConnections);
+}
+
+GatewayTask::GatewayTask(QObject *parent)
+	: QObject(parent)
+{
+	d = new Private(this);
 }
 
 GatewayTask::~GatewayTask()
 {
-	d->db.close();
 	delete d;
 }
 
 void GatewayTask::setDatabaseLink(const QSqlDatabase& sql)
 {
 	d->db = sql;
-	if ( !d->db.open() ) {
+	if ( !d->db.isOpen() && !d->db.open() ) {
 		qDebug() << "[GT]" << "Database open failed" << d->db.lastError();
 		return;
 	}
+
 	QSqlQuery query;
 	query.exec("CREATE TABLE IF NOT EXISTS users ("
-				"jid TEXT"
-				"uin TEXT"
-				"password TEXT"
+				"jid TEXT,"
+				"uin TEXT,"
+				"password TEXT,"
 				"PRIMARY KEY(jid)"
 				")");
 }
@@ -123,6 +144,41 @@ void GatewayTask::processContactDel(const Jid& user, const QString& uin)
 	emit contactDeleted(user, uin);
 }
 
-void GatewayTask::processSendMessage()
+/**
+ * Sends @a message from jabber-user @a user to ICQ user with specified @a uin
+ */
+void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const QString& message)
 {
+}
+
+/**
+ * Sends presence notification to all registered users.
+ */
+void GatewayTask::processGatewayOnline()
+{
+	QSqlQuery query;
+
+	query.exec("SELECT jid FROM users");
+	while ( query.next() ) {
+		Jid user = query.value(0).toString();
+		emit onlineNotifyFor(user);
+	}
+	d->online = true;
+}
+
+/**
+ * Sends offline presence notifications to all registered users.
+ */
+void GatewayTask::processShutdown()
+{
+	if ( !d->online ) {
+		return;
+	}
+	QSqlQuery query;
+	query.exec("SELECT jid FROM users");
+	while ( query.next() ) {
+		Jid user = query.value(0).toString();
+		emit offlineNotifyFor(user);
+	}
+	d->online = false;
 }

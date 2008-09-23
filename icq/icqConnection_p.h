@@ -10,7 +10,10 @@
 #include "managers/icqMessageManager.h"
 #include "managers/icqMetaInfoManager.h"
 
+#include "types/icqMessage.h"
+
 #include <QObject>
+#include <QPointer>
 #include <QTcpSocket>
 #include <QTimer>
 
@@ -34,11 +37,11 @@ class Connection::Private : public QObject
 		/* SNAC(xx,01) */
 		void handle_error(SnacBuffer& snac);
 
-		LoginManager 	*loginManager;
-		RateManager 	*rateManager;
-		SSIManager 		*ssiManager;
+		LoginManager *loginManager;
+		RateManager *rateManager;
+		SSIManager *ssiManager;
 		UserInfoManager *userInfoManager;
-		MessageManager 	*msgManager;
+		MessageManager *msgManager;
 		MetaInfoManager *metaManager;
 
 		QString uin;
@@ -59,6 +62,8 @@ class Connection::Private : public QObject
 		void connectToServer(const QHostInfo& host);
 		void incomingData();
 		void sendKeepAlive();
+
+		void processIncomingMessage(const Message& msg);
 
 		void slot_connected();
 		void slot_disconnected();

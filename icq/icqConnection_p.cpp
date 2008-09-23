@@ -23,6 +23,7 @@ Connection::Private::Private(Connection* parent)
 	QObject::connect( socket, SIGNAL( readyRead() ), SLOT( incomingData() ) );
 	QObject::connect( q, SIGNAL( readyRead() ), SLOT( incomingData() ) );
 	QObject::connect( q, SIGNAL( signedOff() ), SLOT( slot_signedOff() ) );
+	QObject::connect( q, SIGNAL( incomingMessage(Message) ), SLOT( processIncomingMessage(Message) ) );
 
 	QObject::connect( socket, SIGNAL( connected() ), SLOT( slot_connected() ) );
 	QObject::connect( socket, SIGNAL( disconnected() ), SLOT( slot_disconnected() ) );
@@ -32,7 +33,7 @@ Connection::Private::~Private()
 {
 	delete rateManager;
 	delete ssiManager;
-	delete socket;
+	socket->deleteLater();
 }
 
 Word Connection::Private::flapSequence()
@@ -167,6 +168,11 @@ void Connection::Private::sendKeepAlive()
 {
 	qDebug() << "[ICQ:Connection] Keep-alive sent";
 	q->write ( FlapBuffer(FlapBuffer::KeepAliveChannel) );
+}
+
+void Connection::Private::processIncomingMessage(const Message& msg)
+{
+	emit q->incomingMessage( msg.sender(), msg.text() );
 }
 
 void Connection::Private::slot_disconnected()

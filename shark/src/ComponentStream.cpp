@@ -141,7 +141,7 @@ void ComponentStream::handleStreamError(const Parser::Event& event)
  */
 void ComponentStream::processEvent(const Parser::Event& event)
 {
-	qDebug() << "[CS]" << "processEvent()" << "type" << event.typeString();
+	// qDebug() << "[CS]" << "processEvent()" << "type" << event.typeString();
 	switch ( event.type() ) {
 		case Parser::Event::DocumentOpen:
 			if (d->connectionStatus == InitIncomingStream) {
@@ -156,7 +156,7 @@ void ComponentStream::processEvent(const Parser::Event& event)
 			break;
 
 		case Parser::Event::Element:
-			qDebug() << "[CS] incoming element" << event.qualifiedName();
+			// qDebug() << "[CS] incoming element" << event.qualifiedName();
 			if ( event.qualifiedName() == "stream:error" ) {
 				handleStreamError(event);
 			}
@@ -182,13 +182,10 @@ void ComponentStream::processEvent(const Parser::Event& event)
 void ComponentStream::processStanza(const Parser::Event& event)
 {
 	if ( event.qualifiedName() == "message" ) {
-		qDebug() << "[CS]" << "-message-";
 		emit stanzaMessage( event.element() );
 	} else if ( event.qualifiedName() == "iq" ) {
-		qDebug() << "[CS]" << "-iq-";
 		emit stanzaIQ( event.element() );
 	} else if ( event.qualifiedName() == "presence" ) {
-		qDebug() << "[CS]" << "-presence-";
 		emit stanzaPresence( event.element() );
 	}
 }

@@ -1,5 +1,7 @@
 #include "icqConnection_p.h"
 
+#include <QTextCodec>
+
 namespace ICQ
 {
 
@@ -172,7 +174,7 @@ void Connection::Private::sendKeepAlive()
 
 void Connection::Private::processIncomingMessage(const Message& msg)
 {
-	emit q->incomingMessage( msg.sender(), msg.text() );
+	emit q->incomingMessage( msg.sender(), msg.text( QTextCodec::codecForName("UTF-8") ) );
 }
 
 void Connection::Private::slot_disconnected()

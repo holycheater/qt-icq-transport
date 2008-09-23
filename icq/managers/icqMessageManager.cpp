@@ -42,7 +42,7 @@ MessageManager::MessageManager(Connection *parent)
 	d->link = parent;
 
 	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
-	QObject::connect(this, SIGNAL( incomingMessage(const Message&) ), d->link, SIGNAL( incomingMessage(const Message&) ) );
+	QObject::connect(this, SIGNAL( incomingMessage(Message) ), d->link, SIGNAL( incomingMessage(Message) ) );
 }
 
 MessageManager::~MessageManager()
@@ -69,6 +69,7 @@ void MessageManager::sendMessage(const Message& msg)
 	msgTlv.addData( msg.icbmCookie() );
 	msgTlv.addData( Guid("09461349-4C7F-11D1-8222-444553540000") );
 
+	d->link->write(snac);
 }
 
 Message MessageManager::handle_channel_1_msg(TlvChain& chain)

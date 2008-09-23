@@ -119,8 +119,10 @@ void Connection::sendMessage(const QString& recipient, const QString& text)
 {
 	/* TODO */
 	Message msg;
+	msg.setChannel(0x02);
 	msg.setSender( userId() );
 	msg.setReceiver(recipient);
+	msg.setType(Message::PlainText);
 	msg.setText( text.toUtf8() );
 	d->msgManager->sendMessage(msg);
 }

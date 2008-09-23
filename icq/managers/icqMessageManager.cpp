@@ -32,8 +32,125 @@ namespace ICQ
 
 class MessageManager::Private {
 	public:
+		void send_channel_1_message(const Message& msg);
+		void send_channel_2_message(const Message& msg);
+		void send_channel_4_message(const Message& msg);
 		Connection *link;
 };
+
+void MessageManager::Private::send_channel_1_message(const Message& msg)
+{
+	/*TODO*/
+	/*
+	 * 2A 02
+	 * 6B 4D
+	 * 00 37
+	 *
+	 * 00 04
+	 * 00 06
+	 * 00 00
+	 * 00 00 00 49
+	 *
+	 * 49 00 00 00
+	 * 00 00 00 00
+	 *
+	 * 00 01 [channel]
+	 * 09 [uin len]
+	 * 31 37 31 33 36 36 33 36 38
+	 *
+	 * 00 02 [tlv: msg data]
+	 * 00 11 [len]
+	 * 05 [frag id]
+	 * 01 [frag ver]
+	 * 00 01 [rest data len]
+	 * 01 [req caps. 1 == text]
+	 * 01 [frag id: msg]
+	 * 01 [frag ver]
+	 * 00 08 [data len]
+	 * 00 00 [msg charset]
+	 * 00 00 [lang num]
+	 * 73 65 6E 64 [msg str]
+	 *
+	 * 00 06 [store if recip offline]
+	 * 00 00
+	 */
+}
+
+void MessageManager::Private::send_channel_2_message(const Message& msg)
+{
+	SnacBuffer snac(0x04,0x06);
+
+	DWord r1 = qrand(), r2 = qrand();
+
+	snac.addDWord( r1 );
+	snac.addDWord( r2 );
+	snac.addWord( msg.channel() );
+	snac.addByte( msg.receiver().length() );
+	snac.addData( msg.receiver() );
+
+	Tlv msgTlv(0x05);
+	msgTlv.addWord(0x00); // msg type - request
+	msgTlv.addDWord( r1 ); // cookie part1
+	msgTlv.addDWord( r2 ); // cookie part2
+	msgTlv.addData( Guid("09461349-4C7F-11D1-8222-444553540000") );
+
+	Tlv tlv0A(0x0A);
+	tlv0A.addWord(0x01);
+
+	Tlv tlv0F(0x0F);
+
+	msgTlv.addData(tlv0A);
+	msgTlv.addData(tlv0F);
+
+	Buffer chunk1;
+	chunk1.addLEWord(9); // protocol version
+	chunk1.addData( Guid() ); // zero-bytes guid.
+	chunk1.addWord(0);
+	chunk1.addLEDWord(3); // cap flags?!
+	chunk1.addByte(4); // unknown
+	chunk1.addWord(0xffff); // downcounter
+
+	Buffer chunk2;
+	chunk2.addWord(0xffff);
+	chunk2.addDWord(0);
+	chunk2.addDWord(0);
+	chunk2.addDWord(0);
+
+	Buffer msgChunk;
+	msgChunk.addByte( msg.type() );
+	msgChunk.addByte( msg.flags() );
+	msgChunk.addLEWord(5); // status code
+	msgChunk.addLEWord(2); // priority code
+	QByteArray text = msg.text();
+	msgChunk.addLEWord(text.length() + 1); // msg len
+	msgChunk.addData(text);
+	msgChunk.addByte(0); // null-terminated string.
+	msgChunk.addDWord(0x0); // text color
+	msgChunk.addDWord(0xffffff00); // bg color
+
+	QString guidStr = "{0946134E-4C7F-11D1-8222-444553540000}";
+	msgChunk.addLEWord( guidStr.length() );
+	msgChunk.addData(guidStr);
+
+	Tlv extData(0x2711); // TLV 0x2711
+
+	extData.addLEWord( chunk1.size() );
+	extData.addData(chunk1);
+	extData.addLEWord( chunk2.size() );
+	extData.addData(chunk2);
+	extData.addData(msgChunk);
+
+	msgTlv.addData(extData);
+
+	snac.addData( msgTlv.data() );
+
+	link->write(snac);
+}
+
+void MessageManager::Private::send_channel_4_message(const Message& msg)
+{
+	/* TODO */
+}
 
 MessageManager::MessageManager(Connection *parent)
 	: QObject(parent)
@@ -57,19 +174,20 @@ void MessageManager::requestOfflineMessages()
 
 void MessageManager::sendMessage(const Message& msg)
 {
-	SnacBuffer snac(0x04,0x06);
-
-	snac.addData( msg.icbmCookie() );
-	snac.addWord( msg.channel() );
-	snac.addByte( msg.receiver().length() );
-	snac.addData( msg.receiver() );
-
-	Tlv msgTlv(0x05);
-	msgTlv.addWord(0x00); // msg type - request
-	msgTlv.addData( msg.icbmCookie() );
-	msgTlv.addData( Guid("09461349-4C7F-11D1-8222-444553540000") );
-
-	d->link->write(snac);
+	switch ( msg.channel() ) {
+		case 1:
+			d->send_channel_1_message(msg);
+			break;
+		case 2:
+			d->send_channel_2_message(msg);
+			break;
+		case 4:
+			d->send_channel_4_message(msg);
+			break;
+		default:
+			qCritical() << "unknown msg channel" << msg.channel();
+			break;
+	}
 }
 
 Message MessageManager::handle_channel_1_msg(TlvChain& chain)
@@ -176,6 +294,7 @@ Message MessageManager::handle_channel_4_msg(TlvChain& chain)
 
 void MessageManager::handle_incoming_message(SnacBuffer& snac)
 {
+	qDebug() << snac.data().toHex();
 	QByteArray icbmCookie = snac.read(8); // msg-id cookie
 	Word msgChannel = snac.getWord();
 	Byte uinLen = snac.getByte();

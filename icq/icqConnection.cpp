@@ -21,11 +21,16 @@
 #include "icqConnection.h"
 #include "icqConnection_p.h"
 
+#include "managers/icqSsiManager.h"
+
 #include "types/icqFlapBuffer.h"
 #include "types/icqSnacBuffer.h"
+#include "types/icqContact.h"
+#include "types/icqMessage.h"
 
 #include <QTcpSocket>
 #include <QTimer>
+#include <QStringList>
 #include <QtDebug>
 
 namespace ICQ
@@ -77,13 +82,47 @@ Connection::~Connection()
 	delete d;
 }
 
+/**
+ * Adds a @a uin contact to the roster.
+ */
 void Connection::contactAdd(const QString& uin)
 {
-	/*TODO*/
+	/* TODO */
 }
+
+/**
+ * Removes @a uin contact from the roster.
+ */
 void Connection::contactDel(const QString& uin)
 {
-	/*TODO*/
+	/* TODO */
+}
+
+/**
+ * Returns list of UINs in the roster.
+ */
+QStringList Connection::contactList() const
+{
+	QList<Contact> contacts = d->ssiManager->contactList();
+	QListIterator<Contact> i(contacts);
+	QStringList uinList;
+	while ( i.hasNext() ) {
+		uinList << i.next().name();
+	}
+	return uinList;
+}
+
+/**
+ * Sends message to @a recipient uin containing @a text
+ */
+void Connection::sendMessage(const QString& recipient, const QString& text)
+{
+	/* TODO */
+	Message msg;
+	msg.setSender( userId() );
+	msg.setReceiver(recipient);
+	msg.setText( text.toUtf8() );
+	d->msgManager->sendMessage(msg);
 }
 
 /**

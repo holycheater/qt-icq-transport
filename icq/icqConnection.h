@@ -70,6 +70,8 @@ class Connection: public QObject
 		void contactAdd(const QString& uin);
 		void contactDel(const QString& uin);
 
+		QStringList contactList() const;
+
 		/* current connection status (disconnected/connecting/connected) */
 		int connectionStatus() const;
 
@@ -83,14 +85,13 @@ class Connection: public QObject
 		Connection* setServer(const QString& server);
 		Connection* setServerPort(quint16 port);
 
-		/* set user online status*/
 		Connection* setOnlineStatus(Word onlineStatus);
 
-		/* set user visibility status */
 		Connection* setVisibility(int vis);
 
-		/* start login sequence */
 		void signOn(QString& uin, QString& password, QString& server);
+
+		void sendMessage(const QString& recipient, const QString& text);
 
 		/* send empty SNAC request packet (only snac header in the flap) */
 		void snacRequest(Word family, Word subtype);
@@ -117,10 +118,14 @@ class Connection: public QObject
 		void ssiNewVisible(Contact *contact);
 		void ssiNewInvisible(Contact *contact);
 
-		void userOnline(QString userId);
-		void userOffline(QString userId);
+		void userOnline(const QString& userId);
+		void userOffline(const QString& userId);
+
+		void contactAdded(const QString& uin);
+		void contactDeleted(const QString& uin);
 
 		void incomingMessage(const Message& msg);
+		void incomingMessage(const QString& senderUin, const QString& text);
 
 		void signedOff();
 	protected:

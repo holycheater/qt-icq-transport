@@ -51,7 +51,6 @@ LoginManager::LoginManager(Connection* parent)
 
 	QObject::connect( d->link, SIGNAL( incomingFlap(FlapBuffer&) ), this, SLOT ( incomingFlap(FlapBuffer&) ) );
 	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT ( incomingSnac(SnacBuffer&) ) );
-	QObject::connect( this, SIGNAL( loginFinished() ), d->link, SLOT( slot_signedOn() ) );
 }
 
 LoginManager::~LoginManager()

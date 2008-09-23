@@ -125,7 +125,7 @@ void Connection::connectToHost(const QString& hostname, quint16 port)
 {
 	qDebug() << "[ICQ:Connection] Looking up hostname" << hostname;
 
-	d->lookupId = QHostInfo::lookupHost(hostname, this, SLOT( connectToServer(QHostInfo) ) );
+	d->lookupId = QHostInfo::lookupHost(hostname, d, SLOT( connectToServer(QHostInfo) ) );
 
 	d->lookupTimer = new QTimer(this);
 	d->lookupTimer->setSingleShot(true);
@@ -294,6 +294,8 @@ void Connection::signOn(QString& uin, QString& password, QString& server)
 	QObject::connect( d->connectTimer, SIGNAL( timeout() ), d, SLOT( slot_connectionTimeout() ) );
 
 	d->loginManager = new LoginManager(this);
+	QObject::connect( d->loginManager, SIGNAL( loginFinished() ), d, SLOT( slot_signedOn() ) );
+
 	d->loginManager->login(uin, password, server);
 	startConnectionTimer();
 }

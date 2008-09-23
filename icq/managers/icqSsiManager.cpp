@@ -36,6 +36,14 @@ namespace ICQ
 class SSIManager::Private
 {
 	public:
+		void recv_ssi_parameters(SnacBuffer& snac); // 13,03
+		void recv_ssi_contact(SnacBuffer& snac); // 13,06
+		void recv_ssi_uptodate(SnacBuffer& snac); // 13,0F
+
+		QList<Contact> listOfType(Word type) const;
+
+		SSIManager *q;
+
 		Connection *link;
 		QList<Contact> ssiList;
 
@@ -52,6 +60,7 @@ SSIManager::SSIManager(Connection* parent)
 	: QObject(parent)
 {
 	d = new Private;
+	d->q = this;
 	d->link = parent;
 
 	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
@@ -68,38 +77,40 @@ SSIManager::~SSIManager()
 	delete d;
 }
 
-inline QList<Contact> SSIManager::contactList() const
+QList<Contact> SSIManager::contactList() const
 {
-	return listOfType(Contact::Buddy);
+	return d->listOfType(Contact::Buddy);
 }
 
-inline QList<Contact> SSIManager::groupList() const
+QList<Contact> SSIManager::groupList() const
 {
-	return listOfType(Contact::Group);
+	return d->listOfType(Contact::Group);
 }
 
-inline QList<Contact> SSIManager::visibleList() const
+QList<Contact> SSIManager::visibleList() const
 {
-	return listOfType(Contact::Visible);
+	return d->listOfType(Contact::Visible);
 }
 
-inline QList<Contact> SSIManager::invisibleList() const
+QList<Contact> SSIManager::invisibleList() const
 {
-	return listOfType(Contact::Invisible);
+	return d->listOfType(Contact::Invisible);
 }
 
-inline QList<Contact> SSIManager::ignoreList() const
+QList<Contact> SSIManager::ignoreList() const
 {
-	return listOfType(Contact::Ignore);
+	return d->listOfType(Contact::Ignore);
 }
 
-QList<Contact> SSIManager::listOfType(Word type) const
+QList<Contact> SSIManager::Private::listOfType(Word type) const
 {
-	QList<Contact>::const_iterator it, itEnd = d->ssiList.constEnd();
 	QList<Contact> list;
-	for ( it = d->ssiList.constBegin(); it != itEnd; ++it ) {
-		if ( it->type() == type ) {
-			list << *it;
+
+	QListIterator<Contact> i(ssiList);
+	while ( i.hasNext() ) {
+		Contact contact = i.next();
+		if ( contact.type() == type ) {
+			list << contact;
 		}
 	}
 	return list;
@@ -139,21 +150,21 @@ void SSIManager::setLastChangeTime(DWord time)
 }
 
 /* << SNAC(13,03) - SRV_SSI_RIGHTS_REPLY */
-void SSIManager::recv_ssi_parameters(SnacBuffer& reply)
+void SSIManager::Private::recv_ssi_parameters(SnacBuffer& reply)
 {
 	TlvChain chain(reply);
 	reply.seekEnd();
 	Tlv limits = chain.getTlv(0x04);
-	d->maxContacts = limits.getWord();
-	d->maxGroups = limits.getWord();
-	d->maxVisible = limits.getWord();
-	d->maxInvisible = limits.getWord();
+	maxContacts = limits.getWord();
+	maxGroups = limits.getWord();
+	maxVisible = limits.getWord();
+	maxInvisible = limits.getWord();
 	limits.seekForward(sizeof(Word)*10);
-	d->maxIgnored = limits.getWord();
+	maxIgnored = limits.getWord();
 }
 
 /* << SNAC(13,06) - SRV_SSIxREPLY */
-void SSIManager::recv_ssi_contact(SnacBuffer& reply)
+void SSIManager::Private::recv_ssi_contact(SnacBuffer& reply)
 {
 	reply.getByte(); // ssi version - 0x00
 
@@ -169,38 +180,37 @@ void SSIManager::recv_ssi_contact(SnacBuffer& reply)
 		Word dataLen = reply.getWord();
 		TlvChain chain = reply.read(dataLen);
 
-		d->ssiList << Contact(name, groupId, itemId, itemType, chain);
+		ssiList << Contact(name, groupId, itemId, itemType, chain);
 		switch ( itemType ) {
 			case Contact::Group:
-				emit newGroup( &d->ssiList.last() );
+				emit q->newGroup( &ssiList.last() );
 				break;
 			case Contact::Buddy:
-				emit newBuddy( &d->ssiList.last() );
+				emit q->newBuddy( &ssiList.last() );
 				break;
 			case Contact::Visible:
-				emit newVisible( &d->ssiList.last() );
+				emit q->newVisible( &ssiList.last() );
 				break;
 			case Contact::Invisible:
-				emit newInvisible( &d->ssiList.last() );
+				emit q->newInvisible( &ssiList.last() );
 				break;
 			case Contact::Ignore:
-				emit newIgnore( &d->ssiList.last() );
+				emit q->newIgnore( &ssiList.last() );
 				break;
 			default: break;
 		}
 	}
 	DWord lastChangeTime = reply.getDWord();
-	d->lastUpdate = lastChangeTime;
-	qDebug() << lastChangeTime << QDateTime::fromTime_t( lastChangeTime ) << QDateTime::currentDateTime();
-	contactList();
+	lastUpdate = lastChangeTime;
+	// qDebug() << lastChangeTime << QDateTime::fromTime_t( lastChangeTime ) << QDateTime::currentDateTime();
 
 	/* SNAC(13,07) */
-	d->link->snacRequest(0x13, 0x07);
+	link->snacRequest(0x13, 0x07);
 }
 
 /* << SNAC(13,0F) - SRV_SSI_UPxTOxDATE
  * >> SNAC(13,07) - CLI_SSI_ACTIVATE */
-void SSIManager::recv_ssi_uptodate(SnacBuffer& reply)
+void SSIManager::Private::recv_ssi_uptodate(SnacBuffer& reply)
 {
 	DWord modTime = reply.getDWord();
 	Word listSize = reply.getWord();
@@ -217,13 +227,13 @@ void SSIManager::incomingSnac(SnacBuffer& snac)
 
 	switch ( snac.subtype() ) {
 		case 0x03:
-			recv_ssi_parameters(snac);
+			d->recv_ssi_parameters(snac);
 			break;
 		case 0x06:
-			recv_ssi_contact(snac);
+			d->recv_ssi_contact(snac);
 			break;
 		case 0x0F:
-			recv_ssi_uptodate(snac);
+			d->recv_ssi_uptodate(snac);
 			break;
 		default:
 			break;

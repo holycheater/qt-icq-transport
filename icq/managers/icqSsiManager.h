@@ -61,12 +61,6 @@ class SSIManager: public QObject
 		void newIgnore(Contact *contact);
 		void newVisible(Contact *contact);
 		void newInvisible(Contact *contact);
-	private:
-		void recv_ssi_parameters(SnacBuffer& snac); // 13,03
-		void recv_ssi_contact(SnacBuffer& snac); // 13,06
-		void recv_ssi_uptodate(SnacBuffer& snac); // 13,0F
-
-		QList<Contact> listOfType(Word type) const;
 	private slots:
 		void incomingSnac(SnacBuffer& snac);
 	private:

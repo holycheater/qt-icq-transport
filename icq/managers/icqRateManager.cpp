@@ -33,6 +33,16 @@ namespace ICQ
 class RateManager::Private
 {
 	public:
+		RateClass* findRateClass(const SnacBuffer* snac) const; /* find rate class for the packet */
+
+		RateClass* findRateClass(Word rateClassId) const; /* get rate class by ID */
+
+		void recv_server_rates(SnacBuffer& reply); /* snac (01,07) handler */
+
+		void recv_rates_update(SnacBuffer& reply); /* snac (01,0a) handler */
+
+		RateManager *q;
+
 		QList<RateClass*> classList;
 		Connection* link;
 };
@@ -41,8 +51,9 @@ RateManager::RateManager(Connection* parent)
 	: QObject(parent)
 {
 	d = new Private;
+	d->q = this;
 	d->link = parent;
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 RateManager::~RateManager()
@@ -53,13 +64,13 @@ RateManager::~RateManager()
 
 void RateManager::addClass(RateClass* rc)
 {
-	QObject::connect( rc, SIGNAL( dataReady(SnacBuffer*) ), this, SLOT( dataAvailable(SnacBuffer*) ) );
+	QObject::connect( rc, SIGNAL( dataReady(SnacBuffer*) ), SLOT( dataAvailable(SnacBuffer*) ) );
 	d->classList.append(rc);
 }
 
 bool RateManager::canSend(const SnacBuffer& snac) const
 {
-	RateClass *rc = findRateClass(&snac);
+	RateClass *rc = d->findRateClass(&snac);
 	if ( rc ) {
 		if ( rc->timeToNextSend() == 0 ) {
 			return true;
@@ -75,7 +86,7 @@ bool RateManager::canSend(const SnacBuffer& snac) const
 void RateManager::enqueue(const SnacBuffer& packet)
 {
 	SnacBuffer *p = new SnacBuffer(packet);
-	RateClass *rc = findRateClass(p);
+	RateClass *rc = d->findRateClass(p);
 
 	if ( rc ) {
 		qDebug() << "[RateManager] Enqueuing a packet" << p->channel() << "snac family" << p->family() << "subtype" << p->subtype();
@@ -96,19 +107,18 @@ void RateManager::dataAvailable(SnacBuffer* packet)
 	delete packet; // delete packet after writing it to the buffer
 }
 
-RateClass* RateManager::findRateClass(const SnacBuffer* packet) const
+RateClass* RateManager::Private::findRateClass(const SnacBuffer* packet) const
 {
 	RateClass *rc = 0L;
-	if ( d->classList.size() == 0 ) {
+	if ( classList.size() == 0 ) {
 		return rc;
 	}
 
-	QList<RateClass*>::const_iterator it;
-	QList<RateClass*>::const_iterator itEnd = d->classList.constEnd();
-
-	for ( it = d->classList.constBegin(); it != itEnd; it++ ) {
-		if ( (*it)->isMember( packet->family(), packet->subtype() ) ) {
-			rc = *it;
+	QListIterator<RateClass*> i(classList);
+	while ( i.hasNext() ) {
+		RateClass *item = i.next();
+		if ( item->isMember( packet->family(), packet->subtype() ) ) {
+			rc = item;
 			break;
 		}
 	}
@@ -116,19 +126,18 @@ RateClass* RateManager::findRateClass(const SnacBuffer* packet) const
 	return rc;
 }
 
-RateClass* RateManager::findRateClass(Word rateClassId) const
+RateClass* RateManager::Private::findRateClass(Word rateClassId) const
 {
 	RateClass *rc = 0L;
-	if ( d->classList.size() == 0 ) {
+	if ( classList.size() == 0 ) {
 		return rc;
 	}
 
-	QList<RateClass*>::const_iterator it;
-	QList<RateClass*>::const_iterator itEnd = d->classList.constEnd();
-
-	for ( it=d->classList.constBegin(); it!=itEnd; it++ ) {
-		if ( (*it)->classId() == rateClassId ) {
-			rc = *it;
+	QListIterator<RateClass*> i(classList);
+	while ( i.hasNext() ) {
+		RateClass *item = i.next();
+		if ( item->classId() == rateClassId ) {
+			rc = item;
 			break;
 		}
 	}
@@ -139,7 +148,7 @@ RateClass* RateManager::findRateClass(Word rateClassId) const
 
 /* << SNAC (01,07) - SRV_RATE_LIMIT_INFO
  * >> SNAC (01,08) - CLI_RATES_ACK */
-void RateManager::recv_server_rates(SnacBuffer& reply)
+void RateManager::Private::recv_server_rates(SnacBuffer& reply)
 {
 
 	Word rateCount = reply.getWord();
@@ -163,7 +172,7 @@ void RateManager::recv_server_rates(SnacBuffer& reply)
 			->setDisconnectLevel( reply.getDWord() )
 			->setCurrentLevel( reply.getDWord() )
 			->setMaxLevel( reply.getDWord() );
-		addClass(rc);
+		q->addClass(rc);
 
 		reply.getDWord(); // last time (not used)
 		reply.getByte(); // current state (not used)
@@ -187,11 +196,11 @@ void RateManager::recv_server_rates(SnacBuffer& reply)
 	}
 
 	/* send out CLI_RATES_ACK */
-	d->link->write(ratesAck);
+	link->write(ratesAck);
 }
 
 /* << SNAC (01,0A) - SRV_RATE_LIMIT_WARN */
-void RateManager::recv_rates_update(SnacBuffer& reply)
+void RateManager::Private::recv_rates_update(SnacBuffer& reply)
 {
 	Word msgCode = reply.getWord();
 	Word classId = reply.getWord();
@@ -218,10 +227,10 @@ void RateManager::recv_rates_update(SnacBuffer& reply)
 void RateManager::incomingSnac(SnacBuffer& snac)
 {
 	if ( snac.family() == 0x01 && snac.subtype() == 0x07 ) {
-		recv_server_rates(snac);
+		d->recv_server_rates(snac);
 	}
 	if ( snac.family() == 0x01 && snac.subtype() == 0x0A ) {
-		recv_rates_update(snac);
+		d->recv_rates_update(snac);
 	}
 }
 

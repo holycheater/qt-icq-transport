@@ -59,18 +59,6 @@ class RateManager: public QObject
 	public slots:
 		/* this slot sends data to socket */
 		void dataAvailable(SnacBuffer* snac);
-	private:
-		/* find rate class for the packet */
-		RateClass* findRateClass(const SnacBuffer* snac) const;
-
-		/* get rate class by ID */
-		RateClass* findRateClass(Word rateClassId) const;
-
-		/* snac (01,07) handler */
-		void recv_server_rates(SnacBuffer& reply);
-
-		/* snac (01,0a) handler */
-		void recv_rates_update(SnacBuffer& reply);
 	private slots:
 		void incomingSnac(SnacBuffer& snac);
 	private:

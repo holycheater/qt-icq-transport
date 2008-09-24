@@ -39,7 +39,7 @@ UserInfoManager::UserInfoManager(Connection *parent)
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 
 	QObject::connect(this, SIGNAL( statusChanged(int) ), d->link, SIGNAL( statusChanged(int) ) );
 	QObject::connect(this, SIGNAL( userOnline(QString) ), d->link, SIGNAL( userOnline(QString) ) );

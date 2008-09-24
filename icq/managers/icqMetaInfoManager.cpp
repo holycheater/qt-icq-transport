@@ -41,7 +41,7 @@ MetaInfoManager::MetaInfoManager(Connection *parent)
 	d->link = parent;
 	d->metaSequence = 0;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 MetaInfoManager::~MetaInfoManager()

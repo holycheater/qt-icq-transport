@@ -63,7 +63,7 @@ SSIManager::SSIManager(Connection* parent)
 	d->q = this;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 
 	QObject::connect(this, SIGNAL( newGroup(Contact*) ), d->link, SIGNAL( ssiNewGroup(Contact*) ) );
 	QObject::connect(this, SIGNAL( newBuddy(Contact*) ), d->link, SIGNAL( ssiNewBuddy(Contact*) ) );

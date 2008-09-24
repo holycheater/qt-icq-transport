@@ -49,8 +49,8 @@ LoginManager::LoginManager(Connection* parent)
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect( d->link, SIGNAL( incomingFlap(FlapBuffer&) ), this, SLOT ( incomingFlap(FlapBuffer&) ) );
-	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT ( incomingSnac(SnacBuffer&) ) );
+	QObject::connect( d->link, SIGNAL( incomingFlap(FlapBuffer&) ), SLOT ( incomingFlap(FlapBuffer&) ) );
+	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT ( incomingSnac(SnacBuffer&) ) );
 }
 
 LoginManager::~LoginManager()

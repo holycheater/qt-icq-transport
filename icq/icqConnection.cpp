@@ -87,6 +87,11 @@ Connection::~Connection()
  */
 void Connection::contactAdd(const QString& uin)
 {
+	/* if contact is already on the list, just emit the 'added' signal */
+	if ( contactList().contains(uin) ) {
+		emit contactAdded(uin);
+		return;
+	}
 	/* TODO */
 }
 
@@ -95,6 +100,11 @@ void Connection::contactAdd(const QString& uin)
  */
 void Connection::contactDel(const QString& uin)
 {
+	/* if contact is not on the list, just emit the 'deleted' signal */
+	if ( !contactList().contains(uin) ) {
+		emit contactDeleted(uin);
+		return;
+	}
 	/* TODO */
 }
 

@@ -40,7 +40,38 @@ class MessageManager::Private {
 
 void MessageManager::Private::send_channel_1_message(const Message& msg)
 {
-	/*TODO*/
+	SnacBuffer snac(0x04,0x06);
+
+	DWord r1 = qrand(), r2 = qrand();
+
+	snac.addDWord(r1);
+	snac.addDWord(r2);
+	snac.addWord( msg.channel() );
+	snac.addByte( msg.receiver().length() );
+	snac.addData( msg.receiver() );
+
+	Tlv msgData;
+
+	msgData.addByte(0x05); // fragment id
+	msgData.addByte(0x01); // fragment version
+	msgData.addByte(1); // next data len
+	msgData.addByte(1); // required caps, 1 - text.
+
+	Buffer msgChunk;
+	msgChunk.addWord(0x0000); // charset
+	msgChunk.addWord(0x0000); // lang num
+	msgChunk.addData( msg.text() );
+
+	msgData.addByte(0x01); // fragment id: message
+	msgData.addByte(0x01); // fragment version
+	msgData.addWord( msgChunk.size() ); // next data len
+	msgData.addData(msgChunk);
+
+	snac.addTlv(msgData);
+	snac.addTlv( Tlv(0x06) ); // store if recipient offline
+
+	link->write(snac);
+
 	/*
 	 * 2A 02
 	 * 6B 4D
@@ -82,8 +113,8 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 
 	DWord r1 = qrand(), r2 = qrand();
 
-	snac.addDWord( r1 );
-	snac.addDWord( r2 );
+	snac.addDWord(r1);
+	snac.addDWord(r2);
 	snac.addWord( msg.channel() );
 	snac.addByte( msg.receiver().length() );
 	snac.addData( msg.receiver() );
@@ -158,7 +189,7 @@ MessageManager::MessageManager(Connection *parent)
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), this, SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 	QObject::connect(this, SIGNAL( incomingMessage(Message) ), d->link, SIGNAL( incomingMessage(Message) ) );
 }
 

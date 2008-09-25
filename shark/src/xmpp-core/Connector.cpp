@@ -28,7 +28,8 @@
 #include <QtCrypto>
 
 #include "safedelete.h"
-#include <libidn/idna.h>
+/* libidn */
+#include <idna.h>
 
 #include "ndns.h"
 #include "srvresolver.h"

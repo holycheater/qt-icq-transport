@@ -57,9 +57,12 @@ class JabberConnection : public QObject
 		void sendUnsubscribe(const Jid& user, const QString& node);
 		void sendUnsubscribed(const Jid& user, const QString& node);
 
+		void sendOnlinePresence(const Jid& recipient, const QString& uin);
+		void sendOfflinePresence(const Jid& recipient, const QString& uin);
+
 		void sendOnlinePresence(const Jid& recipient);
 		void sendOfflinePresence(const Jid& recipient);
-		void sendMessage(const QString& senderUin, const Jid& recipient, const QString& message);
+		void sendMessage(const Jid& recipient, const QString& uin, const QString& message);
 	signals:
 		void userUnregistered(const QString& jid);
 		void userRegistered(const QString& jid, const QString& uin, const QString& password);

@@ -40,6 +40,7 @@ class GatewayTask : public QObject
 		virtual ~GatewayTask();
 
 		void setDatabaseLink(const QSqlDatabase& sql);
+		void setIcqServer(const QString& host, quint16 port);
 	public slots:
 		void processRegister(const QString& user, const QString& uin, const QString& password);
 		void processUnregister(const QString& user);
@@ -55,8 +56,20 @@ class GatewayTask : public QObject
 		void contactAdded(const Jid& user, const QString& uin);
 		void contactDeleted(const Jid& user, const QString& uin);
 
+		void contactOnline(const Jid& user, const QString& uin);
+		void contactOffline(const Jid& user, const QString& uin);
+
 		void onlineNotifyFor(const Jid& user);
 		void offlineNotifyFor(const Jid& user);
+
+		void incomingMessage(const Jid& user, const QString& uin, const QString& text);
+	private slots:
+		void processIcqStatus(int status);
+		void processContactOnline(const QString& uin);
+		void processContactOffline(const QString& uin);
+		void processContactAdded(const QString& uin);
+		void processContactDeleted(const QString& uin);
+		void processIncomingMessage(const QString& senderUin, const QString& message);
 	private:
 		class Private;
 		Private *d;

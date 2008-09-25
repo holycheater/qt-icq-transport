@@ -144,6 +144,25 @@ void JabberConnection::sendUnsubscribed(const Jid& user, const QString& uin)
 	d->stream->sendStanza(unsubscribed);
 }
 
+void JabberConnection::sendOnlinePresence(const Jid& recipient, const QString& uin)
+{
+	Presence presence;
+	presence.setFrom( d->jid.withNode(uin) );
+	presence.setTo(recipient);
+
+	d->stream->sendStanza(presence);
+}
+
+void JabberConnection::sendOfflinePresence(const Jid& recipient, const QString& uin)
+{
+	Presence presence;
+	presence.setFrom( d->jid.withNode(uin) );
+	presence.setTo(recipient);
+	presence.setType(Presence::Unavailable);
+
+	d->stream->sendStanza(presence);
+}
+
 void JabberConnection::sendOnlinePresence(const Jid& recipient)
 {
 	Presence presence;
@@ -151,6 +170,13 @@ void JabberConnection::sendOnlinePresence(const Jid& recipient)
 	presence.setTo(recipient);
 
 	d->stream->sendStanza(presence);
+
+	Presence probe;
+	probe.setFrom(d->jid);
+	probe.setTo(recipient);
+	probe.setType(Presence::Probe);
+
+	d->stream->sendStanza(probe);
 }
 
 void JabberConnection::sendOfflinePresence(const Jid& recipient)
@@ -169,10 +195,10 @@ void JabberConnection::sendOfflinePresence(const Jid& recipient)
  * @param recipient		Jabber user recipient's jabber-id.
  * @param message		Message itself.
  */
-void JabberConnection::sendMessage(const QString& senderUin, const Jid& recipient, const QString& message)
+void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, const QString& message)
 {
 	Message msg;
-	msg.setFrom( d->jid.withNode(senderUin) );
+	msg.setFrom( d->jid.withNode(uin) );
 	msg.setTo(recipient);
 	msg.setBody(message);
 
@@ -342,6 +368,14 @@ void JabberConnection::stream_iq(const IQ& iq)
 void JabberConnection::stream_message(const Message& msg)
 {
 	qDebug() << "message from" << msg.from() << "to" << msg.to() << "subject" << msg.subject();
+	if ( msg.to().domain() != d->jid.domain() ) {
+		qDebug() << "We shouldn't receive this message";
+		return;
+	}
+	/* message for legacy user */
+	if ( !msg.to().node().isEmpty() ) {
+		emit outgoingMessage( msg.from(), msg.to().node(), msg.body() );
+	}
 }
 
 void JabberConnection::stream_presence(const Presence& presence)

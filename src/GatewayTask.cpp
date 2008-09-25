@@ -23,8 +23,8 @@
 #include "xmpp-core/Jid.h"
 #include "icqConnection.h"
 
-#include <QList>
 #include <QHash>
+#include <QStringList>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -38,10 +38,13 @@ class GatewayTask::Private
 		Private(GatewayTask *parent);
 		~Private();
 
-		QList<ICQ::Connection*> icqConnections;
-
 		/* Jabber-ID-to-ICQ-Connection hash-table. */
-		QHash<QString, ICQ::Connection*> onlineUsers;
+		QHash<QString, ICQ::Connection*> jidIcqTable;
+		/* Connection & Jabber-ID hash-table */
+		QHash<ICQ::Connection*, QString> icqJidTable;
+
+		QString icqHost;
+		quint16 icqPort;
 
 		QSqlDatabase db;
 
@@ -59,8 +62,8 @@ GatewayTask::Private::~Private()
 {
 	db.close();
 
-	onlineUsers.clear();
-	qDeleteAll(icqConnections);
+	qDeleteAll(jidIcqTable);
+	icqJidTable.clear();
 }
 
 GatewayTask::GatewayTask(QObject *parent)
@@ -91,6 +94,12 @@ void GatewayTask::setDatabaseLink(const QSqlDatabase& sql)
 				")");
 }
 
+void GatewayTask::setIcqServer(const QString& host, quint16 port)
+{
+	d->icqHost = host;
+	d->icqPort = port;
+}
+
 void GatewayTask::processRegister(const QString& user, const QString& uin, const QString& password)
 {
 	QSqlQuery query;
@@ -111,37 +120,59 @@ void GatewayTask::processUnregister(const QString& user)
 
 void GatewayTask::processLogin(const Jid& user)
 {
-	if ( d->onlineUsers.contains( user.bare() ) ) {
-		/* user is already signed on */
+	if ( d->jidIcqTable.contains( user.bare() ) ) {
+		qDebug() << "[GT] processLogin: user is already logged on, aborting login step";
 		return;
 	}
+	if ( d->icqHost.isEmpty() || !d->icqPort ) {
+		qDebug() << "[GT] processLogin: icq host and/or port values are not set. Aborting...";
+		return;
+	}
+
 	QSqlQuery query;
-	query.prepare("SELECT uin, password FROM users"
-				  "WHERE jid = '?'");
-	query.addBindValue( user.bare() );
+	/* small hack with replace, because QSqlQuery somehow doesn't understand bindvalues there */
+	query.exec( QString("SELECT uin, password FROM users WHERE jid = '?' ").replace( "?", user.bare() ) );
+
+	if ( query.first() ) {
+		QString uin = query.value(0).toString();
+		QString password = query.value(1).toString();
+		qDebug() << "[GT]" << "credentails for" << user.bare() << "are:" << uin << password;
+
+		ICQ::Connection *conn = new ICQ::Connection(uin, password, d->icqHost, d->icqPort);
+
+		QObject::connect( conn, SIGNAL( statusChanged(int) ), SLOT( processIcqStatus(int) ) );
+		QObject::connect( conn, SIGNAL( userOnline(QString) ), SLOT( processContactOnline(QString) ) );
+		QObject::connect( conn, SIGNAL( userOffline(QString) ), SLOT( processContactOffline(QString) ) );
+		QObject::connect( conn, SIGNAL( contactAdded(QString) ), SLOT( processContactAdded(QString) ) );
+		QObject::connect( conn, SIGNAL( contactDeleted(QString) ), SLOT( processContactDeleted(QString) ) );
+		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString) ), SLOT( processIncomingMessage(QString,QString) ) );
+
+		d->jidIcqTable.insert( user.bare(), conn );
+		d->icqJidTable.insert( conn, user.bare() );
+		conn->setOnlineStatus(ICQ::Connection::Online);
+	}
 }
 
 void GatewayTask::processLogout(const Jid& user)
 {
-	d->onlineUsers.value( user.bare() )->signOff();
-	/* TODO: delete connection object */
+	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	conn->signOff();
+	d->jidIcqTable.remove( user.bare() );
+	d->icqJidTable.remove(conn);
+
+	// conn->deleteLater();
 }
 
 void GatewayTask::processContactAdd(const Jid& user, const QString& uin)
 {
-	ICQ::Connection *conn = d->onlineUsers.value( user.bare() );
+	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	conn->contactAdd(uin);
-
-	/* TODO: do this on auth accept */
-	emit contactAdded(user, uin);
 }
 
 void GatewayTask::processContactDel(const Jid& user, const QString& uin)
 {
-	ICQ::Connection *conn = d->onlineUsers.value( user.bare() );
+	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	conn->contactDel(uin);
-
-	emit contactDeleted(user, uin);
 }
 
 /**
@@ -149,6 +180,8 @@ void GatewayTask::processContactDel(const Jid& user, const QString& uin)
  */
 void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const QString& message)
 {
+	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	conn->sendMessage(uin, message);
 }
 
 /**
@@ -181,4 +214,53 @@ void GatewayTask::processShutdown()
 		emit offlineNotifyFor(user);
 	}
 	d->online = false;
+}
+
+void GatewayTask::processIcqStatus(int status)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	qDebug() << "icq status for" << conn->userId() << "changed to" << status;
+	Jid user = d->icqJidTable.value(conn);
+	if ( status == ICQ::Connection::Offline ) {
+		QStringList contacts = conn->contactList();
+		QStringListIterator i(contacts);
+		while ( i.hasNext() ) {
+			emit contactOffline( user, i.next() );
+		}
+	}
+}
+
+void GatewayTask::processContactOnline(const QString& uin)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+	emit contactOnline(user, uin);
+}
+
+void GatewayTask::processContactOffline(const QString& uin)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+	emit contactOffline(user, uin);
+}
+
+void GatewayTask::processContactAdded(const QString& uin)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+	emit contactAdded(user, uin);
+}
+
+void GatewayTask::processContactDeleted(const QString& uin)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+	emit contactDeleted(user, uin);
+}
+
+void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+	emit incomingMessage(user, senderUin, message);
 }

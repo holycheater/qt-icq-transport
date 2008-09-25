@@ -24,11 +24,11 @@ Connection::Private::Private(Connection* parent)
 
 	QObject::connect( socket, SIGNAL( readyRead() ), SLOT( incomingData() ) );
 	QObject::connect( q, SIGNAL( readyRead() ), SLOT( incomingData() ) );
-	QObject::connect( q, SIGNAL( signedOff() ), SLOT( slot_signedOff() ) );
+	QObject::connect( q, SIGNAL( signedOff() ), SLOT( processSignedOff() ) );
 	QObject::connect( q, SIGNAL( incomingMessage(Message) ), SLOT( processIncomingMessage(Message) ) );
 
-	QObject::connect( socket, SIGNAL( connected() ), SLOT( slot_connected() ) );
-	QObject::connect( socket, SIGNAL( disconnected() ), SLOT( slot_disconnected() ) );
+	QObject::connect( socket, SIGNAL( connected() ), SLOT( processConnected() ) );
+	QObject::connect( socket, SIGNAL( disconnected() ), SLOT( processDisconnected() ) );
 }
 
 Connection::Private::~Private()
@@ -44,12 +44,12 @@ void Connection::Private::startSignOn()
 
 	connectTimer = new QTimer(this);
 	connectTimer->setSingleShot(true);
-	QObject::connect( connectTimer, SIGNAL( timeout() ), SLOT( slot_connectionTimeout() ) );
+	QObject::connect( connectTimer, SIGNAL( timeout() ), SLOT( processConnectionTimeout() ) );
 
 	loginManager = new LoginManager(q);
 	QObject::connect( loginManager, SIGNAL( serverAvailable(QString,quint16) ), SLOT( processNewServer(QString,quint16) ) );
 	QObject::connect( loginManager, SIGNAL( ratesRequest() ), SLOT( processRatesRequest() ) );
-	QObject::connect( loginManager, SIGNAL( loginFinished() ), SLOT( slot_signedOn() ) );
+	QObject::connect( loginManager, SIGNAL( loginFinished() ), SLOT( processSignedOn() ) );
 
 	loginManager->setUsername(uin);
 	loginManager->setPassword(password);
@@ -60,7 +60,7 @@ void Connection::Private::startSignOn()
 
 	lookupTimer = new QTimer(this);
 	lookupTimer->setSingleShot(true);
-	QObject::connect( lookupTimer, SIGNAL( timeout() ), SLOT( slot_lookupFailed() ) );
+	QObject::connect( lookupTimer, SIGNAL( timeout() ), SLOT( processLookupTimeout() ) );
 	lookupTimer->start(10000);
 
 	startConnectionTimer();

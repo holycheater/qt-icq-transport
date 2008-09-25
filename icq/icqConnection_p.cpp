@@ -38,12 +38,50 @@ Connection::Private::~Private()
 	socket->deleteLater();
 }
 
+void Connection::Private::startSignOn()
+{
+	setConnectionStatus(Connecting);
+
+	connectTimer = new QTimer(this);
+	connectTimer->setSingleShot(true);
+	QObject::connect( connectTimer, SIGNAL( timeout() ), SLOT( slot_connectionTimeout() ) );
+
+	loginManager = new LoginManager(q);
+	QObject::connect( loginManager, SIGNAL( serverAvailable(QString,quint16) ), SLOT( processNewServer(QString,quint16) ) );
+	QObject::connect( loginManager, SIGNAL( ratesRequest() ), SLOT( processRatesRequest() ) );
+	QObject::connect( loginManager, SIGNAL( loginFinished() ), SLOT( slot_signedOn() ) );
+
+	loginManager->setUsername(uin);
+	loginManager->setPassword(password);
+
+	qDebug() << "[ICQ:Connection] Looking up hostname" << server;
+
+	lookupId = QHostInfo::lookupHost(server, this, SLOT( processLookupResult(QHostInfo) ) );
+
+	lookupTimer = new QTimer(this);
+	lookupTimer->setSingleShot(true);
+	QObject::connect( lookupTimer, SIGNAL( timeout() ), SLOT( slot_lookupFailed() ) );
+	lookupTimer->start(10000);
+
+	startConnectionTimer();
+}
+
 Word Connection::Private::flapSequence()
 {
 	if ( m_flapSequence >= 0x8000 ) {
 		m_flapSequence = 0;
 	}
 	return ++m_flapSequence;
+}
+
+Word Connection::Private::snacRequest()
+{
+	 return ++m_snacRequest;
+}
+
+int Connection::Private::connectionStatus() const
+{
+	return m_connectionStatus;
 }
 
 void Connection::Private::setConnectionStatus(int status)
@@ -59,18 +97,10 @@ void Connection::Private::setConnectionStatus(int status)
 	m_connectionStatus = status;
 }
 
-void Connection::Private::connectToServer(const QHostInfo& host)
+void Connection::Private::startConnectionTimer()
 {
-	if ( host.error() != QHostInfo::NoError ) {
-		qCritical() << "[ICQ:Connection] Lookup failed:" << host.errorString();
-		return;
-	}
-	QHostAddress address = host.addresses().value(0);
-	qDebug() << "[ICQ:Connection] Found address:" << address.toString();
-	socket->connectToHost(address, port);
-
-	lookupTimer->stop();
-	delete lookupTimer;
+	connectTimer->stop();
+	connectTimer->start(CONNECTION_TIMEOUT);
 }
 
 /* << SNAC(xx,01) - error handling */
@@ -87,15 +117,15 @@ void Connection::Private::handle_error(SnacBuffer& snac)
 void Connection::Private::incomingData()
 {
 	if ( socket->bytesAvailable() < FLAP_HEADER_SIZE ) {
-		qDebug() << "[ICQ:Connection] Not enough data for a header in the socket";
-		return; // we don't have a header at this point
+		/* we don't have a header at this point */
+		return;
 	}
 
 	FlapBuffer flap = FlapBuffer::fromRawData( socket->peek(FLAP_HEADER_SIZE) );
 
 	if (flap.flapDataSize() > (socket->bytesAvailable() - FLAP_HEADER_SIZE) ) {
-		qDebug() << "[ICQ:Connection] Not enough data for a packet" << flap.flapDataSize() << socket->bytesAvailable();
-		return; // we don't need an incomplete packet
+		/* we don't need an incomplete packet */
+		return;
 	}
 
 	socket->seek(FLAP_HEADER_SIZE);
@@ -168,16 +198,26 @@ void Connection::Private::incomingData()
 
 void Connection::Private::sendKeepAlive()
 {
-	qDebug() << "[ICQ:Connection] Keep-alive sent";
+	qDebug() << "[ICQ:Connection]" << "Keep-alive sent";
 	q->write ( FlapBuffer(FlapBuffer::KeepAliveChannel) );
 }
 
-void Connection::Private::processIncomingMessage(const Message& msg)
+void Connection::Private::processConnectionTimeout()
 {
-	emit q->incomingMessage( msg.sender(), msg.text( QTextCodec::codecForName("UTF-8") ) );
+	qWarning() << "[ICQ:Connection]" << "Connection timed out";
+	connectTimer->deleteLater();
+	socket->disconnectFromHost();
+	setConnectionStatus(Disconnected);
+
+	emit q->statusChanged(Offline);
 }
 
-void Connection::Private::slot_disconnected()
+void Connection::Private::processConnected()
+{
+	qDebug() << "[ICQ:Connection] Connected to" << socket->peerName() << "port" << socket->peerPort();
+}
+
+void Connection::Private::processDisconnected()
 {
 	socket->close();
 	qDebug() << "[ICQ:Connection] Disconnected";
@@ -188,33 +228,51 @@ void Connection::Private::slot_disconnected()
 	}
 }
 
-void Connection::Private::slot_connected()
+void Connection::Private::processLookupResult(const QHostInfo& host)
 {
-	qDebug() << "[ICQ:Connection] Connected to" << socket->peerName() << "port" << socket->peerPort();
+	if ( host.error() != QHostInfo::NoError ) {
+		qCritical() << "[ICQ:Connection] Lookup failed:" << host.errorString();
+		return;
+	}
+	QHostAddress address = host.addresses().value(0);
+	qDebug() << "[ICQ:Connection] Found address:" << address.toString();
+	socket->connectToHost(address, port);
+
+	lookupTimer->stop();
+	delete lookupTimer;
 }
 
-void Connection::Private::slot_lookupFailed()
+void Connection::Private::processLookupTimeout()
 {
 	QHostInfo::abortHostLookup(lookupId);
 	lookupTimer->deleteLater();
 	setConnectionStatus(Disconnected);
 
-	qDebug() << "[Error] Host lookup timeout";
+	qDebug() << "[ICQ:Connection] Lookup timeout";
 
 	emit q->statusChanged(Offline);
 }
 
-void Connection::Private::slot_connectionTimeout()
+void Connection::Private::processIncomingMessage(const Message& msg)
 {
-	qWarning() << "[error]" << "connection timed out";
-	connectTimer->deleteLater();
-	socket->disconnectFromHost();
-	setConnectionStatus(Disconnected);
-
-	emit q->statusChanged(Offline);
+	emit q->incomingMessage( msg.sender(), msg.text( QTextCodec::codecForName("UTF-8") ) );
 }
 
-void Connection::Private::slot_signedOn()
+void Connection::Private::processNewServer(QString newHost, quint16 newPort)
+{
+	socket->disconnectFromHost();
+	socket->connectToHost(QHostAddress(newHost), newPort);
+	startConnectionTimer();
+}
+
+void Connection::Private::processRatesRequest()
+{
+	rateManager->requestRates();
+	ssiManager->requestParameters();
+	ssiManager->checkContactList();
+}
+
+void Connection::Private::processSignedOn()
 {
 	delete connectTimer;
 
@@ -235,14 +293,14 @@ void Connection::Private::slot_signedOn()
 	q->setOnlineStatus(onlineStatus);
 }
 
-void Connection::Private::slot_signedOff()
+void Connection::Private::processSignedOff()
 {
 	delete keepAliveTimer;
-	emit q->statusChanged(Offline);
-
 	delete userInfoManager;
 	delete msgManager;
 	delete metaManager;
+
+	emit q->statusChanged(Offline);
 }
 
 

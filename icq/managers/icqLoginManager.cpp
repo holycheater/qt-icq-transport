@@ -48,6 +48,7 @@ LoginManager::LoginManager(Connection* parent)
 {
 	d = new Private;
 	d->link = parent;
+	d->loginStage = Private::stageAuth;
 
 	QObject::connect( d->link, SIGNAL( incomingFlap(FlapBuffer&) ), SLOT ( incomingFlap(FlapBuffer&) ) );
 	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT ( incomingSnac(SnacBuffer&) ) );
@@ -58,14 +59,14 @@ LoginManager::~LoginManager()
 	delete d;
 }
 
-void LoginManager::login(QString& uin, QString& password, QString& server)
+void LoginManager::setUsername(const QString& uin)
 {
-	quint16 port = 5190;
 	d->uin = uin;
-	d->password = password;
+}
 
-	d->link->connectToHost(server, port);
-	d->loginStage = Private::stageAuth;
+void LoginManager::setPassword(const QString& password)
+{
+	d->password = password;
 }
 
 void LoginManager::recv_flap_version(FlapBuffer& reply)
@@ -126,12 +127,10 @@ void LoginManager::recv_auth_reply(SnacBuffer& reply)
 
 	int pos = bosaddr.indexOf(':');
 	QString server = bosaddr.left(pos);
-	int port = bosaddr.right(bosaddr.length()-pos-1).toUInt();
+	quint16 port = bosaddr.right(bosaddr.length()-pos-1).toUInt();
 
-	d->link->disconnectFromHost();
 	d->loginStage = Private::stageProtocolNegotiation;
-	d->link->connectToHost(QHostAddress(server), port);
-	d->link->startConnectionTimer();
+	emit serverAvailable(server, port);
 }
 
 void LoginManager::send_cli_auth_cookie()
@@ -173,15 +172,12 @@ void LoginManager::recv_snac_versions(SnacBuffer& reply)
 	reply.seekEnd(); // we've got it.
 
 	/* send out snac(01,06) - CLI_RATES_REQUEST */
-	d->link->rateManager()->requestRates();
+	emit ratesRequest();
 
 	d->link->snacRequest(0x02, 0x02);
 	d->link->snacRequest(0x03, 0x02);
 	d->link->snacRequest(0x04, 0x04);
 	d->link->snacRequest(0x09, 0x02);
-
-	d->link->ssiManager()->requestParameters();
-	d->link->ssiManager()->checkContactList();
 }
 
 /* << SNAC(02,03) - SRV_LOCATION_RIGHTS_REPLY
@@ -304,35 +300,35 @@ void LoginManager::incomingFlap(FlapBuffer& flap)
 
 void LoginManager::incomingSnac(SnacBuffer& snac)
 {
-	if ( snac.family() == sfAuth && snac.subtype() == 0x07 ) {
+	if ( snac.family() == 0x17 && snac.subtype() == 0x07 ) {
 		recv_auth_key(snac);
 		return;
 	}
-	if ( snac.family() == sfAuth && snac.subtype() == 0x03 ) {
+	if ( snac.family() == 0x17 && snac.subtype() == 0x03 ) {
 		recv_auth_reply(snac);
 		return;
 	}
-	if ( snac.family() == sfGeneric && snac.subtype() == 0x03 ) {
+	if ( snac.family() == 0x01 && snac.subtype() == 0x03 ) {
 		recv_snac_list(snac);
 		return;
 	}
-	if ( snac.family() == sfGeneric && snac.subtype() == 0x18 ) {
+	if ( snac.family() == 0x01 && snac.subtype() == 0x18 ) {
 		recv_snac_versions(snac);
 		return;
 	}
-	if ( snac.family() == sfLocation && snac.subtype() == 0x03 ) {
+	if ( snac.family() == 0x02 && snac.subtype() == 0x03 ) {
 		recv_location_services_limits(snac);
 		return;
 	}
-	if ( snac.family() == sfBLM && snac.subtype() == 0x03 ) {
+	if ( snac.family() == 0x03 && snac.subtype() == 0x03 ) {
 		recv_buddy_list_parameters(snac);
 		return;
 	}
-	if ( snac.family() == sfICBM && snac.subtype() == 0x05 ) {
+	if ( snac.family() == 0x04 && snac.subtype() == 0x05 ) {
 		recv_icbm_parameters(snac);
 		return;
 	}
-	if ( snac.family() == sfPrivacyManagement && snac.subtype() == 0x03 ) {
+	if ( snac.family() == 0x09 && snac.subtype() == 0x03 ) {
 		recv_privacy_parameters(snac);
 		return;
 	}

@@ -89,9 +89,10 @@ class Connection: public QObject
 
 		Connection* setVisibility(int vis);
 
-		void signOn(QString& uin, QString& password, QString& server);
-
 		void sendMessage(const QString& recipient, const QString& text);
+
+		void sendMetaRequest(Word type);
+		void sendMetaRequest(Word type, Buffer& data);
 
 		/* send empty SNAC request packet (only snac header in the flap) */
 		void snacRequest(Word family, Word subtype);
@@ -128,23 +129,6 @@ class Connection: public QObject
 		void incomingMessage(const QString& senderUin, const QString& text);
 
 		void signedOff();
-	protected:
-		friend class LoginManager;
-		friend class MessageManager;
-		/* connect to server */
-		void connectToHost(const QString& hostname, quint16 port);
-		void connectToHost(const QHostAddress& host, quint16 port);
-		/* disconnect from server */
-		void disconnectFromHost();
-
-		void startConnectionTimer();
-
-		/* get access to the rate manager */
-		RateManager* rateManager() const;
-		SSIManager* ssiManager() const;
-
-		void sendMetaRequest(Word type);
-		void sendMetaRequest(Word type, Buffer& data);
 	private:
 		class Private;
 		Private *d;

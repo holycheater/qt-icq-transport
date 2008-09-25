@@ -167,54 +167,6 @@ QString Connection::userId() const
 }
 
 /**
- * Starts connecting to @a host at given @a port by looking up hostname.
- *
- * @param hostname		ICQ login server hostname
- * @param port			ICQ login server port
- */
-void Connection::connectToHost(const QString& hostname, quint16 port)
-{
-	qDebug() << "[ICQ:Connection] Looking up hostname" << hostname;
-
-	d->lookupId = QHostInfo::lookupHost(hostname, d, SLOT( connectToServer(QHostInfo) ) );
-
-	d->lookupTimer = new QTimer(this);
-	d->lookupTimer->setSingleShot(true);
-	QObject::connect( d->lookupTimer, SIGNAL( timeout() ), d, SLOT( slot_lookupFailed() ) );
-	d->lookupTimer->start(10000);
-
-	d->port = port;
-}
-
-/**
- * Starts connecting to @a host at given @a port.
- *
- * @param host			ICQ login server IP address
- * @param port			ICQ login server port
- */
-void Connection::connectToHost(const QHostAddress& host, quint16 port)
-{
-	d->socket->connectToHost(host, port);
-}
-
-/**
- * closes connection to ICQ server.
- */
-void Connection::disconnectFromHost()
-{
-	d->socket->disconnectFromHost();
-}
-
-/**
- * Starts connection sequence timeout timer.
- */
-void Connection::startConnectionTimer()
-{
-	d->connectTimer->stop();
-	d->connectTimer->start(CONNECTION_TIMEOUT);
-}
-
-/**
  * Sets connection ICQ user UIN to @a uin.
  *
  * @param uin			ICQ UIN
@@ -288,7 +240,7 @@ Connection* Connection::setOnlineStatus(Word onlineStatus)
 	}
 
 	if ( connectionStatus() == Disconnected ) {
-		signOn(d->uin, d->password, d->server);
+		d->startSignOn();
 		return this;
 	}
 
@@ -327,28 +279,6 @@ Connection* Connection::setVisibility(int vis)
 {
 	Q_UNUSED(vis)
 	return this;
-}
-
-/**
- * Sign on on the ICQ server with the given credentails.
- *
- * @param uin			ICQ user UIN
- * @param password		ICQ user password
- * @param server		ICQ login server host
- */
-void Connection::signOn(QString& uin, QString& password, QString& server)
-{
-	d->setConnectionStatus(Connecting);
-
-	d->connectTimer = new QTimer(this);
-	d->connectTimer->setSingleShot(true);
-	QObject::connect( d->connectTimer, SIGNAL( timeout() ), d, SLOT( slot_connectionTimeout() ) );
-
-	d->loginManager = new LoginManager(this);
-	QObject::connect( d->loginManager, SIGNAL( loginFinished() ), d, SLOT( slot_signedOn() ) );
-
-	d->loginManager->login(uin, password, server);
-	startConnectionTimer();
 }
 
 /**
@@ -428,22 +358,6 @@ void Connection::signOff()
 	write( FlapBuffer(FlapBuffer::CloseChannel) );
 
 	d->socket->disconnectFromHost();
-}
-
-/**
- * Returns pointer to the RateManager for this connection.
- */
-RateManager* Connection::rateManager() const
-{
-	return d->rateManager;
-}
-
-/**
- * Returns pointer to the SSIManager for this connection. SSI is server-side information.
- */
-SSIManager* Connection::ssiManager() const
-{
-	return d->ssiManager;
 }
 
 void Connection::sendMetaRequest(Word type)

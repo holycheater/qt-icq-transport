@@ -30,7 +30,6 @@
 namespace ICQ
 {
 
-
 class LoginManager: public QObject
 {
 	Q_OBJECT
@@ -38,8 +37,12 @@ class LoginManager: public QObject
 	public:
 		LoginManager(Connection *parent);
 		~LoginManager();
-		void login(QString& uin, QString& password, QString& server);
+
+		void setUsername(const QString& uin);
+		void setPassword(const QString& password);
 	signals:
+		void serverAvailable(const QString& host, quint16 port);
+		void ratesRequest();
 		void loginFinished();
 	private:
 		void recv_flap_version(FlapBuffer& reply);

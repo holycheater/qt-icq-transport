@@ -13,7 +13,6 @@
 #include "types/icqMessage.h"
 
 #include <QObject>
-#include <QPointer>
 #include <QTcpSocket>
 #include <QTimer>
 
@@ -28,11 +27,15 @@ class Connection::Private : public QObject
 		Private(Connection* parent);
 		~Private();
 
-		Word flapSequence();
-		Word snacRequest() { return ++m_snacRequest; };
+		void startSignOn();
 
-		int connectionStatus() const { return m_connectionStatus; }
+		Word flapSequence();
+		Word snacRequest();
+
+		int connectionStatus() const;
 		void setConnectionStatus(int status);
+
+		void startConnectionTimer();
 
 		/* SNAC(xx,01) */
 		void handle_error(SnacBuffer& snac);
@@ -59,19 +62,19 @@ class Connection::Private : public QObject
 		QTimer *keepAliveTimer;
 		QTimer *lookupTimer;
 	public slots:
-		void connectToServer(const QHostInfo& host);
 		void incomingData();
 		void sendKeepAlive();
 
+		void processConnectionTimeout();
+		void processConnected();
+		void processDisconnected();
+		void processLookupResult(const QHostInfo& host);
+		void processLookupTimeout();
 		void processIncomingMessage(const Message& msg);
-
-		void slot_connected();
-		void slot_disconnected();
-		void slot_lookupFailed();
-		void slot_connectionTimeout();
-
-		void slot_signedOn();
-		void slot_signedOff();
+		void processNewServer(QString server, quint16 port);
+		void processRatesRequest();
+		void processSignedOn();
+		void processSignedOff();
 	private:
 		Connection *q;
 		Word m_snacRequest;

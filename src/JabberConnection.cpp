@@ -43,6 +43,13 @@ using namespace XMPP;
 class JabberConnection::Private {
 
 	public:
+		void processDiscoInfo(const IQ& iq);
+		void processDiscoItems(const IQ& iq);
+		void processRegisterRequest(const IQ& iq);
+		void processRegisterForm(const Registration& iq);
+
+		JabberConnection *q;
+
 		Connector* connector;
 		ComponentStream* stream;
 		Jid jid;
@@ -51,10 +58,14 @@ class JabberConnection::Private {
 		QString secret;
 };
 
+/**
+ * Constructs jabber-connection object.
+ */
 JabberConnection::JabberConnection(QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
+	d->q = this;
 
 	d->connector = new Connector;
 	d->stream = new ComponentStream(d->connector);
@@ -66,103 +77,139 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->vcard.setDescription("Qt ICQ Transport");
 	d->vcard.setUrl( QUrl("http://github.com/holycheater") );
 
-	QObject::connect(d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
-	QObject::connect(d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
-	QObject::connect(d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
-	QObject::connect(d->stream, SIGNAL( error(ComponentStream::Error) ), SLOT( stream_error(ComponentStream::Error) ) );
-	QObject::connect(d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
-	QObject::connect(d->stream, SIGNAL( connected() ), SIGNAL( connected() ) );
+	QObject::connect( d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
+	QObject::connect( d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
+	QObject::connect( d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
+	QObject::connect( d->stream, SIGNAL( error(ComponentStream::Error) ), SLOT( stream_error(ComponentStream::Error) ) );
+	QObject::connect( d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
+	QObject::connect( d->stream, SIGNAL( connected() ), SIGNAL( connected() ) );
 }
 
+/**
+ * Destroys jabber-connection object.
+ */
 JabberConnection::~JabberConnection()
 {
 	delete d->stream;
 	delete d->connector;
 }
 
+/**
+ * Start connecting to jabber-server.
+ */
 void JabberConnection::login()
 {
 	d->stream->connectToServer(d->jid, d->secret);
 }
 
+/**
+ * Sets jabber-id to @a username (it should be equal to domain name which the component will serve)
+ */
 void JabberConnection::setUsername(const QString& username)
 {
 	d->jid = username;
 }
 
+/**
+ * Sets jabber server host and port to connect to.
+ */
 void JabberConnection::setServer(const QString& host, quint16 port)
 {
 	d->connector->setOptHostPort(host, port);
 }
 
+/**
+ * Sets secret keyword for jabber server to authorize component.
+ */
 void JabberConnection::setPassword(const QString& password)
 {
 	d->secret = password;
 }
 
-void JabberConnection::sendSubscribe(const Jid& user, const QString& uin)
+/**
+ * Sends 'subscribe' presence to @a toUser on behalf uin\@component.domain
+ */
+void JabberConnection::sendSubscribe(const Jid& toUser, const QString& uin)
 {
 	Presence subscribe;
 
 	subscribe.setType(Presence::Subscribe);
-	subscribe.setFrom(user);
-	subscribe.setTo( d->jid.withNode(uin) );
+	subscribe.setFrom( d->jid.withNode(uin) );
+	subscribe.setTo(toUser);
 
 	d->stream->sendStanza(subscribe);
 }
 
-void JabberConnection::sendSubscribed(const Jid& user, const QString& uin)
+/**
+ * Sends 'subscribed' presence to @a toUser on behalf uin\@component.domain
+ */
+void JabberConnection::sendSubscribed(const Jid& toUser, const QString& fromUin)
 {
 	Presence subscribed;
 
 	subscribed.setType(Presence::Subscribed);
-	subscribed.setFrom(user);
-	subscribed.setTo( d->jid.withNode(uin) );
+	subscribed.setFrom( d->jid.withNode(fromUin) );
+	subscribed.setTo(toUser);
 
 	d->stream->sendStanza(subscribed);
 }
 
-void JabberConnection::sendUnsubscribe(const Jid& user, const QString& uin)
+/**
+ * Sends 'unsubscribe' presence to @a toUser on behalf uin\@component.domain
+ */
+void JabberConnection::sendUnsubscribe(const Jid& toUser, const QString& fromUin)
 {
 	Presence unsubscribe;
 
 	unsubscribe.setType(Presence::Unsubscribe);
-	unsubscribe.setFrom(user);
-	unsubscribe.setTo( d->jid.withNode(uin) );
+	unsubscribe.setFrom( d->jid.withNode(fromUin) );
+	unsubscribe.setTo(toUser);
 
 	d->stream->sendStanza(unsubscribe);
 }
 
-void JabberConnection::sendUnsubscribed(const Jid& user, const QString& uin)
+/**
+ * Sends 'unsubscribed' presence to @a toUser on behalf uin\@component.domain
+ */
+void JabberConnection::sendUnsubscribed(const Jid& toUser, const QString& fromUin)
 {
 	Presence unsubscribed;
 
 	unsubscribed.setType(Presence::Unsubscribed);
-	unsubscribed.setFrom(user);
-	unsubscribed.setTo( d->jid.withNode(uin) );
+	unsubscribed.setFrom( d->jid.withNode(fromUin) );
+	unsubscribed.setTo(toUser);
 
 	d->stream->sendStanza(unsubscribed);
 }
 
-void JabberConnection::sendOnlinePresence(const Jid& recipient, const QString& uin)
+/**
+ * Sends 'available' presence to @a toUser on behalf of '@a fromUin [at] component.domain'
+ */
+void JabberConnection::sendOnlinePresence(const Jid& toUser, const QString& fromUin)
 {
 	Presence presence;
-	presence.setFrom( d->jid.withNode(uin) );
-	presence.setTo(recipient);
+	presence.setFrom( d->jid.withNode(fromUin) );
+	presence.setTo(toUser);
 
 	d->stream->sendStanza(presence);
 }
 
-void JabberConnection::sendOfflinePresence(const Jid& recipient, const QString& uin)
+/**
+ * Sends 'unavailable' presence to @a toUser on behalf of '@a fromUin [at] component.domain'
+ */
+void JabberConnection::sendOfflinePresence(const Jid& toUser, const QString& fromUin)
 {
 	Presence presence;
-	presence.setFrom( d->jid.withNode(uin) );
-	presence.setTo(recipient);
+	presence.setFrom( d->jid.withNode(fromUin) );
+	presence.setTo(toUser);
 	presence.setType(Presence::Unavailable);
 
 	d->stream->sendStanza(presence);
 }
 
+/**
+ * Sends 'available' presence to @a toUser on behalf of component.
+ */
 void JabberConnection::sendOnlinePresence(const Jid& recipient)
 {
 	Presence presence;
@@ -179,6 +226,9 @@ void JabberConnection::sendOnlinePresence(const Jid& recipient)
 	d->stream->sendStanza(probe);
 }
 
+/**
+ * Sends 'unavailable' presence to @a toUser on behalf of component.
+ */
 void JabberConnection::sendOfflinePresence(const Jid& recipient)
 {
 	Presence presence;
@@ -205,7 +255,7 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, con
 	d->stream->sendStanza(msg);
 }
 
-void JabberConnection::process_discoinfo(const IQ& iq)
+void JabberConnection::Private::processDiscoInfo(const IQ& iq)
 {
 	qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
 
@@ -213,20 +263,20 @@ void JabberConnection::process_discoinfo(const IQ& iq)
 	reply.swapFromTo();
 	reply.setType(IQ::Result);
 
-	d->disco.pushToDomElement( reply.childElement() );
-	d->stream->sendStanza(reply);
+	disco.pushToDomElement( reply.childElement() );
+	stream->sendStanza(reply);
 }
 
-void JabberConnection::process_discoitems(const IQ& iq)
+void JabberConnection::Private::processDiscoItems(const IQ& iq)
 {
 	IQ reply(iq);
 	reply.swapFromTo();
 	reply.setType(IQ::Result);
 
-	d->stream->sendStanza(reply);
+	stream->sendStanza(reply);
 }
 
-void JabberConnection::process_register_request(const IQ& iq)
+void JabberConnection::Private::processRegisterRequest(const IQ& iq)
 {
 	Registration regForm(iq);
 
@@ -237,16 +287,16 @@ void JabberConnection::process_register_request(const IQ& iq)
 	regForm.setField(Registration::Username);
 	regForm.setField(Registration::Password);
 
-	d->stream->sendStanza(regForm);
+	stream->sendStanza(regForm);
 }
 
-void JabberConnection::process_register_form(const Registration& iq)
+void JabberConnection::Private::processRegisterForm(const Registration& iq)
 {
-	if ( iq.to() != d->jid ) {
+	if ( iq.to() != jid ) {
 		Registration err(iq);
 		err.swapFromTo();
 		err.setError( Stanza::Error(Stanza::Error::FeatureNotImplemented) );
-		d->stream->sendStanza(err);
+		stream->sendStanza(err);
 		return;
 	}
 	if ( iq.hasField(Registration::Remove) ) {
@@ -255,46 +305,46 @@ void JabberConnection::process_register_form(const Registration& iq)
 			Registration err(iq);
 			err.swapFromTo();
 			err.setError( Stanza::Error(Stanza::Error::BadRequest) );
-			d->stream->sendStanza(err);
+			stream->sendStanza(err);
 			return;
 		}
 		if ( iq.from().isEmpty() ) {
 			Registration err(iq);
 			err.swapFromTo();
 			err.setError( Stanza::Error(Stanza::Error::UnexpectedRequest) );
-			d->stream->sendStanza(err);
+			stream->sendStanza(err);
 			return;
 		}
 		Registration reply(iq);
 		reply.swapFromTo();
 		reply.clearChild();
 		reply.setType(IQ::Result);
-		d->stream->sendStanza(reply);
+		stream->sendStanza(reply);
 
 		Presence removeSubscription;
 		removeSubscription.setTo( iq.from().bare() );
 		removeSubscription.setType(Presence::Unsubscribe);
-		d->stream->sendStanza(removeSubscription);
+		stream->sendStanza(removeSubscription);
 
 		Presence removeAuth;
 		removeAuth.setTo( iq.from().bare() );
 		removeAuth.setType(Presence::Unsubscribed);
-		d->stream->sendStanza(removeAuth);
+		stream->sendStanza(removeAuth);
 
 		Presence logout;
 		logout.setTo( iq.from().bare() );
 		logout.setType(Presence::Unavailable);
-		d->stream->sendStanza(logout);
+		stream->sendStanza(logout);
 
 		/* send unregister signal, slot should remove the user from the database */
-		emit userUnregistered( iq.from().bare() );
+		emit q->userUnregistered( iq.from().bare() );
 		return;
 	}
 	if ( iq.getField(Registration::Username).isEmpty() || iq.getField(Registration::Password).isEmpty() ) {
 		Registration err(iq);
 		err.swapFromTo();
 		err.setError( Stanza::Error(Stanza::Error::NotAcceptable) );
-		d->stream->sendStanza(err);
+		stream->sendStanza(err);
 		return;
 	}
 
@@ -303,31 +353,31 @@ void JabberConnection::process_register_form(const Registration& iq)
 	reply.swapFromTo();
 	reply.clearChild();
 	reply.setType(IQ::Result);
-	d->stream->sendStanza(reply);
+	stream->sendStanza(reply);
 
 	/* subscribe for user presence */
 	Presence presence;
-	presence.setFrom(d->jid);
+	presence.setFrom(jid);
 	presence.setTo( iq.from().bare() );
 	presence.setType(Presence::Subscribe);
-	d->stream->sendStanza(presence);
+	stream->sendStanza(presence);
 
-	emit userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
+	emit q->userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
 }
 
 void JabberConnection::stream_iq(const IQ& iq)
 {
 	if ( iq.childElement().tagName() == "query" && iq.type() == "get" ) {
 		if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_INFO ) {
-			process_discoinfo(iq);
+			d->processDiscoInfo(iq);
 			return;
 		}
 		if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_ITEMS ) {
-			process_discoitems(iq);
+			d->processDiscoItems(iq);
 			return;
 		}
 		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
-			process_register_request(iq);
+			d->processRegisterRequest(iq);
 			return;
 		}
 	}
@@ -359,7 +409,7 @@ void JabberConnection::stream_iq(const IQ& iq)
 	}
 	if ( iq.childElement().tagName() == "query" && iq.type() == "set" ) {
 		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
-			process_register_form(iq);
+			d->processRegisterForm(iq);
 			return;
 		}
 	}

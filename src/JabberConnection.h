@@ -52,13 +52,13 @@ class JabberConnection : public QObject
 		void setServer(const QString& host, quint16 port);
 		void setPassword(const QString& password);
 	public slots:
-		void sendSubscribe(const Jid& user, const QString& node);
-		void sendSubscribed(const Jid& user, const QString& node);
-		void sendUnsubscribe(const Jid& user, const QString& node);
-		void sendUnsubscribed(const Jid& user, const QString& node);
+		void sendSubscribe(const Jid& toUser, const QString& fromUin);
+		void sendSubscribed(const Jid& toUser, const QString& fromUin);
+		void sendUnsubscribe(const Jid& toUser, const QString& fromUin);
+		void sendUnsubscribed(const Jid& toUser, const QString& fromUin);
 
-		void sendOnlinePresence(const Jid& recipient, const QString& uin);
-		void sendOfflinePresence(const Jid& recipient, const QString& uin);
+		void sendOnlinePresence(const Jid& toUser, const QString& fromUin);
+		void sendOfflinePresence(const Jid& toUser, const QString& fromUin);
 
 		void sendOnlinePresence(const Jid& recipient);
 		void sendOfflinePresence(const Jid& recipient);
@@ -74,11 +74,6 @@ class JabberConnection : public QObject
 		void outgoingMessage(const Jid& fromUser, const QString& toUin, const QString& message);
 
 		void connected();
-	private:
-		void process_discoinfo(const IQ& iq);
-		void process_discoitems(const IQ& iq);
-		void process_register_request(const IQ& iq);
-		void process_register_form(const Registration& iq);
 	private slots:
 		void stream_error(const ComponentStream::Error&);
 		void stream_connected();

@@ -22,8 +22,6 @@
 #define ICQUSERINFOMANAGER_H_
 
 #include "icqConnection.h"
-#include "types/icqSnacBuffer.h"
-#include "types/icqUserInfo.h"
 
 #include <QObject>
 #include <QString>
@@ -31,6 +29,8 @@
 namespace ICQ
 {
 
+class SnacBuffer;
+class UserInfo;
 
 class UserInfoManager : public QObject
 {

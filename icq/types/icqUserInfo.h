@@ -38,6 +38,16 @@ namespace ICQ
 class UserInfo
 {
 	public:
+		enum OnlineStatus {
+			Online			= 0x0000,
+			Away			= 0x0001,
+			DoNotDisturb	= 0x0002,
+			NotAvailable	= 0x0004,
+			FreeForChat		= 0x0020,
+			Invisible		= 0x0100,
+			Offline			= 0xFFFF
+		};
+
 		UserInfo();
 		UserInfo(const UserInfo& other);
 		UserInfo& operator=(const UserInfo& other);

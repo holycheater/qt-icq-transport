@@ -27,6 +27,7 @@
 #include "types/icqSnacBuffer.h"
 #include "types/icqContact.h"
 #include "types/icqMessage.h"
+#include "types/icqUserInfo.h"
 
 #include <QTcpSocket>
 #include <QTimer>
@@ -230,7 +231,7 @@ Connection* Connection::setOnlineStatus(Word onlineStatus)
 {
 	d->onlineStatus = onlineStatus;
 
-	if ( onlineStatus == Offline ) {
+	if ( onlineStatus == UserInfo::Offline ) {
 		if ( connectionStatus() == Connecting ) {
 			d->socket->disconnectFromHost();
 		} else if ( connectionStatus() == Connected ) {

@@ -20,6 +20,9 @@
 
 #include "icqUserInfoManager.h"
 
+#include "types/icqSnacBuffer.h"
+#include "types/icqUserInfo.h"
+
 #include <QHash>
 #include <QtDebug>
 

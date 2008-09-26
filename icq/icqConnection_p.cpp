@@ -1,5 +1,7 @@
 #include "icqConnection_p.h"
 
+#include "types/icqUserInfo.h"
+
 #include <QTextCodec>
 
 namespace ICQ
@@ -16,7 +18,7 @@ Connection::Private::Private(Connection* parent)
 
 	socket = new QTcpSocket(parent);
 
-	onlineStatus = Online;
+	onlineStatus = UserInfo::Online;
 
 	m_flapSequence = 0;
 	m_snacRequest = 0;
@@ -209,7 +211,7 @@ void Connection::Private::processConnectionTimeout()
 	socket->disconnectFromHost();
 	setConnectionStatus(Disconnected);
 
-	emit q->statusChanged(Offline);
+	emit q->statusChanged(UserInfo::Offline);
 }
 
 void Connection::Private::processConnected()
@@ -250,7 +252,7 @@ void Connection::Private::processLookupTimeout()
 
 	qDebug() << "[ICQ:Connection] Lookup timeout";
 
-	emit q->statusChanged(Offline);
+	emit q->statusChanged(UserInfo::Offline);
 }
 
 void Connection::Private::processIncomingMessage(const Message& msg)
@@ -300,7 +302,7 @@ void Connection::Private::processSignedOff()
 	delete msgManager;
 	delete metaManager;
 
-	emit q->statusChanged(Offline);
+	emit q->statusChanged(UserInfo::Offline);
 }
 
 

@@ -32,28 +32,20 @@ class Guid
 {
 	public:
 		Guid();
-		Guid(const char* data);
-		Guid(const QByteArray& data);
-		/* takes a string of hex values possibly separated by dashes */
-		Guid(const QString& data);
 
-		/* get the data as a bytearray for decoding */
-		const QByteArray data() const;
+		static Guid fromRawData(const char* raw);
+		static Guid fromRawData(const QByteArray& raw);
+		static Guid fromString(const QString& guidstr);
 
-		/* set the data from a bytearray */
-		void setData(const QByteArray& data);
+		QByteArray data() const;
 
-		/* returns true if all bytes are zero */
+		bool isEqual(const Guid& rhs, int n = 16) const;
+		bool isValid() const;
 		bool isZero() const;
 
-		/* returns true if the guid is exactly 16 bytes */
-		bool isValid() const;
+		void setData(const QByteArray& data);
 
-		/* check if UUID's first n symbols are equal */
-		bool isEqual(const Guid& rhs, int n = 16) const;
-
-		/* convert UUID to string representation (with '-' delimiters) */
-		const QString toString() const;
+		QString toString() const;
 
 		Guid& operator=(const QByteArray& data);
 		bool operator==(const Guid& rhs) const;

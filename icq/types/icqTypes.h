@@ -59,25 +59,25 @@ namespace ICQ {
 	};
 
 	const Guid Capabilities[] = {
-		Guid( QLatin1String("09460000-4C7F-11D1-8222-444553540000") ), // 00 Avatar support
-		Guid( QLatin1String("09461344-4C7F-11D1-8222-444553540000") ), // 01 ICQ Direct Communication
-		Guid( QLatin1String("09461349-4C7F-11D1-8222-444553540000") ), // 02 ICQ Server Relay
-		Guid( QLatin1String("0946134C-4C7F-11D1-8222-444553540000") ), // 03 AIM File transfer
-		Guid( QLatin1String("0946134D-4C7F-11D1-8222-444553540000") ), // 04 AIM Interoperate (AIM-ICQ user support)
-		Guid( QLatin1String("0946134E-4C7F-11D1-8222-444553540000") ), // 05 UTF-8 messages. The only good UUID.
-		Guid( QLatin1String("563FC809-0B6F-41BD-9F79-422609DFA2F3") ), // 06 Typing notifications.
-		Guid( QLatin1String("97B12751-243C-4334-AD22-D6ABF73F1492") ), // 07 RTF messages. Umm?
-		Guid( QLatin1String("B2EC8F16-7C6F-451B-BD79-DC58497888B9") ), // 08 tZerz. SAY WHAT?
-		Guid( QLatin1String("D6687F4F-3DC3-4BDB-8A8C-4C1A572763CD") ), // 09 RnQ protect msg (sounds like encryption support)
+		Guid::fromString("09460000-4C7F-11D1-8222-444553540000"), // 00 Avatar support
+		Guid::fromString("09461344-4C7F-11D1-8222-444553540000"), // 01 ICQ Direct Communication
+		Guid::fromString("09461349-4C7F-11D1-8222-444553540000"), // 02 ICQ Server Relay
+		Guid::fromString("0946134C-4C7F-11D1-8222-444553540000"), // 03 AIM File transfer
+		Guid::fromString("0946134D-4C7F-11D1-8222-444553540000"), // 04 AIM Interoperate (AIM-ICQ user support)
+		Guid::fromString("0946134E-4C7F-11D1-8222-444553540000"), // 05 UTF-8 messages. The only good UUID.
+		Guid::fromString("563FC809-0B6F-41BD-9F79-422609DFA2F3"), // 06 Typing notifications.
+		Guid::fromString("97B12751-243C-4334-AD22-D6ABF73F1492"), // 07 RTF messages. Umm?
+		Guid::fromString("B2EC8F16-7C6F-451B-BD79-DC58497888B9"), // 08 tZerz. SAY WHAT?
+		Guid::fromString("D6687F4F-3DC3-4BDB-8A8C-4C1A572763CD"), // 09 RnQ protect msg (sounds like encryption support)
 
 		// client list
-		Guid( QByteArray::fromRawData("Kopete ICQ      ", 16) ), // Kopete ICQ
-		Guid( QLatin1String("4C696371-2063-6C69-656E-742000000000") ), //LICQ
-		Guid( QLatin1String("26525169-6E73-6964-6500-000000000000") ), // &RQ
-		Guid( QLatin1String("52265169-6E73-6964-6500-000000000000") ), // RnQ
-		Guid( QLatin1String("563FC809-0B6F-4151-4950-203230303561") ), // QIP
-		Guid( QLatin1String("51ADD190-7204-473D-A1A1-49F4A397A41F") ), // QIP PDA
-		Guid( QLatin1String("7C737502-C3BE-4F3E-A69F-015313431E1A") )  // QIP Infium
+		Guid::fromRawData("Kopete ICQ      "), // Kopete ICQ
+		Guid::fromString("4C696371-2063-6C69-656E-742000000000"), //LICQ
+		Guid::fromString("26525169-6E73-6964-6500-000000000000"), // &RQ
+		Guid::fromString("52265169-6E73-6964-6500-000000000000"), // RnQ
+		Guid::fromString("563FC809-0B6F-4151-4950-203230303561"), // QIP
+		Guid::fromString("51ADD190-7204-473D-A1A1-49F4A397A41F"), // QIP PDA
+		Guid::fromString("7C737502-C3BE-4F3E-A69F-015313431E1A")  // QIP Infium
 	};
 
 	/* user flags */

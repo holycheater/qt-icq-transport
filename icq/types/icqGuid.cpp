@@ -21,53 +21,94 @@
 
 #include "icqGuid.h"
 
+#define GUID_SIZE 16
+
 namespace ICQ
 {
 
 
+/**
+ * Constructs an empty GUID object.
+ */
 Guid::Guid()
 {
-	m_data = QByteArray(16, '\0');
+	m_data = QByteArray(GUID_SIZE, '\0');
 }
 
-Guid::Guid(const char* data)
+/**
+ * Constructs GUID from raw data. It takes first 16 bytes of @a raw.
+ */
+Guid Guid::fromRawData(const char* raw)
 {
-	initData( QString(data) );
+	QByteArray ba;
+	ba.resize(GUID_SIZE);
+	qMemCopy(ba.data(), raw, GUID_SIZE);
+
+	Guid guid;
+	guid.m_data = ba;
+	return guid;
 }
 
-Guid::Guid(const QByteArray& data)
-	: m_data(data)
+/**
+ * Constructs GUID from raw data.
+ */
+Guid Guid::fromRawData(const QByteArray& raw)
 {
-	initData( QString(data) );
+	Guid guid;
+	guid.m_data = raw;
+
+	return guid;
 }
 
-Guid::Guid(const QString& data)
+/**
+ * Constructs guid from GUID string.
+ */
+Guid Guid::fromString(const QString& guidstr)
 {
-	initData(data);
-}
+	Guid guid;
 
-void Guid::initData(const QString& data)
-{
-	//get rid of the const
-	QString d(data);
-	//strip out dashes
+	QString d(guidstr);
+	/* strip dashes */
 	d.remove('-');
-	//get each of the 16 2-char bytes
+
+	guid.m_data.clear();
 	for ( int i = 0; i < 32; i += 2 ) {
-		m_data += d.mid(i, 2).toShort(NULL, 16);
+		guid.m_data += d.mid(i, 2).toShort(NULL, GUID_SIZE);
 	}
+
+	return guid;
 }
 
-const QByteArray Guid::data() const
+/**
+ * Returns raw GUID data.
+ */
+QByteArray Guid::data() const
 {
 	return m_data;
 }
 
-void Guid::setData(const QByteArray& data)
+/**
+ * Returns true if first @a n bytes of this guid are equal with @a rhs.
+ */
+bool Guid::isEqual(const Guid& rhs, int n) const
 {
-	m_data = data;
+	if( n > GUID_SIZE ) {
+		n = GUID_SIZE;
+	}
+	return m_data.left(n) == rhs.m_data.left(n);
 }
 
+/**
+ * Returns true if GUID is a valid identifier.
+ */
+bool Guid::isValid() const
+{
+	return m_data.size() == GUID_SIZE;
+}
+
+/**
+ * Returns true if GUID is filled with zero-bytes.
+ */
 bool Guid::isZero() const
 {
 	for (int i = 0; i < m_data.length(); i++) {
@@ -78,20 +119,18 @@ bool Guid::isZero() const
 	return true;
 }
 
-bool Guid::isValid() const
+/**
+ * Sets guid data to @a data.
+ */
+void Guid::setData(const QByteArray& data)
 {
-	return m_data.size() == 16;
+	m_data = data;
 }
 
-bool Guid::isEqual(const Guid& rhs, int n) const
-{
-	if( n > 16 ) {
-		n = 16;
-	}
-	return m_data.left(n) == rhs.m_data.left(n);
-}
-
-const QString Guid::toString() const
+/**
+ * Returns string representation of GUID.
+ */
+QString Guid::toString() const
 {
 	QString uuid = m_data.toHex().toUpper();
 
@@ -103,17 +142,28 @@ const QString Guid::toString() const
 	return uuid;
 }
 
+/**
+ * Sets GUID data to @a data.
+ */
 Guid& Guid::operator=(const QByteArray& data)
 {
 	m_data = data;
 	return *this;
 }
 
+/**
+ * Returns true if this guid and @a rhs are equal.
+ */
 bool Guid::operator==(const Guid& rhs) const
 {
 	return m_data == rhs.m_data;
 }
 
+/**
+ * Returns GUID data.
+ *
+ * @sa data()
+ */
 Guid::operator QByteArray() const
 {
 	return m_data;

@@ -171,7 +171,7 @@ void Connection::Private::incomingData()
 		}
 
 		// read out motd
-		if ( snac.family() == sfGeneric && snac.subtype() == 0x13 ) {
+		if ( snac.family() == 0x01 && snac.subtype() == 0x13 ) {
 			snac.seekEnd();
 		}
 

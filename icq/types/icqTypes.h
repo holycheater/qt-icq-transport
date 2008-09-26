@@ -97,29 +97,6 @@ namespace ICQ {
 
     enum VisibiltyStatus { visAll, visNormal, visContact, visPrivacy, visInvisible };
 
-	/* SNAC families
-	 * 0x01: Generic services
-	 * 0x02: Location services
-	 * 0x03: Buddy list management
-	 * 0x04: ICBM service
-	 * 0x06: Invitation service
-	 * 0x08: Popup services
-	 * 0x09: Privacy management services
-	 * 0x0A: User Lookup services
-	 * 0x0B: Usage statistics
-	 * 0x0D: Chat navigation (??)
-	 * 0x0E: Chat (messages?)
-	 * 0x0F: Directory services
-	 * 0x10: Buddy icons (avatars?)
-	 * 0x13: Server-side information
-	 * 0x15: Extension services
-	 * 0x17: Authorization services
-	 */
-	enum SnacFamily { // sf - snac family
-		sfGeneric = 0x01, sfLocation = 0x02, sfBLM = 0x03 /* buddy list management */, sfICBM = 0x04, sfPrivacyManagement = 0x09,
-		sfUsageStats = 0x0b, sfSSBI = 0x10, sfSSI = 0x13, sfExtensions = 0x15, sfAuth = 0x17
-	};
-
 	const quint8 FLAP_HEADER_SIZE = 6;
 	const quint8 SNAC_HEADER_SIZE = 10;
 	const quint8 TLV_HEADER_SIZE = 4;

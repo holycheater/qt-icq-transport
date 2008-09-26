@@ -87,7 +87,7 @@ void LoginManager::send_flap_version()
 /* >> SNAC (17,06) - CLI_AUTH_KEY_REQUEST */
 void LoginManager::send_cli_auth_request()
 {
-	SnacBuffer snac(sfAuth, 0x06);
+	SnacBuffer snac(0x17, 0x06);
 	snac.addTlv( (Tlv)Tlv(0x01).addData(d->uin) );
 	d->link->write(snac);
 }
@@ -99,7 +99,7 @@ void LoginManager::recv_auth_key(SnacBuffer& reply)
 	Word keylen = reply.getWord();
 	QByteArray authkey = reply.read(keylen);
 
-	SnacBuffer snac(sfAuth, 0x02);
+	SnacBuffer snac(0x17, 0x02);
 
 	snac.addTlv(0x01, d->uin);
 	snac.addTlv( 0x03, QLatin1String("ICQBasic") );
@@ -148,7 +148,7 @@ void LoginManager::recv_snac_list(SnacBuffer& reply)
 	reply.seekEnd();
 
 	/* send out snac(01,17) - CLI_FAMILIES_VERSIONS - client services and version */
-	SnacBuffer snac(sfGeneric, 0x17);
+	SnacBuffer snac(0x01, 0x17);
 
 	snac.addWord(0x0001).addWord(0x0004);
 	snac.addWord(0x0002).addWord(0x0001);
@@ -186,7 +186,7 @@ void LoginManager::recv_location_services_limits(SnacBuffer& reply)
 {
 	reply.seekEnd();
 
-	SnacBuffer snac(sfLocation, 0x04);
+	SnacBuffer snac(0x02, 0x04);
 	Tlv tlv(0x05);
 	tlv.addData( Capabilities[ccICQDirectConnect] );
 	tlv.addData( Capabilities[ccICQServerRelay] );
@@ -230,7 +230,7 @@ void LoginManager::recv_icbm_parameters(SnacBuffer& reply)
 	unknown = 0;
 
 	/* Send snac(04,02) */
-	SnacBuffer snac(sfICBM, 0x02);
+	SnacBuffer snac(0x04, 0x02);
 	snac.addWord(channel);
 	snac.addDWord(msgFlags);
 	snac.addWord(maxMsgSnacSize);
@@ -261,7 +261,7 @@ void LoginManager::login_final_actions()
 {
 	emit loginFinished();
 
-	SnacBuffer snac(sfGeneric, 0x02);
+	SnacBuffer snac(0x01, 0x02);
 
 	snac.addWord(0x0001).addWord(0x0004).addWord(0x0110).addWord(0x1246);
 	snac.addWord(0x0002).addWord(0x0001).addWord(0x0110).addWord(0x1246);

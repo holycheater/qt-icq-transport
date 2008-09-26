@@ -248,7 +248,7 @@ Connection* Connection::setOnlineStatus(Word onlineStatus)
 		return this;
 	}
 
-	SnacBuffer reqSetStatus(sfGeneric, 0x1E);
+	SnacBuffer reqSetStatus(0x01, 0x1E);
 	Word flags = flagDCAuth;
 	reqSetStatus.addTlv( (Tlv)Tlv(0x06).addWord(flags).addWord(d->onlineStatus) );
 

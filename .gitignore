@@ -2,6 +2,7 @@
 /Makefile
 /doc
 /iris
+/users.db
 src/Makefile*
 src/debug
 src/release

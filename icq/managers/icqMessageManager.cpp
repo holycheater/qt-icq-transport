@@ -123,7 +123,7 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 	msgTlv.addWord(0x00); // msg type - request
 	msgTlv.addDWord( r1 ); // cookie part1
 	msgTlv.addDWord( r2 ); // cookie part2
-	msgTlv.addData( Guid("09461349-4C7F-11D1-8222-444553540000") );
+	msgTlv.addData( Guid::fromString("09461349-4C7F-11D1-8222-444553540000") );
 
 	Tlv tlv0A(0x0A);
 	tlv0A.addWord(0x01);
@@ -180,7 +180,7 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 
 void MessageManager::Private::send_channel_4_message(const Message& msg)
 {
-	/* TODO */
+	/* TODO: Send channel 4 messages */
 }
 
 MessageManager::MessageManager(Connection *parent)
@@ -233,20 +233,20 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 	tlv02.seekForward( sizeof(Byte) ); // fragment ident = 05 (capabilities array)
 	tlv02.seekForward( sizeof(Byte) ); // fragment version = 01
 	Word capsSize = tlv02.getWord();
-	QList<Guid> caps;
-	while ( capsSize > 0 ) {
-		Guid cap = tlv02.read(16);
-		qDebug() << cap.toString();
-		caps << cap;
-		capsSize -= 16;
-	}
+	tlv02.seekForward(capsSize);
+
 	tlv02.seekForward( sizeof(Byte) ); // fragment ident = 01 (messageLen)
 	tlv02.seekForward( sizeof(Byte) ); // fragment version = 01
-	Word msgSize = tlv02.getWord();
+	Word msgSize = tlv02.getWord() - sizeof(Word)*2;
 	tlv02.seekForward( sizeof(Word) ); // message charset number
 	tlv02.seekForward( sizeof(Word) ); // message charset subset
-	QByteArray message = tlv02.read( msgSize - sizeof(Word)*2 );
+	QByteArray message = tlv02.read(msgSize);
 	msg.setText(message);
+
+	if ( chain.hasTlv(0x06) ) {
+		Tlv tlv16 = chain.getTlv(0x16);
+		msg.setTimestamp( tlv16.getDWord() );
+	}
 
 	return msg;
 }
@@ -259,7 +259,7 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 
 	block.seekForward( sizeof(Word) ); // message type: 0 - request, 1 - cancel, 2 - accept
 	block.seekForward(8); // message cookie (same as in the snac data) Why do they need to repeat everything twice? I'm not stupid!
-	Guid cap = block.read(16); // capability, needed for this msg
+	Guid cap = Guid::fromRawData( block.read(16) ); // capability, needed for this msg
 
 	qDebug() << "capability" << cap.toString();
 
@@ -271,7 +271,7 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 		msgBlock.getLEWord(); // data length
 		Word protocolVer = msgBlock.getLEWord(); // protocol version
 		qDebug() << "proto version" << protocolVer;
-		Guid cap2 = msgBlock.read(16);
+		Guid cap2 = Guid::fromRawData( msgBlock.read(16) );
 		qDebug() << "cap in 0x2711" << cap2.toString();
 		msgBlock.seekForward( sizeof(Word) ); //unknown
 		DWord capFlags = msgBlock.getLEDWord();
@@ -296,9 +296,6 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	msgBlock.seekForward( sizeof(DWord) ); // bg color
 	DWord guidStrLen = msgBlock.getLEDWord();
 	QByteArray guidStr = msgBlock.read(guidStrLen);
-	qDebug() << "guid str" << guidStr;
-
-	qDebug() << "!! to read" << msgBlock.bytesAvailable();
 
 	return msg;
 }
@@ -330,15 +327,14 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 	Word msgChannel = snac.getWord();
 	Byte uinLen = snac.getByte();
 	QString uin = snac.read(uinLen);
-	Word warningLevel = snac.getWord();
-	Q_UNUSED(warningLevel)
+	snac.seekForward( sizeof(Word) ); // warning level
 
 	qDebug() << "[MessageManager] channel" << msgChannel << "from" << uin;
 
 	Word tlvCount = snac.getWord(); // number of tlvs in fixed part
 	for ( int i = 0; i < tlvCount; i++ ) {
 		Tlv block = Tlv::fromBuffer(snac);
-		// TODO: we should update user info with this
+		/* TODO: we should update user info with this */
 	}
 	TlvChain chain;
 	while ( !snac.atEnd() ) {
@@ -365,7 +361,9 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 	msg.setIcbmCookie(icbmCookie);
 	msg.setReceiver( d->link->userId() );
 	msg.setSender(uin);
-	msg.setTimestamp( QDateTime::currentDateTime() );
+	if ( msg.timestamp().isNull() ) {
+		msg.setTimestamp( QDateTime::currentDateTime() );
+	}
 
 	qDebug() << "[MessageManager]" << "type" << msg.type() << "flags" << msg.flags() << "message" << msg.text();
 

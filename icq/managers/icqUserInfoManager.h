@@ -40,7 +40,8 @@ class UserInfoManager : public QObject
 		UserInfoManager(Connection *parent);
 		~UserInfoManager();
 
-		UserInfo getUserInfo(const QString& userId);
+		UserInfo getUserInfo(const QString& uin);
+		Word getUserStatus(const QString& uin) const;
 	signals:
 		void statusChanged(int status);
 		void userOnline(QString userId);

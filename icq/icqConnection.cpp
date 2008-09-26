@@ -128,9 +128,16 @@ QStringList Connection::contactList() const
  */
 void Connection::sendMessage(const QString& recipient, const QString& text)
 {
-	/* TODO */
 	Message msg;
-	msg.setChannel(0x02);
+
+	if ( d->userInfoManager->getUserStatus(recipient) == UserInfo::Offline ) {
+		qDebug() << "[ICQ:Connection]" << "sending offline message via channel 1";
+		msg.setChannel(0x01);
+	} else {
+		qDebug() << "[ICQ:Connection]" << "sending message via channel 2";
+		msg.setChannel(0x02);
+	}
+
 	msg.setSender( userId() );
 	msg.setReceiver(recipient);
 	msg.setType(Message::PlainText);
@@ -225,7 +232,7 @@ Connection* Connection::setServerPort(quint16 port)
  *
  * @param onlineStatus	ICQ user online status
  * @return				Pointer to this connection
- * @sa	setVisibility()
+ * @sa setVisibility()
  */
 Connection* Connection::setOnlineStatus(Word onlineStatus)
 {

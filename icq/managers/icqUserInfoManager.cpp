@@ -32,6 +32,7 @@ namespace ICQ {
 class UserInfoManager::Private {
 	public:
 		QHash<QString, UserInfo> userInfoList;
+		QHash<QString, Word> statusList;
 		UserInfo ownInfo;
 		Connection *link;
 };
@@ -53,6 +54,19 @@ UserInfoManager::~UserInfoManager()
 {
 }
 
+UserInfo UserInfoManager::getUserInfo(const QString& uin)
+{
+	return d->userInfoList.value(uin);
+}
+
+Word UserInfoManager::getUserStatus(const QString& uin) const
+{
+	if ( d->statusList.contains(uin) ) {
+		return d->statusList.value(uin);
+	}
+	return UserInfo::Offline;
+}
+
 void UserInfoManager::handle_own_user_info(SnacBuffer& snac)
 {
 	UserInfo info = UserInfo::fromBuffer(snac);
@@ -71,8 +85,10 @@ void UserInfoManager::handle_user_online_notification(SnacBuffer& snac)
 			UserInfo existing = d->userInfoList.take( info.userId() );
 			existing.mergeFrom(info);
 			d->userInfoList.insert(existing.userId(), existing);
+			d->statusList.insert( existing.userId(), existing.onlineStatus() );
 		} else {
 			d->userInfoList.insert(info.userId(), info);
+			d->statusList.insert( info.userId(), info.onlineStatus() );
 		}
 		emit userOnline( info.userId() );
 	}

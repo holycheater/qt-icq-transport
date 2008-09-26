@@ -50,11 +50,11 @@ void MessageManager::Private::send_channel_1_message(const Message& msg)
 	snac.addByte( msg.receiver().length() );
 	snac.addData( msg.receiver() );
 
-	Tlv msgData;
+	Tlv msgData(0x02);
 
 	msgData.addByte(0x05); // fragment id
 	msgData.addByte(0x01); // fragment version
-	msgData.addByte(1); // next data len
+	msgData.addWord(1); // next data len
 	msgData.addByte(1); // required caps, 1 - text.
 
 	Buffer msgChunk;
@@ -71,40 +71,6 @@ void MessageManager::Private::send_channel_1_message(const Message& msg)
 	snac.addTlv( Tlv(0x06) ); // store if recipient offline
 
 	link->write(snac);
-
-	/*
-	 * 2A 02
-	 * 6B 4D
-	 * 00 37
-	 *
-	 * 00 04
-	 * 00 06
-	 * 00 00
-	 * 00 00 00 49
-	 *
-	 * 49 00 00 00
-	 * 00 00 00 00
-	 *
-	 * 00 01 [channel]
-	 * 09 [uin len]
-	 * 31 37 31 33 36 36 33 36 38
-	 *
-	 * 00 02 [tlv: msg data]
-	 * 00 11 [len]
-	 * 05 [frag id]
-	 * 01 [frag ver]
-	 * 00 01 [rest data len]
-	 * 01 [req caps. 1 == text]
-	 * 01 [frag id: msg]
-	 * 01 [frag ver]
-	 * 00 08 [data len]
-	 * 00 00 [msg charset]
-	 * 00 00 [lang num]
-	 * 73 65 6E 64 [msg str]
-	 *
-	 * 00 06 [store if recip offline]
-	 * 00 00
-	 */
 }
 
 void MessageManager::Private::send_channel_2_message(const Message& msg)
@@ -261,8 +227,6 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	block.seekForward(8); // message cookie (same as in the snac data) Why do they need to repeat everything twice? I'm not stupid!
 	Guid cap = Guid::fromRawData( block.read(16) ); // capability, needed for this msg
 
-	qDebug() << "capability" << cap.toString();
-
 	TlvChain msgChain( block.readAll() );
 
 	Tlv msgBlock = msgChain.getTlv(0x2711);
@@ -270,14 +234,16 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	{
 		msgBlock.getLEWord(); // data length
 		Word protocolVer = msgBlock.getLEWord(); // protocol version
-		qDebug() << "proto version" << protocolVer;
+
 		Guid cap2 = Guid::fromRawData( msgBlock.read(16) );
-		qDebug() << "cap in 0x2711" << cap2.toString();
+
 		msgBlock.seekForward( sizeof(Word) ); //unknown
 		DWord capFlags = msgBlock.getLEDWord();
-		qDebug() << "cap flags" << QByteArray::number(capFlags, 16);
 		msgBlock.seekForward( sizeof(Byte) ); //unknown
 		msgBlock.seekForward( sizeof(Word) ); //downcounter
+
+		Q_UNUSED(protocolVer)
+		Q_UNUSED(capFlags)
 	}
 	{
 		Word dataLen = msgBlock.getLEWord();
@@ -329,7 +295,7 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 	QString uin = snac.read(uinLen);
 	snac.seekForward( sizeof(Word) ); // warning level
 
-	qDebug() << "[MessageManager] channel" << msgChannel << "from" << uin;
+	qDebug() << "[ICQ:MM] Incoming msg. channel" << msgChannel << "from" << uin;
 
 	Word tlvCount = snac.getWord(); // number of tlvs in fixed part
 	for ( int i = 0; i < tlvCount; i++ ) {
@@ -353,7 +319,7 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 			msg = handle_channel_4_msg(chain);
 			break;
 		default:
-			qDebug() << "unknown channel for the incoming message" << msgChannel;
+			qDebug() << "[ICQ:MM] Unknown channel for the incoming message" << msgChannel;
 			break;
 	}
 
@@ -365,7 +331,7 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 		msg.setTimestamp( QDateTime::currentDateTime() );
 	}
 
-	qDebug() << "[MessageManager]" << "type" << msg.type() << "flags" << msg.flags() << "message" << msg.text();
+	qDebug() << "[ICQ:MM]" << "type" << msg.type() << "flags" << msg.flags() << "message" << msg.text();
 
 	emit incomingMessage(msg);
 }
@@ -407,8 +373,9 @@ void MessageManager::incomingMetaInfo(Word type, Buffer& data)
 {
 	if ( type == 0x41 ) { // offline message block
 		handle_offline_message(data);
-	} else if ( type == 0x42 ) { // end of offline messages
-		d->link->sendMetaRequest(0x3E); // delete offline messages
+	} else if ( type == 0x42 ) {
+		/* delete offline messages */
+		d->link->sendMetaRequest(0x3E);
 	}
 }
 

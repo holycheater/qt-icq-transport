@@ -48,6 +48,8 @@ class GatewayTask : public QObject
 		void processLogout(const Jid& user);
 		void processContactAdd(const Jid& user, const QString& uin);
 		void processContactDel(const Jid& user, const QString& uin);
+		void processAuthGrant(const Jid& user, const QString& uin);
+		void processAuthDeny(const Jid& user, const QString& uin);
 		void processSendMessage(const Jid& user, const QString& uin, const QString& message);
 
 		void processGatewayOnline();

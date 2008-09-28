@@ -70,6 +70,8 @@ class JabberConnection : public QObject
 		void userOffline(const Jid& jid);
 		void userAdd(const Jid& jid, const QString& uin);
 		void userDel(const Jid& jid, const QString& uin);
+		void userAuthGrant(const Jid& jid, const QString& uin);
+		void userAuthDeny(const Jid& jid, const QString& uin);
 
 		void outgoingMessage(const Jid& fromUser, const QString& toUin, const QString& message);
 

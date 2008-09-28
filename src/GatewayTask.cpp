@@ -22,6 +22,7 @@
 
 #include "xmpp-core/Jid.h"
 #include "icqConnection.h"
+#include "types/icqUserInfo.h"
 
 #include <QHash>
 #include <QStringList>
@@ -149,7 +150,7 @@ void GatewayTask::processLogin(const Jid& user)
 
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
-		conn->setOnlineStatus(ICQ::Connection::Online);
+		conn->setOnlineStatus(ICQ::UserInfo::Online);
 	}
 }
 
@@ -165,14 +166,28 @@ void GatewayTask::processLogout(const Jid& user)
 
 void GatewayTask::processContactAdd(const Jid& user, const QString& uin)
 {
+	qDebug() << "[GT]" << user << "request for adding contact:" << uin;
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	conn->contactAdd(uin);
 }
 
 void GatewayTask::processContactDel(const Jid& user, const QString& uin)
 {
+	qDebug() << "[GT]" << user << "request for deleting contact:" << uin;
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	conn->contactDel(uin);
+}
+
+void GatewayTask::processAuthGrant(const Jid& user, const QString& uin)
+{
+	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	conn->grantAuth(uin);
+}
+
+void GatewayTask::processAuthDeny(const Jid& user, const QString& uin)
+{
+	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	conn->denyAuth(uin);
 }
 
 /**
@@ -211,6 +226,11 @@ void GatewayTask::processShutdown()
 	query.exec("SELECT jid FROM users");
 	while ( query.next() ) {
 		Jid user = query.value(0).toString();
+		ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+		QStringListIterator i( conn->contactList() );
+		while ( i.hasNext() ) {
+			emit contactOffline( user, i.next() );
+		}
 		emit offlineNotifyFor(user);
 	}
 	d->online = false;
@@ -221,7 +241,7 @@ void GatewayTask::processIcqStatus(int status)
 	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
 	qDebug() << "icq status for" << conn->userId() << "changed to" << status;
 	Jid user = d->icqJidTable.value(conn);
-	if ( status == ICQ::Connection::Offline ) {
+	if ( status == ICQ::UserInfo::Offline ) {
 		QStringList contacts = conn->contactList();
 		QStringListIterator i(contacts);
 		while ( i.hasNext() ) {

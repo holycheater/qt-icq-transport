@@ -72,14 +72,16 @@ int main(int argc, char **argv)
 
 	delete options;
 
-	QObject::connect( &conn, SIGNAL( userRegistered(QString,QString,QString) ), &gw, SLOT( processRegister(QString,QString,QString) ) );
-	QObject::connect( &conn, SIGNAL( userUnregistered(QString) ), &gw, SLOT( processUnregister(QString) ) );
-	QObject::connect( &conn, SIGNAL( userOnline(Jid) ), &gw, SLOT( processLogin(Jid) ) );
-	QObject::connect( &conn, SIGNAL( userOffline(Jid) ), &gw, SLOT( processLogout(Jid) ) );
-	QObject::connect( &conn, SIGNAL( userAdd(Jid,QString) ), &gw, SLOT( processContactAdd(Jid,QString) ) );
-	QObject::connect( &conn, SIGNAL( userDel(Jid,QString) ), &gw, SLOT( processContactDel(Jid,QString) ) );
-	QObject::connect( &conn, SIGNAL( outgoingMessage(Jid,QString,QString) ), &gw, SLOT( processSendMessage(Jid,QString,QString) ) );
-	QObject::connect( &conn, SIGNAL( connected() ), &gw, SLOT( processGatewayOnline() ) );
+	QObject::connect( &conn, SIGNAL( userRegistered(QString,QString,QString) ),	&gw, SLOT( processRegister(QString,QString,QString) ) );
+	QObject::connect( &conn, SIGNAL( userUnregistered(QString) ),				&gw, SLOT( processUnregister(QString) ) );
+	QObject::connect( &conn, SIGNAL( userOnline(Jid) ),							&gw, SLOT( processLogin(Jid) ) );
+	QObject::connect( &conn, SIGNAL( userOffline(Jid) ),						&gw, SLOT( processLogout(Jid) ) );
+	QObject::connect( &conn, SIGNAL( userAdd(Jid,QString) ),					&gw, SLOT( processContactAdd(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( userDel(Jid,QString) ),					&gw, SLOT( processContactDel(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( userAuthGrant(Jid,QString) ),				&gw, SLOT( processAuthGrant(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( userAuthGrant(Jid,QString) ),				&gw, SLOT( processAuthDeny(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( outgoingMessage(Jid,QString,QString) ),	&gw, SLOT( processSendMessage(Jid,QString,QString) ) );
+	QObject::connect( &conn, SIGNAL( connected() ),								&gw, SLOT( processGatewayOnline() ) );
 
 	QObject::connect( &gw, SIGNAL( contactAdded(Jid,QString) ),				&conn, SLOT( sendSubscribed(Jid,QString) ) );
 	QObject::connect( &gw, SIGNAL( contactDeleted(Jid,QString) ),			&conn, SLOT( sendUnsubscribed(Jid,QString) ) );

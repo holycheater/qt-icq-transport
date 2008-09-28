@@ -440,20 +440,25 @@ void JabberConnection::stream_presence(const Presence& presence)
 		d->stream->sendStanza(approve);
 		return;
 	}
-	if ( presence.type() == Presence::Subscribe && presence.to().domain() == d->jid.domain() && !presence.to().node().isEmpty() ) {
-		emit userAdd(presence.from(), presence.to().node() );
+	if ( presence.type() == Presence::Subscribe && !presence.to().node().isEmpty() ) {
+		emit userAdd( presence.from(), presence.to().node() );
 	}
-	if ( presence.type() == Presence::Unsubscribe && presence.to().domain() == d->jid.domain() && !presence.to().node().isEmpty() ) {
-		emit userDel(presence.from(), presence.to().node() );
+	if ( presence.type() == Presence::Unsubscribe && !presence.to().node().isEmpty() ) {
+		qDebug() << "[JC]" << "User" << presence.from() << "requested contact delete of" << presence.to().node();
+		emit userDel( presence.from(), presence.to().node() );
+	}
+	if ( presence.type() == Presence::Unsubscribed && !presence.to().node().isEmpty() ) {
+		emit userAuthDeny( presence.from(), presence.to().node() );
+	}
+	if ( presence.type() == Presence::Subscribed && !presence.to().node().isEmpty() ) {
+		emit userAuthGrant( presence.from(), presence.to().node() );
 	}
 
 	if ( presence.type() == Presence::Available ) {
-		qDebug() << "[JC] User Online:" << presence.from();
 		emit userOnline( presence.from() );
 		return;
 	}
 	if ( presence.type() == Presence::Unavailable ) {
-		qDebug() << "[JC] User Offline:" << presence.from();
 		emit userOffline( presence.from() );
 		return;
 	}

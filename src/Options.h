@@ -33,7 +33,7 @@ class Options
 
 		void parseCommandLine();
 
-		QString getOption(const QString& name);
+		QString getOption(const QString& name) const;
 	private:
 		static void printUsage();
 		QHash<QString, QString> m_options;

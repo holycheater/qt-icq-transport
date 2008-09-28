@@ -21,6 +21,7 @@
 #include "Options.h"
 
 #include <QCoreApplication>
+#include <QFileInfo>
 #include <QStringList>
 #include <QTextStream>
 
@@ -45,7 +46,7 @@ Options::~Options()
 {
 }
 
-QString Options::getOption(const QString& name)
+QString Options::getOption(const QString& name) const
 {
 	return m_options.value(name);
 }
@@ -66,7 +67,13 @@ void Options::parseCommandLine()
 			QCoreApplication::exit();
 		}
 		if ( arg == "-database" ) {
-			m_options.insert( "database", i.next() );
+			QString db = i.next();
+			QFileInfo fi(db);
+			if ( fi.exists() && !( fi.isReadable() && fi.isWritable() ) ) {
+				qCritical("Database file '%s' is not readable/writeable", qPrintable(db) );
+				exit(1);
+			}
+			m_options.insert( "database", db );
 			continue;
 		}
 		if ( arg == "-jabber-server" ) {

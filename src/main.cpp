@@ -18,8 +18,9 @@
  *
  */
 
-#include "JabberConnection.h"
 #include "GatewayTask.h"
+#include "JabberConnection.h"
+#include "Options.h"
 
 #include <QCoreApplication>
 #include <QTimer>
@@ -47,29 +48,29 @@ int main(int argc, char **argv)
 {
 	QCoreApplication app(argc, argv);
 
-	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-	db.setDatabaseName(":memory:");
+	Options *options = new Options;
 
-	db.open();
-	QSqlQuery query;
-	query.exec("CREATE TABLE IF NOT EXISTS users ("
-				"jid TEXT,"
-				"uin TEXT,"
-				"password TEXT,"
-				"PRIMARY KEY(jid)"
-				")");
-	// query.exec("INSERT INTO users VALUES ('holy.cheater@dragonfly', '*', '*')");
+	options->parseCommandLine();
+
+	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {
+		qCritical() << "Your Qt installation doesn't have the sqlite database driver";
+		QCoreApplication::exit(1);
+	}
+
+	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+	db.setDatabaseName( options->getOption("database") );
 
 	GatewayTask gw;
 	gw.setDatabaseLink(db);
-	gw.setIcqServer("login.icq.com", 5190);
+	gw.setIcqServer( options->getOption("icq-server"), options->getOption("icq-port").toUInt() );
 	gw_ptr = &gw;
 
-	// TODO: Read username/secret/server from config-file
 	JabberConnection conn;
-	conn.setUsername("icq.dragonfly");
-	conn.setServer("192.168.10.10", 5555);
-	conn.setPassword("jaba");
+	conn.setUsername( options->getOption("jabber-user") );
+	conn.setServer( options->getOption("jabber-server"), options->getOption("jabber-port").toUInt() );
+	conn.setPassword( options->getOption("jabber-secret") );
+
+	delete options;
 
 	QObject::connect( &conn, SIGNAL( userRegistered(QString,QString,QString) ), &gw, SLOT( processRegister(QString,QString,QString) ) );
 	QObject::connect( &conn, SIGNAL( userUnregistered(QString) ), &gw, SLOT( processUnregister(QString) ) );

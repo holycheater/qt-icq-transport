@@ -11,7 +11,9 @@ QMAKE_DISTCLEAN += $$PWD/debug \
 QMAKE_DEL_FILE = rm \
     -rf
 HEADERS += GatewayTask.h \
-	JabberConnection.h
+	JabberConnection.h \
+	Options.h
 SOURCES += GatewayTask.cpp \
 	JabberConnection.cpp \
+	Options.cpp \
 	main.cpp

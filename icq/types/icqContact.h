@@ -21,13 +21,16 @@
 #ifndef ICQCONTACT_H_
 #define ICQCONTACT_H_
 
-#include "icqTlvChain.h"
+#include "icqTypes.h"
 
 #include <QString>
+#include <QSharedDataPointer>
 
 namespace ICQ
 {
 
+
+class TlvChain;
 
 class Contact
 {
@@ -36,14 +39,17 @@ class Contact
 			Presence = 0x0005, Ignore = 0x000E, SelfIcon = 0x0013 };
 
 		Contact();
+		Contact(const Contact& other);
 		Contact(const QString& name, Word groupId, Word itemId, Word type, const TlvChain& data);
 		~Contact();
+
+		bool isValid() const;
 
 		QString name() const;
 		Word groupId() const;
 		Word id() const;
 		Word type() const;
-		const TlvChain& tlvChain() const;
+		TlvChain tlvChain() const;
 
 		void setName(const QString& name);
 		void setGroupId(Word id);
@@ -59,14 +65,12 @@ class Contact
 		/* set display name. updated after ssi list change */
 		void setDisplayName(const QString& name);
 
+		Contact& operator=(const Contact& other);
 		bool operator==(const Contact& other) const;
 		operator QByteArray() const;
 	private:
-		QString m_name;
-		Word m_groupId;
-		Word m_itemId;
-		Word m_type;
-		TlvChain m_data;
+		class Private;
+		QSharedDataPointer<Private> d;
 };
 
 }

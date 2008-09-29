@@ -61,6 +61,9 @@ class Connection: public QObject
 		void contactAdd(const QString& uin);
 		void contactDel(const QString& uin);
 
+		void grantAuth(const QString& uin);
+		void denyAuth(const QString& uin);
+
 		QStringList contactList() const;
 
 		/* current connection status (disconnected/connecting/connected) */
@@ -103,12 +106,6 @@ class Connection: public QObject
 		void incomingFlap(FlapBuffer& flap);
 		void incomingSnac(SnacBuffer& snac);
 		void readyRead();
-
-		void ssiNewGroup(Contact *contact);
-		void ssiNewBuddy(Contact *contact);
-		void ssiNewIgnore(Contact *contact);
-		void ssiNewVisible(Contact *contact);
-		void ssiNewInvisible(Contact *contact);
 
 		void userOnline(const QString& userId);
 		void userOffline(const QString& userId);

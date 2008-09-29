@@ -40,6 +40,15 @@ class SSIManager: public QObject
 		SSIManager(Connection *parent);
 		~SSIManager();
 
+		void addContact(const QString& uin);
+		void delContact(const QString& uin);
+
+		Word addGroup(const QString& name);
+		void delGroup(const QString& name);
+
+		void grantAuthorization(const QString& uin);
+		void denyAuthorization(const QString& uin);
+
 		QList<Contact> contactList() const;
 		QList<Contact> groupList() const;
 		QList<Contact> visibleList() const;
@@ -56,14 +65,15 @@ class SSIManager: public QObject
 		DWord lastChangeTime() const;
 		void setLastChangeTime(DWord time);
 	signals:
-		void newGroup(Contact* contact);
-		void newBuddy(Contact *contact);
-		void newIgnore(Contact *contact);
-		void newVisible(Contact *contact);
-		void newInvisible(Contact *contact);
+		void authGranted(const QString& uin);
+		void authDenied(const QString& uin);
+
+		void contactAdded(const QString& uin);
+		void contactDeleted(const QString& uin);
 	private slots:
 		void incomingSnac(SnacBuffer& snac);
 	private:
+		Q_DISABLE_COPY(SSIManager)
 		class Private;
 		Private *d;
 };

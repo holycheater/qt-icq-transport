@@ -93,7 +93,24 @@ void Connection::contactAdd(const QString& uin)
 		emit contactAdded(uin);
 		return;
 	}
-	/* TODO */
+	qDebug() << "[ICQ;Connection]" << "adding contact" << uin;
+	d->ssiManager->addContact(uin);
+}
+
+/**
+ * Grant authorization to @a uin
+ */
+void Connection::grantAuth(const QString& uin)
+{
+	d->ssiManager->grantAuthorization(uin);
+}
+
+/**
+ * Deny authorization to @a uin
+ */
+void Connection::denyAuth(const QString& uin)
+{
+	d->ssiManager->denyAuthorization(uin);
 }
 
 /**
@@ -103,10 +120,11 @@ void Connection::contactDel(const QString& uin)
 {
 	/* if contact is not on the list, just emit the 'deleted' signal */
 	if ( !contactList().contains(uin) ) {
+		qDebug() << "[ICQ:Connection]" << "Contact is not on the list:" << uin;
 		emit contactDeleted(uin);
 		return;
 	}
-	/* TODO */
+	d->ssiManager->delContact(uin);
 }
 
 /**

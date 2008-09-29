@@ -26,6 +26,9 @@
 #include <QDateTime>
 
 #include <QList>
+#include <QHash>
+#include <QSet>
+#include <QQueue>
 
 #include <QtDebug>
 
@@ -36,16 +39,49 @@ namespace ICQ
 class SSIManager::Private
 {
 	public:
-		void recv_ssi_parameters(SnacBuffer& snac); // 13,03
-		void recv_ssi_contact(SnacBuffer& snac); // 13,06
-		void recv_ssi_uptodate(SnacBuffer& snac); // 13,0F
+		enum ModifyType {
+			ModSuccess = 0x0000,
+			ModNotFound = 0x0002,
+			ModAlreadyExists = 0x0003,
+			ModError = 0x000A,
+			ModLimitExceed = 0x000C,
+			ModAuthRequired = 0x000E
+		};
+
+		void sendContact(const Contact& contact, Word snacSubtype);
+
+		void processSsiParameters(SnacBuffer& reply); /* SNAC(13,03) */
+		void processSsiContact(SnacBuffer& reply); /* SNAC(13,06) */
+		void processSsiAdd(SnacBuffer& reply); /* SNAC(13,08) */
+		void processSsiUpdate(SnacBuffer& reply); /* SNAC(13,09) */
+		void processSsiRemove(SnacBuffer& reply); /* SNAC(13,0A) */
+		void processServerEditAck(SnacBuffer& reply); /* SNAC(13,0E) */
+		void processSsiUpToDate(SnacBuffer& reply); /* SNAC(13,0F) */
+		void processAuthGranted(SnacBuffer& reply); /* SNAC(13,15) */
+		void processAuthReply(SnacBuffer& reply); /* SNAC(13,1B) */
+
+		void beginTransaction();
+		void finishTransaction();
+
+		void requestAuthorization(const QString& uin); /* SNAC(13,18) */
+
+		Word freeItemId() const;
+		Word freeGroupId() const;
 
 		QList<Contact> listOfType(Word type) const;
+
+		Contact groupByName(const QString& name);
 
 		SSIManager *q;
 
 		Connection *link;
-		QList<Contact> ssiList;
+		QHash<Word, Contact> ssiList;
+		Contact masterGroup;
+		QSet<Word> existingGroups;
+		QSet<Word> existingItems;
+
+		/* list of modified contacts awaiting ack from server */
+		QQueue<Contact> outgoingContacts;
 
 		DWord lastUpdate;
 
@@ -56,6 +92,276 @@ class SSIManager::Private
 		Word maxIgnored;
 };
 
+void SSIManager::Private::sendContact(const Contact& contact, Word snacSubtype)
+{
+	SnacBuffer snac(0x13, snacSubtype);
+	snac.addData(contact);
+
+	outgoingContacts.enqueue(contact);
+	link->write(snac);
+	qDebug() << snac.data().toHex();
+}
+
+void SSIManager::Private::processSsiParameters(SnacBuffer& reply)
+{
+	TlvChain chain(reply);
+	reply.seekEnd();
+	Tlv limits = chain.getTlv(0x04);
+	maxContacts = limits.getWord();
+	maxGroups = limits.getWord();
+	maxVisible = limits.getWord();
+	maxInvisible = limits.getWord();
+	limits.seekForward(sizeof(Word)*10);
+	maxIgnored = limits.getWord();
+}
+
+/* << SNAC(13,06) - SRV_SSIxREPLY */
+void SSIManager::Private::processSsiContact(SnacBuffer& reply)
+{
+	reply.getByte(); // ssi version - 0x00
+
+	Word listSize = reply.getWord();
+
+	for ( Word i = 0; i < listSize; i++ ) {
+		Word nameLen = reply.getWord();
+		QString name = reply.read(nameLen);
+		Word groupId = reply.getWord();
+		Word itemId = reply.getWord();
+		Word itemType = reply.getWord();
+
+		existingItems.insert(itemId);
+
+		if ( itemType == Contact::Group ) {
+			existingGroups.insert(groupId);
+		}
+
+		Word dataLen = reply.getWord();
+		TlvChain chain = reply.read(dataLen);
+
+		Contact contact(name, groupId, itemId, itemType, chain);
+		if ( contact.type() == Contact::Group && contact.groupId() == 0 && contact.id() == 0 ) {
+			masterGroup = contact;
+		}
+
+		qDebug() << "[ICQ:SSI]" << "Contact: " << "name" << name << "gid" << groupId << "iid" << itemId << "type" << QString::number(itemType, 16);
+
+		ssiList.insert(itemId, contact);
+	}
+	DWord lastChangeTime = reply.getDWord();
+	lastUpdate = lastChangeTime;
+
+	/* SNAC(13,07) - SSI Activate */
+	link->snacRequest(0x13, 0x07);
+}
+
+void SSIManager::Private::processSsiAdd(SnacBuffer& reply)
+{
+	while ( !reply.atEnd() ) {
+		Word nameLen = reply.getWord();
+		QString name = reply.read(nameLen);
+		Word gid = reply.getWord();
+		Word iid = reply.getWord();
+		Word itemType = reply.getWord();
+
+		existingItems.insert(iid);
+
+		Word dataLen = reply.getWord();
+		TlvChain chain = reply.read(dataLen);
+
+		Contact contact(name, gid, iid, itemType, chain);
+		ssiList.insert(iid, contact);
+		qDebug() << "[ICQ:SSI]" << "Contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name << "added";
+		if ( contact.type() == Contact::Buddy ) {
+			emit q->contactAdded( contact.name() );
+		}
+		if ( contact.type() == Contact::Deleted ) {
+			emit q->contactDeleted( contact.name() );
+			/* remove Deleted contact from SSI list */
+			sendContact(contact, 0x0A);
+		}
+	}
+}
+
+void SSIManager::Private::processSsiUpdate(SnacBuffer& reply)
+{
+	while ( !reply.atEnd() ) {
+		Word nameLen = reply.getWord();
+		QString name = reply.read(nameLen);
+		Word gid = reply.getWord();
+		Word iid = reply.getWord();
+		Word itemType = reply.getWord();
+
+		existingItems.insert(iid);
+		if ( itemType == Contact::Group ) {
+			existingGroups.insert(gid);
+		}
+
+		Word dataLen = reply.getWord();
+		TlvChain chain = reply.read(dataLen);
+
+		Contact contact(name, gid, iid, itemType, chain);
+
+		if ( contact.type() == Contact::Group && contact.groupId() == 0 && contact.id() == 0 ) {
+			masterGroup = contact;
+		}
+
+		ssiList.insert(iid, contact);
+		qDebug() << "[ICQ:SSI]" << "Contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name << "updated";
+	}
+}
+
+void SSIManager::Private::processSsiRemove(SnacBuffer& reply)
+{
+	while ( !reply.atEnd() ) {
+		Word nameLen = reply.getWord();
+		QString name = reply.read(nameLen);
+		Word gid = reply.getWord();
+		Word iid = reply.getWord();
+		Word itemType = reply.getWord();
+
+		if ( iid ) {
+			existingItems.remove(iid);
+			ssiList.remove(iid);
+		}
+		if ( itemType == Contact::Group && gid ) {
+			existingGroups.remove(gid);
+		}
+
+		Word dataLen = reply.getWord();
+		TlvChain chain = reply.read(dataLen);
+
+		if ( itemType == Contact::Buddy ) {
+			emit q->contactDeleted(name);
+		}
+
+		qDebug() << "[ICQ:SSI]" << "Contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name << "deleted";
+	}
+}
+
+void SSIManager::Private::processServerEditAck(SnacBuffer& reply)
+{
+	Word code = reply.getWord();
+	qDebug() << "[ICQ:SSI]" << "Modify code:" << QByteArray::number(code, 16);
+
+	if ( code == 0x0 ) {
+		Contact contact = outgoingContacts.dequeue();
+
+		/* so this is a new buddy item which is not on the list */
+		if ( contact.type() == Contact::Buddy && !ssiList.contains( contact.id() ) ) {
+			ssiList.insert(contact.id(), contact);
+		}
+		return;
+	}
+	/* contact requires auth */
+	if ( code == 0x0E ) {
+		Contact contact = outgoingContacts.dequeue();
+		contact.setAwaitingAuth(true);
+
+		beginTransaction();
+		sendContact(contact, 0x08);
+		finishTransaction();
+
+		requestAuthorization( contact.name() );
+
+		return;
+	}
+	outgoingContacts.dequeue();
+}
+
+void SSIManager::Private::processSsiUpToDate(SnacBuffer& reply)
+{
+	DWord modTime = reply.getDWord();
+	Word listSize = reply.getWord();
+	Q_UNUSED(modTime)
+	Q_UNUSED(listSize)
+	qDebug() << "[ICQ:SSI]" << "SSI is up-to-date";
+
+	/* SNAC(13,07) - SSI Activate */
+	link->snacRequest(0x13, 0x07);
+}
+
+void SSIManager::Private::processAuthGranted(SnacBuffer& snac)
+{
+	Byte uinLen = snac.getByte();
+	QString uin = snac.read(uinLen);
+	snac.seekEnd();
+
+	emit q->authGranted(uin);
+}
+
+void SSIManager::Private::processAuthReply(SnacBuffer& reply)
+{
+	int uinLen = reply.getByte();
+	QString uin = reply.read(uinLen);
+
+	int accepted = reply.getByte();
+
+	reply.seekEnd();
+
+	if ( accepted == 1 ) {
+		emit q->authGranted(uin);
+	} else {
+		emit q->authDenied(uin);
+	}
+}
+
+inline void SSIManager::Private::beginTransaction()
+{
+	link->snacRequest(0x13, 0x11);
+}
+
+inline void SSIManager::Private::finishTransaction()
+{
+	link->snacRequest(0x13, 0x12);
+}
+
+void SSIManager::Private::requestAuthorization(const QString& uin)
+{
+	SnacBuffer snac(0x13, 0x18);
+
+	snac.addByte( uin.length() );
+	snac.addData(uin);
+	snac.addWord(0); // auth msg len
+	snac.addWord(0); // unknown
+
+	link->write(snac);
+}
+
+Word SSIManager::Private::freeItemId() const
+{
+	qsrand( existingItems.size() );
+
+	Word iid = qrand();
+	while ( existingItems.contains(iid) ) {
+		iid = qrand();
+	}
+	return iid;
+}
+
+Word SSIManager::Private::freeGroupId() const
+{
+	Word gid = 1;
+	while ( existingGroups.contains(gid) ) {
+		++gid;
+	}
+	return gid;
+}
+
+Contact SSIManager::Private::groupByName(const QString& name)
+{
+	QHashIterator<Word, Contact> i(ssiList);
+	while ( i.hasNext() ) {
+		i.next();
+		if ( i.value().type() != Contact::Group ) {
+			continue;
+		}
+		if ( i.value().name() == name ) {
+			return i.value();
+		}
+	}
+	return Contact();
+}
+
 SSIManager::SSIManager(Connection* parent)
 	: QObject(parent)
 {
@@ -63,18 +369,125 @@ SSIManager::SSIManager(Connection* parent)
 	d->q = this;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect(this, SIGNAL( contactAdded(QString) ), d->link, SIGNAL( contactAdded(QString) ) );
+	QObject::connect(this, SIGNAL( contactDeleted(QString) ), d->link, SIGNAL( contactDeleted(QString) ) );
 
-	QObject::connect(this, SIGNAL( newGroup(Contact*) ), d->link, SIGNAL( ssiNewGroup(Contact*) ) );
-	QObject::connect(this, SIGNAL( newBuddy(Contact*) ), d->link, SIGNAL( ssiNewBuddy(Contact*) ) );
-	QObject::connect(this, SIGNAL( newVisible(Contact*) ), d->link, SIGNAL( ssiNewVisible(Contact*) ) );
-	QObject::connect(this, SIGNAL( newInvisible(Contact*) ), d->link, SIGNAL( ssiNewInvisible(Contact*) ) );
-	QObject::connect(this, SIGNAL( newIgnore(Contact*) ), d->link, SIGNAL( ssiNewIgnore(Contact*) ) );
+	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 SSIManager::~SSIManager()
 {
 	delete d;
+}
+
+void SSIManager::addContact(const QString& uin)
+{
+	Contact group = d->groupByName("default");
+	Word gid;
+	if ( !group.isValid() ) {
+		gid = addGroup("default");
+	} else {
+		gid = group.groupId();
+	}
+
+	Contact newContact;
+
+	newContact.setType(Contact::Buddy);
+	newContact.setName(uin);
+	newContact.setGroupId(gid);
+	newContact.setItemId( d->freeItemId() );
+	newContact.setDisplayName(uin);
+
+	d->beginTransaction();
+	d->sendContact(newContact, 0x08);
+	d->finishTransaction();
+}
+
+void SSIManager::delContact(const QString& uin)
+{
+	QHashIterator<Word, Contact> i(d->ssiList);
+	Contact contact;
+	while ( i.hasNext() ) {
+		i.next();
+		if ( i.value().name() == uin ) {
+			contact = i.value();
+			break;
+		}
+	}
+	if ( !contact.isValid() ) {
+		qDebug() << "[ICQ:SSI] Contact with uin" << uin << "not found";
+		return;
+	}
+
+	d->beginTransaction();
+	d->sendContact(contact, 0x0A);
+	d->finishTransaction();
+}
+
+/**
+ * Adds group named @a name to roster
+ */
+Word SSIManager::addGroup(const QString& name)
+{
+	Contact check = d->groupByName(name);
+	if ( check.isValid() ) {
+		return check.groupId();
+	}
+
+	Contact group;
+	group.setType(Contact::Group);
+	group.setName(name);
+	group.setGroupId( d->freeGroupId() );
+	group.setItemId(0);
+	group.setChilds( QList<Word>() );
+
+	QList<Word> groups = d->masterGroup.childs();
+	groups.append( group.groupId() );
+
+	d->beginTransaction();
+	d->sendContact(group, 0x08);
+	d->sendContact(d->masterGroup, 0x09);
+	d->finishTransaction();
+
+	return group.groupId();
+}
+
+void SSIManager::delGroup(const QString& name)
+{
+	/* we won't delete group that doesn't exist */
+	Contact group = d->groupByName(name);
+	if ( !group.isValid() ) {
+		return;
+	}
+
+	d->beginTransaction();
+	d->sendContact(group, 0x0A);
+	d->finishTransaction();
+}
+
+void SSIManager::grantAuthorization(const QString& uin)
+{
+	SnacBuffer snac(0x13, 0x14);
+
+	snac.addByte( uin.length() );
+	snac.addData(uin);
+	snac.addWord(0); // auth msg len
+	snac.addWord(0); // unknown
+
+	d->link->write(snac);
+}
+
+void SSIManager::denyAuthorization(const QString& uin)
+{
+	SnacBuffer snac(0x13, 0x1A);
+
+	snac.addByte( uin.length() );
+	snac.addData(uin);
+	snac.addByte(0); // auth denied
+	snac.addWord(0); // auth msg len
+	snac.addWord(0); // unknown
+
+	d->link->write(snac);
 }
 
 QList<Contact> SSIManager::contactList() const
@@ -106,9 +519,10 @@ QList<Contact> SSIManager::Private::listOfType(Word type) const
 {
 	QList<Contact> list;
 
-	QListIterator<Contact> i(ssiList);
+	QHashIterator<Word, Contact> i(ssiList);
 	while ( i.hasNext() ) {
-		Contact contact = i.next();
+		i.next();
+		Contact contact = i.value();
 		if ( contact.type() == type ) {
 			list << contact;
 		}
@@ -149,76 +563,6 @@ void SSIManager::setLastChangeTime(DWord time)
 	d->lastUpdate = time;
 }
 
-/* << SNAC(13,03) - SRV_SSI_RIGHTS_REPLY */
-void SSIManager::Private::recv_ssi_parameters(SnacBuffer& reply)
-{
-	TlvChain chain(reply);
-	reply.seekEnd();
-	Tlv limits = chain.getTlv(0x04);
-	maxContacts = limits.getWord();
-	maxGroups = limits.getWord();
-	maxVisible = limits.getWord();
-	maxInvisible = limits.getWord();
-	limits.seekForward(sizeof(Word)*10);
-	maxIgnored = limits.getWord();
-}
-
-/* << SNAC(13,06) - SRV_SSIxREPLY */
-void SSIManager::Private::recv_ssi_contact(SnacBuffer& reply)
-{
-	reply.getByte(); // ssi version - 0x00
-
-	Word listSize = reply.getWord();
-
-	for ( uint i = 0; i < listSize; i++ ) {
-		Word nameLen = reply.getWord();
-		QString name = reply.read(nameLen);
-		Word groupId = reply.getWord();
-		Word itemId = reply.getWord();
-		Word itemType = reply.getWord();
-
-		Word dataLen = reply.getWord();
-		TlvChain chain = reply.read(dataLen);
-
-		ssiList << Contact(name, groupId, itemId, itemType, chain);
-		switch ( itemType ) {
-			case Contact::Group:
-				emit q->newGroup( &ssiList.last() );
-				break;
-			case Contact::Buddy:
-				emit q->newBuddy( &ssiList.last() );
-				break;
-			case Contact::Visible:
-				emit q->newVisible( &ssiList.last() );
-				break;
-			case Contact::Invisible:
-				emit q->newInvisible( &ssiList.last() );
-				break;
-			case Contact::Ignore:
-				emit q->newIgnore( &ssiList.last() );
-				break;
-			default: break;
-		}
-	}
-	DWord lastChangeTime = reply.getDWord();
-	lastUpdate = lastChangeTime;
-	// qDebug() << lastChangeTime << QDateTime::fromTime_t( lastChangeTime ) << QDateTime::currentDateTime();
-
-	/* SNAC(13,07) */
-	link->snacRequest(0x13, 0x07);
-}
-
-/* << SNAC(13,0F) - SRV_SSI_UPxTOxDATE
- * >> SNAC(13,07) - CLI_SSI_ACTIVATE */
-void SSIManager::Private::recv_ssi_uptodate(SnacBuffer& reply)
-{
-	DWord modTime = reply.getDWord();
-	Word listSize = reply.getWord();
-	Q_UNUSED(modTime)
-	Q_UNUSED(listSize)
-	qDebug() << "[SSI Manager] CL is up-to-date";
-}
-
 void SSIManager::incomingSnac(SnacBuffer& snac)
 {
 	if ( snac.family() != 0x13 ) {
@@ -227,13 +571,36 @@ void SSIManager::incomingSnac(SnacBuffer& snac)
 
 	switch ( snac.subtype() ) {
 		case 0x03:
-			d->recv_ssi_parameters(snac);
+			d->processSsiParameters(snac);
 			break;
 		case 0x06:
-			d->recv_ssi_contact(snac);
+			d->processSsiContact(snac);
+			break;
+		case 0x08:
+			d->processSsiAdd(snac);
+			break;
+		case 0x09:
+			d->processSsiUpdate(snac);
+			break;
+		case 0x0A:
+			d->processSsiRemove(snac);
+			break;
+		case 0x0E:
+			d->processServerEditAck(snac);
 			break;
 		case 0x0F:
-			d->recv_ssi_uptodate(snac);
+			d->processSsiUpToDate(snac);
+			break;
+		case 0x11:
+			qDebug() << "[ICQ:SSI]" << "Server started the transaction";
+			break;
+		case 0x12:
+			qDebug() << "[ICQ:SSI]" << "Server closed the transaction";
+		case 0x15:
+			d->processAuthGranted(snac);
+			break;
+		case 0x1B:
+			d->processAuthReply(snac);
 			break;
 		default:
 			break;

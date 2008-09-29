@@ -113,7 +113,7 @@ void Connection::Private::handle_error(SnacBuffer& snac)
 	if ( tlvs.hasTlv(0x08) ) {
 		errmsg += " subcode" + tlvs.getTlvData(0x08).toHex();
 	}
-	qDebug() << "[ICQ:Connection] ERROR!!" << "family" << snac.family() << errmsg;
+	qDebug() << "[ICQ:Connection] ERROR!!" << "family" << QString::number(snac.family(), 16) << errmsg;
 }
 
 void Connection::Private::incomingData()

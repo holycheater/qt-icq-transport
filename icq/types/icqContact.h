@@ -36,7 +36,7 @@ class Contact
 {
 	public:
 		enum ItemType { Buddy = 0x0000, Group = 0x0001, Visible = 0x0002, Invisible = 0x0003, PermitDeny = 0x0004,
-			Presence = 0x0005, Ignore = 0x000E, SelfIcon = 0x0013 };
+			Presence = 0x0005, Ignore = 0x000E, SelfIcon = 0x0013, Deleted = 0x0019 };
 
 		Contact();
 		Contact(const Contact& other);

@@ -109,6 +109,23 @@ Word Contact::type() const
 	return d->type;
 }
 
+/**
+ * Returns list of child item-ids for a group or child group-ids for master-group (TLV 0xC8).
+ * @note Method works only for items which type is Group (0001), otherwise it does nothing.
+ */
+QList<Word> Contact::childs() const
+{
+	if ( d->type != Group ) {
+		return QList<Word>();
+	}
+	QList<Word> childs;
+	Tlv tlvChilds = d->data.getTlv(0xC8);
+	while ( !tlvChilds.atEnd() ) {
+		childs << tlvChilds.getWord();
+	}
+	return childs;
+}
+
 TlvChain Contact::tlvChain() const
 {
 	return d->data;
@@ -132,6 +149,25 @@ void Contact::setItemId(Word id)
 void Contact::setType(Word type)
 {
 	d->type = type;
+}
+
+/**
+ * Sets list of child item-ids for a group or child group-ids for master-group (TLV 0xC8).
+ * @note Method works only for items which type is Group (0001), otherwise it does nothing.
+ */
+void Contact::setChilds(const QList<Word>& childs)
+{
+	if ( d->type != Group ) {
+		return;
+	}
+	Tlv tlv(0xC8);
+
+	QListIterator<Word> i(childs);
+	while ( i.hasNext() ) {
+		tlv.addWord( i.next() );
+	}
+
+	d->data.addTlv(tlv);
 }
 
 void Contact::setTlvChain(const TlvChain& chain)

@@ -49,12 +49,14 @@ class Contact
 		Word groupId() const;
 		Word id() const;
 		Word type() const;
+		QList<Word> childs() const;
 		TlvChain tlvChain() const;
 
 		void setName(const QString& name);
 		void setGroupId(Word id);
 		void setItemId(Word id);
 		void setType(Word type);
+		void setChilds(const QList<Word>& childs);
 		void setTlvChain(const TlvChain& chain);
 
 		bool awaitingAuth() const;

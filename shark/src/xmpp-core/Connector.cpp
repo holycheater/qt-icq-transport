@@ -545,9 +545,3 @@ void Connector::Proxy::setUserPass(const QString &user, const QString &pass)
 	m_username = user;
 	m_password = pass;
 }
-
-void Connector::Proxy::setPollInterval(int secs)
-{
-	m_poll = secs;
-}
-

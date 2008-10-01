@@ -39,8 +39,6 @@ class Connector : public QObject
 		Connector(QObject *parent = 0);
 		virtual ~Connector();
 
-		class Proxy;
-
 		void connectToServer(const QString& server);
 		ByteStream *stream() const;
 		void done();
@@ -51,12 +49,9 @@ class Connector : public QObject
 		QHostAddress peerAddress() const;
 		quint16 peerPort() const;
 
-		void setProxy(const Proxy& proxy);
 		void setOptHostPort(const QString& host, quint16 port);
 		void setOptProbe(bool);
 		void setOptSSL(bool);
-
-		void changePollInterval(int secs);
 
 		int errorCode() const;
 
@@ -86,33 +81,6 @@ class Connector : public QObject
 		class Private;
 		Private *d;
 };
-
-class Connector::Proxy
-{
-	public:
-		enum { None, Socks };
-		Proxy();
-		~Proxy();
-
-		int type() const;
-		QString host() const;
-		quint16 port() const;
-		QString url() const;
-		QString user() const;
-		QString pass() const;
-		int pollInterval() const;
-
-		void setSocks(const QString& host, quint16 port);
-		void setUserPass(const QString& user, const QString& pass);
-	private:
-		int m_type;
-		QString m_host, m_url;
-		quint16 m_port;
-		QString m_username, m_password;
-		int m_poll;
-};
-
-
 
 
 } /* end of namespace XMPP */

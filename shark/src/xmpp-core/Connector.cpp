@@ -25,15 +25,15 @@
 
 #include "Connector.h"
 
-#include "safedelete.h"
 /* libidn */
 #include <idna.h>
 
-#include "ndns.h"
-#include "srvresolver.h"
+/* legacy stuff */
+#include "irisnet/noncore/legacy/safedelete.h"
+#include "irisnet/noncore/legacy/ndns.h"
+#include "irisnet/noncore/legacy/srvresolver.h"
 
 #include "cutestuff/bsocket.h"
-#include "cutestuff/socks.h"
 
 using namespace XMPP;
 
@@ -57,7 +57,6 @@ class Connector::Private
 		QString opt_host;
 		int opt_port;
 		bool opt_probe, opt_ssl;
-		Proxy proxy;
 
 		QString host;
 		QList<Q3Dns::Server> servers;
@@ -71,9 +70,6 @@ class Connector::Private
 		SafeDelete sd;
 };
 
-//----------------------------------------------------------------------------
-// Connector
-//----------------------------------------------------------------------------
 Connector::Connector(QObject *parent)
 	: QObject(parent)
 {
@@ -83,8 +79,8 @@ Connector::Connector(QObject *parent)
 	setPeerAddressNone();
 
 	d->bs = 0;
-	connect(&d->dns, SIGNAL(resultsReady()), SLOT(dns_done()));
-	connect(&d->srv, SIGNAL(resultsReady()), SLOT(srv_done()));
+	QObject::connect( &d->dns, SIGNAL( resultsReady() ), SLOT( dns_done() ) );
+	QObject::connect( &d->srv, SIGNAL( resultsReady() ), SLOT( srv_done() ) );
 	d->opt_probe = false;
 	d->opt_ssl = false;
 	cleanup();
@@ -161,14 +157,6 @@ void Connector::cleanup()
 
 	setUseSSL(false);
 	setPeerAddressNone();
-}
-
-void Connector::setProxy(const Proxy& proxy)
-{
-	if (d->mode != Idle) {
-		return;
-	}
-	d->proxy = proxy;
 }
 
 void Connector::setOptHostPort(const QString& host, quint16 port)
@@ -263,13 +251,7 @@ void Connector::dns_done()
 		printf("dns1\n");
 #endif
 		// using proxy?  then try the unresolved host through the proxy
-		if(d->proxy.type() != Proxy::None) {
-#ifdef XMPP_DEBUG
-			printf("dns1.1\n");
-#endif
-			do_connect();
-		}
-		else if(d->using_srv) {
+		if ( d->using_srv ) {
 #ifdef XMPP_DEBUG
 			printf("dns1.2\n");
 #endif
@@ -312,29 +294,11 @@ void Connector::do_connect()
 #ifdef XMPP_DEBUG
 	qDebug() << "trying host" << d->host << "port" << d->port;
 #endif
-	int t = d->proxy.type();
-	if(t == Proxy::None) {
-#ifdef XMPP_DEBUG
-		printf("do_connect1\n");
-#endif
-		BSocket *s = new BSocket;
-		d->bs = s;
-		connect(s, SIGNAL(connected()), SLOT(bs_connected()));
-		connect(s, SIGNAL(error(int)), SLOT(bs_error(int)));
-		s->connectToHost(d->host, d->port);
-	}
-	else if(t == Proxy::Socks) {
-#ifdef XMPP_DEBUG
-		printf("do_connect3\n");
-#endif
-		SocksClient *s = new SocksClient;
-		d->bs = s;
-		connect(s, SIGNAL(connected()), SLOT(bs_connected()));
-		connect(s, SIGNAL(error(int)), SLOT(bs_error(int)));
-		if(!d->proxy.user().isEmpty())
-			s->setAuth(d->proxy.user(), d->proxy.pass());
-		s->connectToHost(d->proxy.host(), d->proxy.port(), d->host, d->port);
-	}
+	BSocket *s = new BSocket;
+	d->bs = s;
+	QObject::connect( s, SIGNAL( connected() ), SLOT( bs_connected() ) );
+	QObject::connect( s, SIGNAL( error(int) ), SLOT( bs_error(int) ) );
+	s->connectToHost(d->host, d->port);
 }
 
 void Connector::tryNextSrv()
@@ -396,11 +360,9 @@ void Connector::srv_done()
 
 void Connector::bs_connected()
 {
-	if(d->proxy.type() == Proxy::None) {
-		QHostAddress h = (static_cast<BSocket*>(d->bs))->peerAddress();
-		int p = (static_cast<BSocket*>(d->bs))->peerPort();
-		setPeerAddress(h, p);
-	}
+	QHostAddress h = (static_cast<BSocket*>(d->bs))->peerAddress();
+	int p = (static_cast<BSocket*>(d->bs))->peerPort();
+	setPeerAddress(h, p);
 
 	// only allow ssl override if proxy==poll or host:port
 	if( !d->opt_host.isEmpty() && d->opt_ssl ) {
@@ -415,7 +377,7 @@ void Connector::bs_connected()
 
 void Connector::bs_error(int x)
 {
-	if(d->mode == Connected) {
+	if (d->mode == Connected) {
 		d->errorCode = ErrStream;
 		emit error();
 		return;
@@ -423,50 +385,27 @@ void Connector::bs_error(int x)
 
 	bool proxyError = false;
 	int err = ErrConnectionRefused;
-	int t = d->proxy.type();
 
-#ifdef XMPP_DEBUG
-	printf("bse1\n");
-#endif
-
-	// figure out the error
-	if (t == Proxy::None) {
-		if (x == BSocket::ErrHostNotFound) {
-			err = ErrHostNotFound;
-		} else {
-			err = ErrConnectionRefused;
-		}
-	} else if(t == Proxy::Socks) {
-		if(x == SocksClient::ErrConnectionRefused)
-			err = ErrConnectionRefused;
-		else if(x == SocksClient::ErrHostNotFound)
-			err = ErrHostNotFound;
-		else {
-			proxyError = true;
-			if(x == SocksClient::ErrProxyAuth)
-				err = ErrProxyAuth;
-			else if(x == SocksClient::ErrProxyNeg)
-				err = ErrProxyNeg;
-			else
-				err = ErrProxyConnect;
-		}
+	if (x == BSocket::ErrHostNotFound) {
+		err = ErrHostNotFound;
+	} else {
+		err = ErrConnectionRefused;
 	}
 
 	// no-multi or proxy error means we quit
-	if(!d->multi || proxyError) {
+	if (!d->multi || proxyError) {
 		cleanup();
 		d->errorCode = err;
 		emit error();
 		return;
 	}
 
-	if(d->using_srv && !d->servers.isEmpty()) {
+	if ( d->using_srv && !d->servers.isEmpty() ) {
 #ifdef XMPP_DEBUG
 		printf("bse1.1\n");
 #endif
 		tryNextSrv();
-	}
-	else if(!d->using_srv && d->opt_probe && d->probe_mode == 0) {
+	} else if (!d->using_srv && d->opt_probe && d->probe_mode == 0) {
 #ifdef XMPP_DEBUG
 		printf("bse1.2\n");
 #endif
@@ -474,8 +413,7 @@ void Connector::bs_error(int x)
 		d->port = 5222;
 		d->will_be_ssl = false;
 		do_connect();
-	}
-	else {
+	} else {
 #ifdef XMPP_DEBUG
 		printf("bse1.3\n");
 #endif
@@ -483,65 +421,4 @@ void Connector::bs_error(int x)
 		d->errorCode = ErrConnectionRefused;
 		emit error();
 	}
-}
-
-//----------------------------------------------------------------------------
-// Connector::Proxy
-//----------------------------------------------------------------------------
-Connector::Proxy::Proxy()
-{
-	m_type = None;
-	m_poll = 30;
-}
-
-Connector::Proxy::~Proxy()
-{
-}
-
-int Connector::Proxy::type() const
-{
-	return m_type;
-}
-
-QString Connector::Proxy::host() const
-{
-	return m_host;
-}
-
-quint16 Connector::Proxy::port() const
-{
-	return m_port;
-}
-
-QString Connector::Proxy::url() const
-{
-	return m_url;
-}
-
-QString Connector::Proxy::user() const
-{
-	return m_username;
-}
-
-QString Connector::Proxy::pass() const
-{
-	return m_password;
-}
-
-int Connector::Proxy::pollInterval() const
-{
-	return m_poll;
-}
-
-void Connector::Proxy::setSocks(const QString &host, quint16 port)
-{
-	m_type = Socks;
-	m_host = host;
-	m_port = port;
-}
-
-void Connector::Proxy::setUserPass(const QString &user, const QString &pass)
-{
-	m_username = user;
-	m_password = pass;
 }

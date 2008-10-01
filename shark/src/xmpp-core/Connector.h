@@ -90,7 +90,7 @@ class Connector : public QObject
 class Connector::Proxy
 {
 	public:
-		enum { None, HttpConnect, HttpPoll, Socks };
+		enum { None, Socks };
 		Proxy();
 		~Proxy();
 
@@ -102,11 +102,8 @@ class Connector::Proxy
 		QString pass() const;
 		int pollInterval() const;
 
-		void setHttpConnect(const QString& host, quint16 port);
-		void setHttpPoll(const QString& host, quint16 port, const QString& url);
 		void setSocks(const QString& host, quint16 port);
 		void setUserPass(const QString& user, const QString& pass);
-		void setPollInterval(int secs);
 	private:
 		int m_type;
 		QString m_host, m_url;

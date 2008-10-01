@@ -25,8 +25,6 @@
 
 #include "Connector.h"
 
-#include <QtCrypto>
-
 #include "safedelete.h"
 /* libidn */
 #include <idna.h>
@@ -35,8 +33,6 @@
 #include "srvresolver.h"
 
 #include "cutestuff/bsocket.h"
-#include "cutestuff/httpconnect.h"
-#include "cutestuff/httppoll.h"
 #include "cutestuff/socks.h"
 
 using namespace XMPP;
@@ -212,58 +208,20 @@ void Connector::connectToServer(const QString &server)
 	// Encode the servername
 	d->server = QUrl::toAce(server);
 
-	if(d->proxy.type() == Proxy::HttpPoll) {
+	if (!d->opt_host.isEmpty()) {
+		d->host = d->opt_host;
+		d->port = d->opt_port;
+		do_resolve();
+	} else {
+		d->multi = true;
 
-		HttpPoll *s = new HttpPoll;
-		d->bs = s;
-		connect(s, SIGNAL( connected() ), SLOT( bs_connected() ));
-		connect(s, SIGNAL( syncStarted() ), SIGNAL( httpSyncStarted() ));
-		connect(s, SIGNAL( syncFinished() ), SIGNAL( httpSyncFinished() ));
-		connect(s, SIGNAL( error(int) ), SLOT( bs_error(int) ));
-		if(!d->proxy.user().isEmpty())
-			s->setAuth(d->proxy.user(), d->proxy.pass());
-		s->setPollInterval(d->proxy.pollInterval());
-
-		if(d->proxy.host().isEmpty())
-			s->connectToUrl(d->proxy.url());
-		else
-			s->connectToHost(d->proxy.host(), d->proxy.port(), d->proxy.url());
-	}
-	else if (d->proxy.type() == Proxy::HttpConnect) {
-		if(!d->opt_host.isEmpty()) {
-			d->host = d->opt_host;
-			d->port = d->opt_port;
+		QPointer<QObject> self = this;
+		emit srvLookup(d->server);
+		if (!self) {
+			return;
 		}
-		else {
-			d->host = server;
-			d->port = 5222;
-		}
-		do_connect();
-	}
-	else {
-		if(!d->opt_host.isEmpty()) {
-			d->host = d->opt_host;
-			d->port = d->opt_port;
-			do_resolve();
-		}
-		else {
-			d->multi = true;
 
-			QPointer<QObject> self = this;
-			emit srvLookup(d->server);
-			if(!self)
-				return;
-
-			d->srv.resolveSrvOnly(d->server, "xmpp-client", "tcp");
-		}
-	}
-}
-
-void Connector::changePollInterval(int secs)
-{
-	if(d->bs && (d->bs->inherits("XMPP::HttpPoll") || d->bs->inherits("HttpPoll"))) {
-		HttpPoll *s = static_cast<HttpPoll*>(d->bs);
-		s->setPollInterval(secs);
+		d->srv.resolveSrvOnly(d->server, "xmpp-client", "tcp");
 	}
 }
 
@@ -365,18 +323,6 @@ void Connector::do_connect()
 		connect(s, SIGNAL(error(int)), SLOT(bs_error(int)));
 		s->connectToHost(d->host, d->port);
 	}
-	else if(t == Proxy::HttpConnect) {
-#ifdef XMPP_DEBUG
-		printf("do_connect2\n");
-#endif
-		HttpConnect *s = new HttpConnect;
-		d->bs = s;
-		connect(s, SIGNAL(connected()), SLOT(bs_connected()));
-		connect(s, SIGNAL(error(int)), SLOT(bs_error(int)));
-		if(!d->proxy.user().isEmpty())
-			s->setAuth(d->proxy.user(), d->proxy.pass());
-		s->connectToHost(d->proxy.host(), d->proxy.port(), d->host, d->port);
-	}
 	else if(t == Proxy::Socks) {
 #ifdef XMPP_DEBUG
 		printf("do_connect3\n");
@@ -457,10 +403,11 @@ void Connector::bs_connected()
 	}
 
 	// only allow ssl override if proxy==poll or host:port
-	if((d->proxy.type() == Proxy::HttpPoll || !d->opt_host.isEmpty()) && d->opt_ssl)
+	if( !d->opt_host.isEmpty() && d->opt_ssl ) {
 		setUseSSL(true);
-	else if(d->will_be_ssl)
+	} else if (d->will_be_ssl) {
 		setUseSSL(true);
+	}
 
 	d->mode = Connected;
 	emit connected();
@@ -483,43 +430,13 @@ void Connector::bs_error(int x)
 #endif
 
 	// figure out the error
-	if(t == Proxy::None) {
-		if(x == BSocket::ErrHostNotFound)
+	if (t == Proxy::None) {
+		if (x == BSocket::ErrHostNotFound) {
 			err = ErrHostNotFound;
-		else
+		} else {
 			err = ErrConnectionRefused;
-	}
-	else if(t == Proxy::HttpConnect) {
-		if(x == HttpConnect::ErrConnectionRefused)
-			err = ErrConnectionRefused;
-		else if(x == HttpConnect::ErrHostNotFound)
-			err = ErrHostNotFound;
-		else {
-			proxyError = true;
-			if(x == HttpConnect::ErrProxyAuth)
-				err = ErrProxyAuth;
-			else if(x == HttpConnect::ErrProxyNeg)
-				err = ErrProxyNeg;
-			else
-				err = ErrProxyConnect;
 		}
-	}
-	else if(t == Proxy::HttpPoll) {
-		if(x == HttpPoll::ErrConnectionRefused)
-			err = ErrConnectionRefused;
-		else if(x == HttpPoll::ErrHostNotFound)
-			err = ErrHostNotFound;
-		else {
-			proxyError = true;
-			if(x == HttpPoll::ErrProxyAuth)
-				err = ErrProxyAuth;
-			else if(x == HttpPoll::ErrProxyNeg)
-				err = ErrProxyNeg;
-			else
-				err = ErrProxyConnect;
-		}
-	}
-	else if(t == Proxy::Socks) {
+	} else if(t == Proxy::Socks) {
 		if(x == SocksClient::ErrConnectionRefused)
 			err = ErrConnectionRefused;
 		else if(x == SocksClient::ErrHostNotFound)
@@ -614,21 +531,6 @@ QString Connector::Proxy::pass() const
 int Connector::Proxy::pollInterval() const
 {
 	return m_poll;
-}
-
-void Connector::Proxy::setHttpConnect(const QString &host, quint16 port)
-{
-	m_type = HttpConnect;
-	m_host = host;
-	m_port = port;
-}
-
-void Connector::Proxy::setHttpPoll(const QString &host, quint16 port, const QString &url)
-{
-	m_type = HttpPoll;
-	m_host = host;
-	m_port = port;
-	m_url  = url;
 }
 
 void Connector::Proxy::setSocks(const QString &host, quint16 port)

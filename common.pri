@@ -1,4 +1,3 @@
-CONFIG += crypto
 QT *= network xml sql
 QT -= gui
 

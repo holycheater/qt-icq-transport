@@ -135,6 +135,7 @@ void GatewayTask::processLogin(const Jid& user)
 	query.exec( QString("SELECT uin, password FROM users WHERE jid = '?' ").replace( "?", user.bare() ) );
 
 	if ( query.first() ) {
+		emit onlineNotifyFor(user);
 		QString uin = query.value(0).toString();
 		QString password = query.value(1).toString();
 		qDebug() << "[GT]" << "credentails for" << user.bare() << "are:" << uin << password;

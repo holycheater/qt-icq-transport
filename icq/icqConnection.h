@@ -113,6 +113,11 @@ class Connection: public QObject
 		void contactAdded(const QString& uin);
 		void contactDeleted(const QString& uin);
 
+		void authGranted(const QString& uin);
+		void authDenied(const QString& uin);
+
+		void authRequest(const QString& uin);
+
 		void incomingMessage(const Message& msg);
 		void incomingMessage(const QString& senderUin, const QString& text);
 

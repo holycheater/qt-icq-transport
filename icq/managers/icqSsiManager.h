@@ -68,6 +68,8 @@ class SSIManager: public QObject
 		void authGranted(const QString& uin);
 		void authDenied(const QString& uin);
 
+		void authRequest(const QString& uin);
+
 		void contactAdded(const QString& uin);
 		void contactDeleted(const QString& uin);
 	private slots:

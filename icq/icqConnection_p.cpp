@@ -257,7 +257,7 @@ void Connection::Private::processLookupTimeout()
 
 void Connection::Private::processIncomingMessage(const Message& msg)
 {
-	emit q->incomingMessage( msg.sender(), msg.text( QTextCodec::codecForName("UTF-8") ) );
+	emit q->incomingMessage( msg.sender(), msg.text( QTextCodec::codecForName("Windows-1251") ) );
 }
 
 void Connection::Private::processNewServer(QString newHost, quint16 newPort)

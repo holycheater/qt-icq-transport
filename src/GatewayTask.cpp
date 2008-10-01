@@ -144,8 +144,9 @@ void GatewayTask::processLogin(const Jid& user)
 		QObject::connect( conn, SIGNAL( statusChanged(int) ), SLOT( processIcqStatus(int) ) );
 		QObject::connect( conn, SIGNAL( userOnline(QString) ), SLOT( processContactOnline(QString) ) );
 		QObject::connect( conn, SIGNAL( userOffline(QString) ), SLOT( processContactOffline(QString) ) );
-		QObject::connect( conn, SIGNAL( contactAdded(QString) ), SLOT( processContactAdded(QString) ) );
-		QObject::connect( conn, SIGNAL( contactDeleted(QString) ), SLOT( processContactDeleted(QString) ) );
+		QObject::connect( conn, SIGNAL( authGranted(QString) ), SLOT( processAuthGranted(QString) ) );
+		QObject::connect( conn, SIGNAL( authDenied(QString) ), SLOT( processAuthDenied(QString) ) );
+		QObject::connect( conn, SIGNAL( authRequest(QString) ), SLOT( processAuthRequest(QString) ) );
 		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString) ), SLOT( processIncomingMessage(QString,QString) ) );
 
 		d->jidIcqTable.insert( user.bare(), conn );
@@ -264,23 +265,44 @@ void GatewayTask::processContactOffline(const QString& uin)
 	emit contactOffline(user, uin);
 }
 
-void GatewayTask::processContactAdded(const QString& uin)
-{
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
-	Jid user = d->icqJidTable.value(conn);
-	emit contactAdded(user, uin);
-}
-
-void GatewayTask::processContactDeleted(const QString& uin)
-{
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
-	Jid user = d->icqJidTable.value(conn);
-	emit contactDeleted(user, uin);
-}
-
 void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message)
 {
 	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 	emit incomingMessage(user, senderUin, message);
+}
+
+/**
+ * This slot is triggered when user @a uin grants authorization to jabber user.
+ */
+void GatewayTask::processAuthGranted(const QString& uin)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+
+	qDebug() << "[GT]" << user << "granted auth to" << uin;
+	emit subscriptionReceived(user, uin);
+}
+
+/**
+ * This slot is triggered when user @a uin denies authorization to jabber user.
+ */
+void GatewayTask::processAuthDenied(const QString& uin)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+
+	qDebug() << "[GT]" << user << "denied auth to" << uin;
+	emit subscriptionRemoved(user, uin);
+}
+
+/**
+ * This slot is triggered when user @a uin sends an authorization request to jabber user.
+ */
+void GatewayTask::processAuthRequest(const QString& uin)
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+
+	emit subscriptionRequest(user, uin);
 }

@@ -423,31 +423,6 @@ void Connection::sendMetaRequest(Word type, Buffer& data)
  */
 
 /**
- * @fn void Connection::ssiNewGroup(Contact *contact)
- * @brief This signal is emitted when new group was added to the roster.
- */
-
-/**
- * @fn void Connection::ssiNewBuddy(Contact *contact)
- * @brief This signal is emitted when new buddy was added to the roster.
- */
-
-/**
- * @fn void Connection::ssiNewIgnore(Contact *contact)
- * @brief This signal is emitted when new ignore-list record was added to the roster.
- */
-
-/**
- * @fn void Connection::ssiNewVisible(Contact *contact)
- * @brief This signal is emitted when new visible-list record was added to the roster.
- */
-
-/**
- * @fn void Connection::ssiNewInvisible(Contact *contact)
- * @brief This signal is emitted when new invisible-list record was added to the roster.
- */
-
-/**
  * @fn void Connection::userOnline(QString userId)
  * @brief This signal is emitted when a user from buddy list goes online.
  *
@@ -459,6 +434,30 @@ void Connection::sendMetaRequest(Word type, Buffer& data)
  * @brief This signal is emitted when a user from buddy list goes offline.
  *
  * @param userId		UIN of user which gone offline.
+ */
+
+/**
+ * @fn void Connection::contactAdded(const QString& uin)
+ * @brief This signal is emitted when connection recieves acknowledge that a contact @a uin was added to server-side roster.
+ */
+/**
+ * @fn void Connection::contactDeleted(const QString& uin)
+ * @brief This signal is emitted when connection recieves acknowledge that a contact @a uin was deleted from server-side roster.
+ */
+
+/**
+ * @fn void Connection::authGranted(const QString& uin)
+ * @brief This signal is emitted when user @a uin grants you authorization.
+ */
+
+/**
+ * @fn void Connection::authDenied(const QString& uin)
+ * @brief This signal is emitted when user @a uin denies you authorization.
+ */
+
+/**
+ * @fn void Connection::authRequest(const QString& uin)
+ * @brief This signal is emitted when user @a uin sends you an authorization request.
  */
 
 /**

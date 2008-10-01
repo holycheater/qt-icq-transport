@@ -55,8 +55,9 @@ class GatewayTask : public QObject
 		void processGatewayOnline();
 		void processShutdown();
 	signals:
-		void contactAdded(const Jid& user, const QString& uin);
-		void contactDeleted(const Jid& user, const QString& uin);
+		void subscriptionReceived(const Jid& user, const QString& uin);
+		void subscriptionRemoved(const Jid& user, const QString& uin);
+		void subscriptionRequest(const Jid& user, const QString& uin);
 
 		void contactOnline(const Jid& user, const QString& uin);
 		void contactOffline(const Jid& user, const QString& uin);
@@ -69,9 +70,11 @@ class GatewayTask : public QObject
 		void processIcqStatus(int status);
 		void processContactOnline(const QString& uin);
 		void processContactOffline(const QString& uin);
-		void processContactAdded(const QString& uin);
-		void processContactDeleted(const QString& uin);
 		void processIncomingMessage(const QString& senderUin, const QString& message);
+
+		void processAuthGranted(const QString& uin);
+		void processAuthDenied(const QString& uin);
+		void processAuthRequest(const QString& uin);
 	private:
 		class Private;
 		Private *d;

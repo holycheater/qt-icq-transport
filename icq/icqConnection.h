@@ -121,6 +121,7 @@ class Connection: public QObject
 		void incomingMessage(const Message& msg);
 		void incomingMessage(const QString& senderUin, const QString& text);
 
+		void signedOn();
 		void signedOff();
 	private:
 		class Private;

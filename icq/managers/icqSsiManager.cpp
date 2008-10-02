@@ -24,9 +24,7 @@
 
 #include <QByteArray>
 #include <QDateTime>
-
 #include <QList>
-#include <QHash>
 #include <QSet>
 #include <QQueue>
 
@@ -155,6 +153,7 @@ void SSIManager::Private::processSsiContact(SnacBuffer& reply)
 
 	/* SNAC(13,07) - SSI Activate */
 	link->snacRequest(0x13, 0x07);
+	emit q->ssiActivated();
 }
 
 void SSIManager::Private::processSsiAdd(SnacBuffer& reply)
@@ -312,6 +311,7 @@ void SSIManager::Private::processSsiUpToDate(SnacBuffer& reply)
 
 	/* SNAC(13,07) - SSI Activate */
 	link->snacRequest(0x13, 0x07);
+	emit q->ssiActivated();
 }
 
 void SSIManager::Private::processAuthGranted(SnacBuffer& snac)
@@ -596,7 +596,9 @@ QList<Contact> SSIManager::Private::listOfType(Word type) const
 	return list;
 }
 
-/* >> SNAC(13,05) - CLI_SSI_CHECKOUT */
+/**
+ * Sends SNAC(13,05) - CLI_SSI_CHECKOUT (Checks server-side roster for update).
+ */
 void SSIManager::checkContactList()
 {
 	/* send out SNAC(13,05) - check ssi-items */
@@ -608,25 +610,44 @@ void SSIManager::checkContactList()
 	d->link->write(snac);
 }
 
-/* >> SNAC(13,02) - CLI_SSI_RIGHTS_REQUEST */
+/**
+ * Sends SNAC(13,04) - CLI_SSI_REQUEST. Request server-side roster.
+ */
+void SSIManager::requestContactList()
+{
+	d->link->snacRequest(0x13, 0x04);
+}
+
+/**
+ * Sends SNAC(13,02) - CLI_SSI_RIGHTS_REQUEST (request roster parameters: max number of various items).
+ */
 void SSIManager::requestParameters()
 {
 	d->link->snacRequest(0x13, 0x02);
 }
 
+/**
+ * Returns number of records in SSI-list
+ */
 Word SSIManager::size() const
 {
 	return d->ssiList.size();
 }
 
-DWord SSIManager::lastChangeTime() const
+/**
+ * Returns roster's last change time.
+ */
+QDateTime SSIManager::lastChangeTime() const
 {
-	return d->lastUpdate;
+	return QDateTime::fromTime_t(d->lastUpdate);
 }
 
-void SSIManager::setLastChangeTime(DWord time)
+/**
+ * Sets roster's last change time to @a time
+ */
+void SSIManager::setLastChangeTime(const QDateTime& time)
 {
-	d->lastUpdate = time;
+	d->lastUpdate = time.toTime_t();
 }
 
 void SSIManager::incomingSnac(SnacBuffer& snac)

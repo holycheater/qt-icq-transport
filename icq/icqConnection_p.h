@@ -61,6 +61,8 @@ class Connection::Private : public QObject
 		QTimer *connectTimer;
 		QTimer *keepAliveTimer;
 		QTimer *lookupTimer;
+
+		bool ssiActivated, loginFinished;
 	public slots:
 		void incomingData();
 		void sendKeepAlive();
@@ -73,6 +75,7 @@ class Connection::Private : public QObject
 		void processIncomingMessage(const Message& msg);
 		void processNewServer(QString server, quint16 port);
 		void processRatesRequest();
+		void processSsiActivated();
 		void processSignedOn();
 		void processSignedOff();
 	private:

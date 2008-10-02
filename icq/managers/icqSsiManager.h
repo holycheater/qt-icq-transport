@@ -27,6 +27,8 @@
 #include <QObject>
 #include <QString>
 
+class QDateTime;
+
 namespace ICQ
 {
 
@@ -55,15 +57,15 @@ class SSIManager: public QObject
 		QList<Contact> invisibleList() const;
 		QList<Contact> ignoreList() const;
 
-		/* SNAC(13,05) - Check server copy of CL for update */
 		void checkContactList();
+		void requestContactList();
 
 		/* SNAC(13,02) - Request SSI rights/limitations  */
 		void requestParameters();
 
 		Word size() const;
-		DWord lastChangeTime() const;
-		void setLastChangeTime(DWord time);
+		QDateTime lastChangeTime() const;
+		void setLastChangeTime(const QDateTime& time);
 	signals:
 		void authGranted(const QString& uin);
 		void authDenied(const QString& uin);
@@ -72,6 +74,8 @@ class SSIManager: public QObject
 
 		void contactAdded(const QString& uin);
 		void contactDeleted(const QString& uin);
+
+		void ssiActivated();
 	private slots:
 		void incomingSnac(SnacBuffer& snac);
 	private:

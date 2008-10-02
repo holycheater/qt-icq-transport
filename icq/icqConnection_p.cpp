@@ -11,6 +11,8 @@ namespace ICQ
 Connection::Private::Private(Connection* parent)
 	: QObject(parent)
 {
+	ssiActivated = false;
+	loginFinished = false;
 	m_connectionStatus = Connection::Disconnected;
 
 	rateManager = new RateManager(parent);
@@ -271,11 +273,21 @@ void Connection::Private::processRatesRequest()
 {
 	rateManager->requestRates();
 	ssiManager->requestParameters();
-	ssiManager->checkContactList();
+	ssiManager->requestContactList();
+}
+
+void Connection::Private::processSsiActivated()
+{
+	ssiActivated = true;
+
+	if ( ssiActivated && loginFinished ) {
+		emit q->signedOn();
+	}
 }
 
 void Connection::Private::processSignedOn()
 {
+	loginFinished = true;
 	delete connectTimer;
 
 	keepAliveTimer = new QTimer(q);
@@ -292,6 +304,11 @@ void Connection::Private::processSignedOn()
 	msgManager->requestOfflineMessages();
 
 	setConnectionStatus(Connected);
+
+	if ( ssiActivated && loginFinished ) {
+		emit q->signedOn();
+	}
+
 	q->setOnlineStatus(onlineStatus);
 }
 

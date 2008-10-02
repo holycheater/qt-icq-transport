@@ -41,6 +41,9 @@ Connector::Private::~Private()
 
 void Connector::Private::beginConnect()
 {
+	if ( socket ) {
+		delete socket;
+	}
 	connectTimer = new QTimer(q);
 	QObject::connect(connectTimer, SIGNAL( timeout() ), SLOT( processConnectionTimeout() ) );
 	connectTimer->setSingleShot(true);

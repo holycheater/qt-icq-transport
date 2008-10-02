@@ -167,16 +167,16 @@ void GatewayTask::processLogout(const Jid& user)
 	conn->deleteLater();
 }
 
-void GatewayTask::processContactAdd(const Jid& user, const QString& uin)
+void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
 {
-	qDebug() << "[GT]" << user << "request for adding contact:" << uin;
+	qDebug() << "[GT]" << user << "sent subscribe request to" << uin;
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	conn->contactAdd(uin);
 }
 
-void GatewayTask::processContactDel(const Jid& user, const QString& uin)
+void GatewayTask::processUnsubscribeRequest(const Jid& user, const QString& uin)
 {
-	qDebug() << "[GT]" << user << "request for deleting contact:" << uin;
+	qDebug() << "[GT]" << user << "sent unsubscribe request to" << uin;
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	conn->contactDel(uin);
 }

@@ -557,6 +557,16 @@ void SSIManager::denyAuthorization(const QString& uin)
 	d->link->write(snac);
 }
 
+void SSIManager::requestAuthorization(const QString& uin)
+{
+	d->requestAuthorization(uin);
+}
+
+Contact SSIManager::contactByUin(const QString& uin)
+{
+	return d->contactByName(uin);
+}
+
 QList<Contact> SSIManager::contactList() const
 {
 	return d->listOfType(Contact::Buddy);

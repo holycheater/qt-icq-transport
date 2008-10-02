@@ -90,11 +90,31 @@ void Connection::contactAdd(const QString& uin)
 {
 	/* if contact is already on the list, just emit the 'added' signal */
 	if ( contactList().contains(uin) ) {
+		// qDebug() << "[ICQ:Connection]" << "contactAdd: User is already on the list";
+		if ( d->ssiManager->contactByUin(uin).awaitingAuth() ) {
+			d->ssiManager->requestAuthorization(uin);
+		} else {
+			emit authGranted(uin);
+		}
 		emit contactAdded(uin);
 		return;
 	}
-	qDebug() << "[ICQ;Connection]" << "adding contact" << uin;
+	// qDebug() << "[ICQ;Connection]" << "adding contact" << uin;
 	d->ssiManager->addContact(uin);
+}
+
+/**
+ * Removes @a uin contact from the roster.
+ */
+void Connection::contactDel(const QString& uin)
+{
+	/* if contact is not on the list, just emit the 'deleted' signal */
+	if ( !contactList().contains(uin) ) {
+		// qDebug() << "[ICQ:Connection]" << "contactDel: Contact is not on the list:" << uin;
+		emit contactDeleted(uin);
+		return;
+	}
+	d->ssiManager->delContact(uin);
 }
 
 /**
@@ -111,20 +131,6 @@ void Connection::grantAuth(const QString& uin)
 void Connection::denyAuth(const QString& uin)
 {
 	d->ssiManager->denyAuthorization(uin);
-}
-
-/**
- * Removes @a uin contact from the roster.
- */
-void Connection::contactDel(const QString& uin)
-{
-	/* if contact is not on the list, just emit the 'deleted' signal */
-	if ( !contactList().contains(uin) ) {
-		qDebug() << "[ICQ:Connection]" << "Contact is not on the list:" << uin;
-		emit contactDeleted(uin);
-		return;
-	}
-	d->ssiManager->delContact(uin);
 }
 
 /**

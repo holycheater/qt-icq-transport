@@ -50,6 +50,9 @@ class SSIManager: public QObject
 
 		void grantAuthorization(const QString& uin);
 		void denyAuthorization(const QString& uin);
+		void requestAuthorization(const QString& uin);
+
+		Contact contactByUin(const QString& uin);
 
 		QList<Contact> contactList() const;
 		QList<Contact> groupList() const;

@@ -149,6 +149,7 @@ void GatewayTask::processLogin(const Jid& user)
 		QObject::connect( conn, SIGNAL( authDenied(QString) ), SLOT( processAuthDenied(QString) ) );
 		QObject::connect( conn, SIGNAL( authRequest(QString) ), SLOT( processAuthRequest(QString) ) );
 		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString) ), SLOT( processIncomingMessage(QString,QString) ) );
+		QObject::connect( conn, SIGNAL( signedOn() ), SLOT( processIcqSignOn() ) );
 
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
@@ -236,6 +237,19 @@ void GatewayTask::processShutdown()
 		emit offlineNotifyFor(user);
 	}
 	d->online = false;
+}
+
+void GatewayTask::processIcqSignOn()
+{
+	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+
+	QStringList contacts = conn->contactList();
+	QStringListIterator i(contacts);
+
+	while ( i.hasNext() ) {
+		emit contactOffline( user, i.next() );
+	}
 }
 
 void GatewayTask::processIcqStatus(int status)

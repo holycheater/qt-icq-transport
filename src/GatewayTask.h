@@ -67,7 +67,9 @@ class GatewayTask : public QObject
 
 		void incomingMessage(const Jid& user, const QString& uin, const QString& text);
 	private slots:
+		void processIcqSignOn();
 		void processIcqStatus(int status);
+
 		void processContactOnline(const QString& uin);
 		void processContactOffline(const QString& uin);
 		void processIncomingMessage(const QString& senderUin, const QString& message);

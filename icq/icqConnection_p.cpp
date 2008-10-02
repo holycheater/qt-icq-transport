@@ -16,7 +16,9 @@ Connection::Private::Private(Connection* parent)
 	m_connectionStatus = Connection::Disconnected;
 
 	rateManager = new RateManager(parent);
+
 	ssiManager = new SSIManager(parent);
+	QObject::connect( ssiManager, SIGNAL( ssiActivated() ), SLOT( processSsiActivated() ) );
 
 	socket = new QTcpSocket(parent);
 

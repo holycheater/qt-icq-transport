@@ -29,7 +29,6 @@
 #include <idna.h>
 
 /* legacy stuff */
-#include "irisnet/noncore/legacy/safedelete.h"
 #include "irisnet/noncore/legacy/ndns.h"
 #include "irisnet/noncore/legacy/srvresolver.h"
 
@@ -67,7 +66,6 @@ class Connector::Private
 		int probe_mode;
 
 		bool aaaa;
-		SafeDelete sd;
 };
 
 Connector::Connector(QObject *parent)

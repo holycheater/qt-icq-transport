@@ -163,8 +163,7 @@ void GatewayTask::processLogout(const Jid& user)
 	conn->signOff();
 	d->jidIcqTable.remove( user.bare() );
 	d->icqJidTable.remove(conn);
-
-	// conn->deleteLater();
+	conn->deleteLater();
 }
 
 void GatewayTask::processContactAdd(const Jid& user, const QString& uin)
@@ -229,10 +228,18 @@ void GatewayTask::processShutdown()
 	query.exec("SELECT jid FROM users");
 	while ( query.next() ) {
 		Jid user = query.value(0).toString();
-		ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
-		QStringListIterator i( conn->contactList() );
-		while ( i.hasNext() ) {
-			emit contactOffline( user, i.next() );
+		if ( d->jidIcqTable.contains( user.bare() ) ) {
+			ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+			QStringListIterator i( conn->contactList() );
+			while ( i.hasNext() ) {
+				emit contactOffline( user, i.next() );
+			}
+
+			d->jidIcqTable.remove( user.bare() );
+			d->icqJidTable.remove(conn);
+
+			conn->signOff();
+			conn->deleteLater();
 		}
 		emit offlineNotifyFor(user);
 	}

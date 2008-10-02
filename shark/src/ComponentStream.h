@@ -28,6 +28,7 @@
 #include <QObject>
 
 #include "xmpp-core/Parser.h"
+#include "xmpp-core/Connector.h"
 
 class QDomDocument;
 
@@ -76,11 +77,10 @@ class ComponentStream : public QObject
 		void send_handshake();
 		void write(const QByteArray& data);
 	private slots:
-		void bs_error(int errno);
 		void bs_readyRead();
 		void bs_closed();
 		void cr_connected();
-		void cr_error();
+		void cr_error(Connector::ErrorType errcode);
 		void send_keepalive();
 	private:
 		class Private;

@@ -1,5 +1,6 @@
 HEADERS += \
 	$$PWD/Connector.h \
+	$$PWD/Connector_p.h \
 	$$PWD/IQ.h \
 	$$PWD/Jid.h \
 	$$PWD/Message.h \
@@ -9,6 +10,7 @@ HEADERS += \
 
 SOURCES += \
 	$$PWD/Connector.cpp \
+	$$PWD/Connector_p.cpp \
 	$$PWD/IQ.cpp \
 	$$PWD/Jid.cpp \
 	$$PWD/Message.cpp \

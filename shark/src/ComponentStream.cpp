@@ -20,6 +20,7 @@
 
 #include <QDomDocument>
 #include <QCryptographicHash>
+#include <QTcpSocket>
 #include <QXmlAttributes>
 
 #include "ComponentStream.h"
@@ -28,9 +29,6 @@
 #include "xmpp-core/Jid.h"
 #include "xmpp-core/Message.h"
 #include "xmpp-core/Presence.h"
-
-#include "xmpp-core/Connector.h"
-#include "cutestuff/bytestream.h"
 
 #include <QtDebug>
 
@@ -44,7 +42,7 @@ class ComponentStream::Private
 		Connector *connector;
 
 		/* Connection socket stream */
-		ByteStream *bs;
+		QTcpSocket *socket;
 
 		/* component Jabber-ID */
 		Jid jid;
@@ -74,7 +72,7 @@ ComponentStream::ComponentStream(Connector *connector, QObject *parent)
 
 	d->connector = connector;
 	QObject::connect( d->connector, SIGNAL( connected() ), SLOT( cr_connected() ) );
-	QObject::connect( d->connector, SIGNAL( error() ), SLOT( cr_error() ) );
+	QObject::connect( d->connector, SIGNAL( error(Connector::ErrorType) ), SLOT( cr_error(Connector::ErrorType) ) );
 }
 
 /**
@@ -105,7 +103,7 @@ void ComponentStream::connectToServer(const Jid& jid, const QString& secret)
 	d->jid = jid;
 	d->secret = secret.toUtf8();
 
-	d->connector->connectToServer( jid.full() );
+	d->connector->connectToServer( jid.bare() );
 }
 
 /**
@@ -251,7 +249,7 @@ void ComponentStream::send_handshake()
 void ComponentStream::write(const QByteArray& data)
 {
 	qDebug() << "[CS]" << "-send-" << data;
-	d->bs->write(data);
+	d->socket->write(data);
 }
 
 void ComponentStream::bs_closed()
@@ -259,14 +257,9 @@ void ComponentStream::bs_closed()
 	qDebug() << "[CS]" << "Bytestream closed";
 }
 
-void ComponentStream::bs_error(int errno)
-{
-	qDebug() << "[CS]" << "Bytestream error. Errno:" << errno;
-}
-
 void ComponentStream::bs_readyRead()
 {
-	QByteArray data = d->bs->read();
+	QByteArray data = d->socket->readAll();
 	qDebug() << "[CS]" << "-recv-" << data;
 
 	d->parser.appendData(data);
@@ -280,20 +273,22 @@ void ComponentStream::bs_readyRead()
 
 void ComponentStream::cr_connected()
 {
-	d->bs = d->connector->stream();
+	d->socket = d->connector->socket();
 
-	QObject::connect( d->bs, SIGNAL( connectionClosed() ), SIGNAL( disconnected() ) );
-	QObject::connect( d->bs, SIGNAL( connectionClosed() ), SLOT( bs_closed() ) );
-	QObject::connect( d->bs, SIGNAL( error(int) ), SLOT( bs_error(int) ) );
-	QObject::connect( d->bs, SIGNAL( readyRead() ), SLOT( bs_readyRead() ) );
+	QObject::connect( d->socket, SIGNAL( disconnected() ), SIGNAL( disconnected() ) );
+	QObject::connect( d->socket, SIGNAL( disconnected() ), SLOT( bs_closed() ) );
+	QObject::connect( d->socket, SIGNAL( readyRead() ), SLOT( bs_readyRead() ) );
 
 	/* we've connected to the server, so we need to initiate communications */
 	send_stream_open();
 }
 
-void ComponentStream::cr_error()
+void ComponentStream::cr_error(Connector::ErrorType errcode)
 {
-	qDebug() << "[CS]" << "Connector error";
+	qDebug() << "[CS]" << "Connector error code" << errcode;
+	if ( errcode == Connector::ESocketError ) {
+		qDebug() << "[CS] Socket error: " << d->socket->errorString();
+	}
 }
 
 /**

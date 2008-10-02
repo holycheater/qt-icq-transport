@@ -1,6 +1,7 @@
 /*
  * Connector.cpp - establish a connection to an XMPP server
  * Copyright (C) 2003  Justin Karneges
+ * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,405 +19,70 @@
  *
  */
 
-#include <QHostAddress>
-#include <QPointer>
-#include <QList>
-#include <QUrl>
-
 #include "Connector.h"
+#include "Connector_p.h"
 
-/* libidn */
-#include <idna.h>
-
-/* legacy stuff */
-#include "irisnet/noncore/legacy/ndns.h"
-#include "irisnet/noncore/legacy/srvresolver.h"
-
-#include "cutestuff/bsocket.h"
+#include <QtDebug>
 
 using namespace XMPP;
-
-enum { Idle, Connecting, Connected };
-
-class Connector::Private
-{
-	public:
-		/* from connector's private */
-		bool useSSL;
-		bool haveaddr;
-		QHostAddress addr;
-		quint16 port;
-
-		int mode;
-		ByteStream *bs;
-		NDns dns;
-		SrvResolver srv;
-
-		QString server;
-		QString opt_host;
-		int opt_port;
-		bool opt_probe, opt_ssl;
-
-		QString host;
-		QList<Q3Dns::Server> servers;
-		int errorCode;
-
-		bool multi, using_srv;
-		bool will_be_ssl;
-		int probe_mode;
-
-		bool aaaa;
-};
 
 Connector::Connector(QObject *parent)
 	: QObject(parent)
 {
-	d = new Private;
-
-	setUseSSL(false);
-	setPeerAddressNone();
-
-	d->bs = 0;
-	QObject::connect( &d->dns, SIGNAL( resultsReady() ), SLOT( dns_done() ) );
-	QObject::connect( &d->srv, SIGNAL( resultsReady() ), SLOT( srv_done() ) );
-	d->opt_probe = false;
-	d->opt_ssl = false;
-	cleanup();
-	d->errorCode = 0;
-
+	d = new Private(this);
 }
 
 Connector::~Connector()
 {
-	cleanup();
+	d->reset();
 	delete d;
 }
 
-bool Connector::useSSL() const
+QTcpSocket* Connector::socket() const
 {
-	return d->useSSL;
-}
-
-bool Connector::havePeerAddress() const
-{
-	return d->haveaddr;
-}
-
-QHostAddress Connector::peerAddress() const
-{
-	return d->addr;
-}
-
-quint16 Connector::peerPort() const
-{
-	return d->port;
-}
-
-void Connector::setUseSSL(bool useSSL)
-{
-	d->useSSL = useSSL;
-}
-
-void Connector::setPeerAddressNone()
-{
-	d->haveaddr = false;
-	d->addr = QHostAddress();
-	d->port = 0;
-}
-
-void Connector::setPeerAddress(const QHostAddress& address, quint16 port)
-{
-	d->haveaddr = true;
-	d->addr = address;
-	d->port = port;
-}
-
-
-void Connector::cleanup()
-{
-	d->mode = Idle;
-
-	// stop any dns
-	if ( d->dns.isBusy() ) {
-		d->dns.stop();
-	}
-	if ( d->srv.isBusy() ) {
-		d->srv.stop();
-	}
-
-	// destroy the bytestream, if there is one
-	delete d->bs;
-	d->bs = 0;
-
-	d->multi = false;
-	d->using_srv = false;
-	d->will_be_ssl = false;
-	d->probe_mode = -1;
-
-	setUseSSL(false);
-	setPeerAddressNone();
+	return d->socket;
 }
 
 void Connector::setOptHostPort(const QString& host, quint16 port)
 {
-	if (d->mode != Idle) {
+	if (d->mode != Private::Idle) {
 		return;
 	}
-	d->opt_host = host;
-	d->opt_port = port;
+
+	d->host = host;
+	d->port = port;
 }
 
-void Connector::setOptProbe(bool b)
+void Connector::connectToServer(const QString& server)
 {
-	if(d->mode != Idle)
+	if (d->mode != Private::Idle) {
+		qDebug() << "[Connector] Already connected/connecting";
 		return;
-	d->opt_probe = b;
-}
-
-void Connector::setOptSSL(bool b)
-{
-	if(d->mode != Idle)
+	}
+	if ( server.isEmpty() ) {
+		qDebug() << "[Connector] Server string is empty";
+		emit error(EHostLookupFailed);
 		return;
-	d->opt_ssl = b;
-}
+	}
+	d->mode = Private::Connecting;
 
-void Connector::connectToServer(const QString &server)
-{
-	if(d->mode != Idle)
-		return;
-	if(server.isEmpty())
-		return;
+	QString host;
 
-	d->errorCode = 0;
-	d->mode = Connecting;
-	d->aaaa = true;
-
-	// Encode the servername
-	d->server = QUrl::toAce(server);
-
-	if (!d->opt_host.isEmpty()) {
-		d->host = d->opt_host;
-		d->port = d->opt_port;
-		do_resolve();
+	if ( !d->host.isEmpty() && d->port != 0 ) {
+		host = d->host;
 	} else {
-		d->multi = true;
-
-		QPointer<QObject> self = this;
-		emit srvLookup(d->server);
-		if (!self) {
-			return;
-		}
-
-		d->srv.resolveSrvOnly(d->server, "xmpp-client", "tcp");
-	}
-}
-
-ByteStream* Connector::stream() const
-{
-	if(d->mode == Connected)
-		return d->bs;
-	else
-		return 0;
-}
-
-void Connector::done()
-{
-	cleanup();
-}
-
-int Connector::errorCode() const
-{
-	return d->errorCode;
-}
-
-void Connector::do_resolve()
-{
-	d->dns.resolve(d->host);
-}
-
-void Connector::dns_done()
-{
-	bool failed = false;
-	QHostAddress addr;
-
-	if(d->dns.result().isNull ())
-		failed = true;
-	else
-		addr = QHostAddress(d->dns.result());
-
-	if(failed) {
-#ifdef XMPP_DEBUG
-		printf("dns1\n");
-#endif
-		// using proxy?  then try the unresolved host through the proxy
-		if ( d->using_srv ) {
-#ifdef XMPP_DEBUG
-			printf("dns1.2\n");
-#endif
-			if(d->servers.isEmpty()) {
-#ifdef XMPP_DEBUG
-				printf("dns1.2.1\n");
-#endif
-				cleanup();
-				d->errorCode = ErrConnectionRefused;
-				emit error();
-			}
-			else {
-#ifdef XMPP_DEBUG
-				printf("dns1.2.2\n");
-#endif
-				tryNextSrv();
-				return;
-			}
-		}
-		else {
-#ifdef XMPP_DEBUG
-			printf("dns1.3\n");
-#endif
-			cleanup();
-			d->errorCode = ErrHostNotFound;
-			emit error();
-		}
-	}
-	else {
-#ifdef XMPP_DEBUG
-		printf("dns2\n");
-#endif
-		d->host = addr.toString();
-		do_connect();
-	}
-}
-
-void Connector::do_connect()
-{
-#ifdef XMPP_DEBUG
-	qDebug() << "trying host" << d->host << "port" << d->port;
-#endif
-	BSocket *s = new BSocket;
-	d->bs = s;
-	QObject::connect( s, SIGNAL( connected() ), SLOT( bs_connected() ) );
-	QObject::connect( s, SIGNAL( error(int) ), SLOT( bs_error(int) ) );
-	s->connectToHost(d->host, d->port);
-}
-
-void Connector::tryNextSrv()
-{
-#ifdef XMPP_DEBUG
-	printf("trying next srv\n");
-#endif
-	Q_ASSERT(!d->servers.isEmpty());
-	d->host = d->servers.first().name;
-	d->port = d->servers.first().port;
-	d->servers.takeFirst();
-	do_resolve();
-}
-
-void Connector::srv_done()
-{
-	QPointer<QObject> self = this;
-#ifdef XMPP_DEBUG
-	printf("srv_done1\n");
-#endif
-	d->servers = d->srv.servers();
-	if(d->servers.isEmpty()) {
-		emit srvResult(false);
-		if(!self)
-			return;
-
-#ifdef XMPP_DEBUG
-		printf("srv_done1.1\n");
-#endif
-		// fall back to A record
-		d->using_srv = false;
-		d->host = d->server;
-		if(d->opt_probe) {
-#ifdef XMPP_DEBUG
-			printf("srv_done1.1.1\n");
-#endif
-			d->probe_mode = 0;
-			d->port = 5223;
-			d->will_be_ssl = true;
-		}
-		else {
-#ifdef XMPP_DEBUG
-			printf("srv_done1.1.2\n");
-#endif
-			d->probe_mode = 1;
-			d->port = 5222;
-		}
-		do_resolve();
-		return;
+		host = server;
 	}
 
-	emit srvResult(true);
-	if(!self)
-		return;
+	if ( QHostAddress(host).isNull() ) {
+		d->lookupTimer = new QTimer(this);
+		QObject::connect( d->lookupTimer, SIGNAL( timeout() ), d, SLOT( processLookupTimeout() ) );
+		d->lookupTimer->setSingleShot(true);
+		d->lookupTimer->start(d->lookupTimeout);
 
-	d->using_srv = true;
-	tryNextSrv();
-}
-
-void Connector::bs_connected()
-{
-	QHostAddress h = (static_cast<BSocket*>(d->bs))->peerAddress();
-	int p = (static_cast<BSocket*>(d->bs))->peerPort();
-	setPeerAddress(h, p);
-
-	// only allow ssl override if proxy==poll or host:port
-	if( !d->opt_host.isEmpty() && d->opt_ssl ) {
-		setUseSSL(true);
-	} else if (d->will_be_ssl) {
-		setUseSSL(true);
-	}
-
-	d->mode = Connected;
-	emit connected();
-}
-
-void Connector::bs_error(int x)
-{
-	if (d->mode == Connected) {
-		d->errorCode = ErrStream;
-		emit error();
-		return;
-	}
-
-	bool proxyError = false;
-	int err = ErrConnectionRefused;
-
-	if (x == BSocket::ErrHostNotFound) {
-		err = ErrHostNotFound;
+		d->lookupID = QHostInfo::lookupHost(host, d, SLOT( processLookupResult(QHostInfo) ) );
 	} else {
-		err = ErrConnectionRefused;
-	}
-
-	// no-multi or proxy error means we quit
-	if (!d->multi || proxyError) {
-		cleanup();
-		d->errorCode = err;
-		emit error();
-		return;
-	}
-
-	if ( d->using_srv && !d->servers.isEmpty() ) {
-#ifdef XMPP_DEBUG
-		printf("bse1.1\n");
-#endif
-		tryNextSrv();
-	} else if (!d->using_srv && d->opt_probe && d->probe_mode == 0) {
-#ifdef XMPP_DEBUG
-		printf("bse1.2\n");
-#endif
-		d->probe_mode = 1;
-		d->port = 5222;
-		d->will_be_ssl = false;
-		do_connect();
-	} else {
-#ifdef XMPP_DEBUG
-		printf("bse1.3\n");
-#endif
-		cleanup();
-		d->errorCode = ErrConnectionRefused;
-		emit error();
+		d->addr.setAddress(host);
+		d->beginConnect();
 	}
 }

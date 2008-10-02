@@ -30,7 +30,7 @@ class Presence : public Stanza
 {
 	public:
 		enum Type { Available, Unavailable, Subscribe, Subscribed, Unsubscribe, Unsubscribed, Probe, Error };
-		enum Show { Chat, Away, NotAvailable, DoNotDisturb };
+		enum Show { None, Chat, Away, NotAvailable, DoNotDisturb };
 
 		Presence();
 		Presence(const Presence& other);
@@ -39,7 +39,7 @@ class Presence : public Stanza
 		~Presence();
 
 		int priority() const;
-		QString show() const;
+		Show show() const;
 		QString status() const;
 		Type type() const;
 
@@ -51,6 +51,7 @@ class Presence : public Stanza
 	private:
 		static QString typeToString(Type type);
 		static Type stringToType(const QString& type);
+		static Show stringToShow(const QString& show);
 };
 
 }

@@ -86,9 +86,9 @@ int Presence::priority() const
 	return element.text().toInt();
 }
 
-QString Presence::show() const
+Presence::Show Presence::show() const
 {
-	return doc()->documentElement().firstChildElement("show").text();
+	return stringToShow( doc()->documentElement().firstChildElement("show").text() );
 }
 
 /**
@@ -131,6 +131,7 @@ void Presence::setShow(Show showState)
 	switch (showState) {
 		case Chat:
 			str = "chat";
+			break;
 		case Away:
 			str = "away";
 			break;
@@ -225,6 +226,26 @@ Presence::Type Presence::stringToType(const QString& type)
 		return Error;
 	}
 	return Error;
+}
+
+Presence::Show Presence::stringToShow(const QString& show)
+{
+	if ( show.isEmpty() ) {
+		return None;
+	}
+	if (show == "chat") {
+		return Chat;
+	}
+	if (show == "away") {
+		return Away;
+	}
+	if (show == "xa") {
+		return NotAvailable;
+	}
+	if (show == "dnd") {
+		return DoNotDisturb;
+	}
+	return None;
 }
 
 /**

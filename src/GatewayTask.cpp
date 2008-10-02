@@ -21,6 +21,7 @@
 #include "GatewayTask.h"
 
 #include "xmpp-core/Jid.h"
+#include "xmpp-core/Presence.h"
 #include "icqConnection.h"
 #include "types/icqUserInfo.h"
 
@@ -143,7 +144,7 @@ void GatewayTask::processLogin(const Jid& user)
 		ICQ::Connection *conn = new ICQ::Connection(uin, password, d->icqHost, d->icqPort);
 
 		QObject::connect( conn, SIGNAL( statusChanged(int) ), SLOT( processIcqStatus(int) ) );
-		QObject::connect( conn, SIGNAL( userOnline(QString) ), SLOT( processContactOnline(QString) ) );
+		QObject::connect( conn, SIGNAL( userOnline(QString,quint16) ), SLOT( processContactOnline(QString,quint16) ) );
 		QObject::connect( conn, SIGNAL( userOffline(QString) ), SLOT( processContactOffline(QString) ) );
 		QObject::connect( conn, SIGNAL( authGranted(QString) ), SLOT( processAuthGranted(QString) ) );
 		QObject::connect( conn, SIGNAL( authDenied(QString) ), SLOT( processAuthDenied(QString) ) );
@@ -273,11 +274,35 @@ void GatewayTask::processIcqStatus(int status)
 	}
 }
 
-void GatewayTask::processContactOnline(const QString& uin)
+void GatewayTask::processContactOnline(const QString& uin, quint16 status)
 {
 	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
-	emit contactOnline(user, uin);
+
+	int showStatus;
+	switch ( status ) {
+		case ICQ::UserInfo::Online:
+			showStatus = XMPP::Presence::None;
+			break;
+		case ICQ::UserInfo::Away:
+			showStatus = XMPP::Presence::Away;
+			break;
+		case ICQ::UserInfo::NotAvailable:
+			showStatus = XMPP::Presence::NotAvailable;
+			break;
+		case ICQ::UserInfo::DoNotDisturb:
+			showStatus = XMPP::Presence::DoNotDisturb;
+			break;
+		case ICQ::UserInfo::FreeForChat:
+			showStatus = XMPP::Presence::Chat;
+			break;
+		default:
+			qDebug() << Q_FUNC_INFO << " - unknown contact status" << QString::number(status, 16) <<"for" << uin;
+			showStatus = XMPP::Presence::None;
+			break;
+	}
+
+	emit contactOnline(user, uin, showStatus);
 }
 
 void GatewayTask::processContactOffline(const QString& uin)

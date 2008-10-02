@@ -185,11 +185,12 @@ void JabberConnection::sendUnsubscribed(const Jid& toUser, const QString& fromUi
 /**
  * Sends 'available' presence to @a toUser on behalf of '@a fromUin [at] component.domain'
  */
-void JabberConnection::sendOnlinePresence(const Jid& toUser, const QString& fromUin)
+void JabberConnection::sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus)
 {
 	Presence presence;
 	presence.setFrom( d->jid.withNode(fromUin) );
 	presence.setTo(toUser);
+	presence.setShow( Presence::Show(showStatus) );
 
 	d->stream->sendStanza(presence);
 }

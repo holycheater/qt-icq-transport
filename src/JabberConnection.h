@@ -57,7 +57,7 @@ class JabberConnection : public QObject
 		void sendUnsubscribe(const Jid& toUser, const QString& fromUin);
 		void sendUnsubscribed(const Jid& toUser, const QString& fromUin);
 
-		void sendOnlinePresence(const Jid& toUser, const QString& fromUin);
+		void sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus);
 		void sendOfflinePresence(const Jid& toUser, const QString& fromUin);
 
 		void sendOnlinePresence(const Jid& recipient);

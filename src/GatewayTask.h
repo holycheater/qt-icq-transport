@@ -59,7 +59,7 @@ class GatewayTask : public QObject
 		void subscriptionRemoved(const Jid& user, const QString& uin);
 		void subscriptionRequest(const Jid& user, const QString& uin);
 
-		void contactOnline(const Jid& user, const QString& uin);
+		void contactOnline(const Jid& user, const QString& uin, int status);
 		void contactOffline(const Jid& user, const QString& uin);
 
 		void onlineNotifyFor(const Jid& user);
@@ -70,7 +70,7 @@ class GatewayTask : public QObject
 		void processIcqSignOn();
 		void processIcqStatus(int status);
 
-		void processContactOnline(const QString& uin);
+		void processContactOnline(const QString& uin, quint16 status);
 		void processContactOffline(const QString& uin);
 		void processIncomingMessage(const QString& senderUin, const QString& message);
 

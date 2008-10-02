@@ -83,10 +83,10 @@ int main(int argc, char **argv)
 	QObject::connect( &conn, SIGNAL( outgoingMessage(Jid,QString,QString) ),	&gw, SLOT( processSendMessage(Jid,QString,QString) ) );
 	QObject::connect( &conn, SIGNAL( connected() ),								&gw, SLOT( processGatewayOnline() ) );
 
-	QObject::connect( &gw, SIGNAL( subscriptionReceived(Jid,QString) ),				&conn, SLOT( sendSubscribed(Jid,QString) ) );
-	QObject::connect( &gw, SIGNAL( subscriptionRemoved(Jid,QString) ),			&conn, SLOT( sendUnsubscribed(Jid,QString) ) );
-	QObject::connect( &gw, SIGNAL( subscriptionRequest(Jid,QString) ),			&conn, SLOT( sendSubscribe(Jid,QString) ) );
-	QObject::connect( &gw, SIGNAL( contactOnline(Jid,QString) ),			&conn, SLOT( sendOnlinePresence(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( subscriptionReceived(Jid,QString) ),		&conn, SLOT( sendSubscribed(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( subscriptionRemoved(Jid,QString) ),		&conn, SLOT( sendUnsubscribed(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( subscriptionRequest(Jid,QString) ),		&conn, SLOT( sendSubscribe(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( contactOnline(Jid,QString,int) ),		&conn, SLOT( sendOnlinePresence(Jid,QString, int) ) );
 	QObject::connect( &gw, SIGNAL( contactOffline(Jid,QString) ),			&conn, SLOT( sendOfflinePresence(Jid,QString) ) );
 	QObject::connect( &gw, SIGNAL( onlineNotifyFor(Jid) ),					&conn, SLOT( sendOnlinePresence(Jid) ) );
 	QObject::connect( &gw, SIGNAL( offlineNotifyFor(Jid) ),					&conn, SLOT( sendOfflinePresence(Jid) ) );

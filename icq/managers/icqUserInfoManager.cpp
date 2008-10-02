@@ -19,6 +19,7 @@
  */
 
 #include "icqUserInfoManager.h"
+#include "icqConnection.h"
 
 #include "types/icqSnacBuffer.h"
 #include "types/icqUserInfo.h"
@@ -43,11 +44,11 @@ UserInfoManager::UserInfoManager(Connection *parent)
 	d = new Private;
 	d->link = parent;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 
-	QObject::connect(this, SIGNAL( statusChanged(int) ), d->link, SIGNAL( statusChanged(int) ) );
-	QObject::connect(this, SIGNAL( userOnline(QString) ), d->link, SIGNAL( userOnline(QString) ) );
-	QObject::connect(this, SIGNAL( userOffline(QString) ), d->link, SIGNAL( userOffline(QString) ) );
+	QObject::connect( this, SIGNAL( statusChanged(int) ), d->link, SIGNAL( statusChanged(int) ) );
+	QObject::connect( this, SIGNAL( userOnline(QString,quint16) ), d->link, SIGNAL( userOnline(QString,quint16) ) );
+	QObject::connect( this, SIGNAL( userOffline(QString) ), d->link, SIGNAL( userOffline(QString) ) );
 }
 
 UserInfoManager::~UserInfoManager()
@@ -59,7 +60,7 @@ UserInfo UserInfoManager::getUserInfo(const QString& uin)
 	return d->userInfoList.value(uin);
 }
 
-Word UserInfoManager::getUserStatus(const QString& uin) const
+quint16 UserInfoManager::getUserStatus(const QString& uin) const
 {
 	if ( d->statusList.contains(uin) ) {
 		return d->statusList.value(uin);
@@ -90,7 +91,32 @@ void UserInfoManager::handle_user_online_notification(SnacBuffer& snac)
 			d->userInfoList.insert(info.userId(), info);
 			d->statusList.insert( info.userId(), info.onlineStatus() );
 		}
-		emit userOnline( info.userId() );
+
+		/* hack: emit single status for userOnline signal instead a group of flags
+		 * Anyways, it's a mystery why ICQ needs flags for online status. You can't be Occuppied and DND at the same time */
+		quint16 singleStatus;
+		singleStatus = UserInfo::Online;
+		if ( info.onlineStatus() & UserInfo::Invisible ) {
+			singleStatus = UserInfo::Invisible;
+		} else if ( info.onlineStatus() & UserInfo::Away ) {
+			singleStatus = UserInfo::Away;
+			if ( info.onlineStatus() & UserInfo::NotAvailable ) {
+				singleStatus = UserInfo::NotAvailable;
+			} else if ( info.onlineStatus() & UserInfo::Occupied ) {
+				singleStatus = UserInfo::Occupied;
+				if ( info.onlineStatus() & UserInfo::DoNotDisturb ) {
+					singleStatus = UserInfo::DoNotDisturb;
+				}
+			}
+		} else if ( info.onlineStatus() & UserInfo::FreeForChat ) {
+			singleStatus = UserInfo::FreeForChat;
+		} else if ( info.onlineStatus() & UserInfo::Evil ) {
+			singleStatus = UserInfo::Evil;
+		} else if ( info.onlineStatus() & UserInfo::Depression ) {
+			singleStatus = UserInfo::Depression;
+		}
+		// qDebug() << info.onlineStatus() << "vs" << singleStatus;
+		emit userOnline( info.userId(), singleStatus );
 	}
 }
 

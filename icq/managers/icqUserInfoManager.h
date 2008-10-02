@@ -21,14 +21,13 @@
 #ifndef ICQUSERINFOMANAGER_H_
 #define ICQUSERINFOMANAGER_H_
 
-#include "icqConnection.h"
-
 #include <QObject>
 #include <QString>
 
 namespace ICQ
 {
 
+class Connection;
 class SnacBuffer;
 class UserInfo;
 
@@ -41,10 +40,10 @@ class UserInfoManager : public QObject
 		~UserInfoManager();
 
 		UserInfo getUserInfo(const QString& uin);
-		Word getUserStatus(const QString& uin) const;
+		quint16 getUserStatus(const QString& uin) const;
 	signals:
 		void statusChanged(int status);
-		void userOnline(QString userId);
+		void userOnline(QString userId, quint16 status);
 		void userOffline(QString userId);
 	private:
 		void handle_own_user_info(SnacBuffer& snac); // SNAC(01,0F)

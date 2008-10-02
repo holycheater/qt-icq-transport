@@ -43,8 +43,11 @@ class UserInfo
 			Away			= 0x0001,
 			DoNotDisturb	= 0x0002,
 			NotAvailable	= 0x0004,
+			Occupied		= 0x0010,
 			FreeForChat		= 0x0020,
 			Invisible		= 0x0100,
+			Evil			= 0x3000,
+			Depression		= 0x4000,
 			Offline			= 0xFFFF
 		};
 

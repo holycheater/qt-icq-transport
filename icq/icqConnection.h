@@ -107,7 +107,7 @@ class Connection: public QObject
 		void incomingSnac(SnacBuffer& snac);
 		void readyRead();
 
-		void userOnline(const QString& userId);
+		void userOnline(const QString& userId, quint16 status);
 		void userOffline(const QString& userId);
 
 		void contactAdded(const QString& uin);

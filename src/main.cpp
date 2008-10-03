@@ -91,6 +91,7 @@ int main(int argc, char **argv)
 	QObject::connect( &gw, SIGNAL( onlineNotifyFor(Jid) ),					&conn, SLOT( sendOnlinePresence(Jid) ) );
 	QObject::connect( &gw, SIGNAL( offlineNotifyFor(Jid) ),					&conn, SLOT( sendOfflinePresence(Jid) ) );
 	QObject::connect( &gw, SIGNAL( incomingMessage(Jid,QString,QString) ),	&conn, SLOT( sendMessage(Jid,QString,QString) ) );
+	QObject::connect( &gw, SIGNAL( gatewayMessage(Jid,QString) ), &conn, SLOT( sendMessage(Jid,QString) ) );
 
 	conn.login();
 

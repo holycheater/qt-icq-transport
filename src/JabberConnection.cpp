@@ -256,6 +256,19 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, con
 	d->stream->sendStanza(msg);
 }
 
+/**
+ * Send a @a message to @a recipient on behalf of this service.
+ */
+void JabberConnection::sendMessage(const Jid& recipient, const QString& message)
+{
+	Message msg;
+	msg.setFrom(d->jid);
+	msg.setTo(recipient);
+	msg.setBody(message);
+
+	d->stream->sendStanza(msg);
+}
+
 void JabberConnection::Private::processDiscoInfo(const IQ& iq)
 {
 	qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();

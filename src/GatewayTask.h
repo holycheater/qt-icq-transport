@@ -66,7 +66,9 @@ class GatewayTask : public QObject
 		void offlineNotifyFor(const Jid& user);
 
 		void incomingMessage(const Jid& user, const QString& uin, const QString& text);
+		void gatewayMessage(const Jid& user, const QString& text);
 	private slots:
+		void processIcqError(const QString& desc);
 		void processIcqSignOn();
 		void processIcqStatus(int status);
 

@@ -56,6 +56,7 @@ void Connection::Private::startSignOn()
 	QObject::connect( loginManager, SIGNAL( serverAvailable(QString,quint16) ), SLOT( processNewServer(QString,quint16) ) );
 	QObject::connect( loginManager, SIGNAL( ratesRequest() ), SLOT( processRatesRequest() ) );
 	QObject::connect( loginManager, SIGNAL( loginFinished() ), SLOT( processSignedOn() ) );
+	QObject::connect( loginManager, SIGNAL( error(QString) ), q, SIGNAL( error(QString) ) );
 
 	loginManager->setUsername(uin);
 	loginManager->setPassword(password);

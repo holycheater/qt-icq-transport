@@ -123,6 +123,7 @@ class Connection: public QObject
 
 		void signedOn();
 		void signedOff();
+		void error(const QString& desc);
 	private:
 		class Private;
 		Private *d;

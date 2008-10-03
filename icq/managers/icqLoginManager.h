@@ -41,6 +41,7 @@ class LoginManager: public QObject
 		void setUsername(const QString& uin);
 		void setPassword(const QString& password);
 	signals:
+		void error(const QString& desc);
 		void serverAvailable(const QString& host, quint16 port);
 		void ratesRequest();
 		void loginFinished();

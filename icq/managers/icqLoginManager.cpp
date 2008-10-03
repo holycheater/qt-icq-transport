@@ -34,6 +34,8 @@ namespace ICQ {
 class LoginManager::Private
 {
 	public:
+		static QString authErrorString(Word code);
+
 		enum loginStage { stageAuth, stageProtocolNegotiation, stageServicesSetup, stageFinal };
 		QByteArray authcookie;
 		QString uin;
@@ -41,7 +43,59 @@ class LoginManager::Private
 
 		Connection *link;
 		loginStage loginStage;
+
+		struct AuthErrorDesc {
+			Word code;
+			QString desc;
+		};
+		static AuthErrorDesc AuthErrorDescTable[];
 };
+
+LoginManager::Private::AuthErrorDesc LoginManager::Private::AuthErrorDescTable[] = {
+	{ 0x0001, tr("Invalid nick or password") },
+	{ 0x0002, tr("Service temporary unavailable") },
+	{ 0x0003, tr("Generic error") },
+	{ 0x0004, tr("Incorrect nickname or password") },
+	{ 0x0005, tr("Nickname/password mismatch") },
+	{ 0x0006, tr("Internal client error (bad input to authorizer)") },
+	{ 0x0007, tr("Invalid account") },
+	{ 0x0008, tr("Deleted account") },
+	{ 0x0009, tr("Expired account") },
+	{ 0x000A, tr("No access to database") },
+	{ 0x000B, tr("No access to resolver") },
+	{ 0x000C, tr("Invalid database fields") },
+	{ 0x000D, tr("Bad database status") },
+	{ 0x000E, tr("Bad resolver status") },
+	{ 0x000F, tr("Internal error") },
+	{ 0x0010, tr("Service temporarily offline") },
+	{ 0x0011, tr("Suspended account") },
+	{ 0x0012, tr("DB send error") },
+	{ 0x0013, tr("DB link error") },
+	{ 0x0014, tr("Reservation map error") },
+	{ 0x0015, tr("Reservation link error") },
+	{ 0x0016, tr("Number of users connected from this IP address has reached the maximum") },
+	{ 0x0017, tr("Number of users connected from this IP address has reached the maximum (reservation)") },
+	{ 0x0018, tr("Rate limit exceeded (reservation). Please try to reconnect in a few minutes") },
+	{ 0x0019, tr("User too heavily warned") },
+	{ 0x001A, tr("Reservation timeout") },
+	{ 0x001B, tr("You are using an older version of ICQ. Upgrade required") },
+	{ 0x001C, tr("You are using an older version of ICQ. Upgrade recommended") },
+	{ 0x001D, tr("Rate limit exceeded. Please try to reconnect in a few minutes") },
+	{ 0x001E, tr("Can't register on the ICQ network. Reconnect in a few minutes") },
+	{ 0x0020, tr("Invalid SecurID") },
+	{ 0x0022, tr("Account suspended because of your age (age < 13)") },
+	{ 0, "" }
+};
+
+QString LoginManager::Private::authErrorString(Word code)
+{
+	for (int i = 0; !AuthErrorDescTable[i].desc.isEmpty(); ++i) {
+		if (AuthErrorDescTable[i].code == code) {
+			return AuthErrorDescTable[i].desc;
+		}
+	}
+	return tr("Unknown error");
+}
 
 LoginManager::LoginManager(Connection* parent)
 	: QObject(parent)
@@ -116,7 +170,10 @@ void LoginManager::recv_auth_reply(SnacBuffer& reply)
 	reply.seekEnd();
 
 	if ( list.hasTlv(0x08) ) {
+		Word code = list.getTlvData(0x08).toUInt();
 		qCritical() << "[LoginManager] Error during authentication:" << list.getTlvData(0x08).toHex();
+		QString desc = tr("Authentication failure.") + " " + tr("Code: ") + "0x" + QString::number(code, 16).rightJustified(4, '0') + Private::authErrorString(code);
+		emit error(desc);
 		d->link->signOff();
 		return;
 	}

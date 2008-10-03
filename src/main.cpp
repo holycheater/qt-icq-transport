@@ -27,7 +27,7 @@
 #include <QtSql>
 #include <QtDebug>
 
-#include <csignal>
+#include <signal.h>
 
 static GatewayTask *gw_ptr = 0;
 

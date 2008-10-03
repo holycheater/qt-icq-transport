@@ -285,10 +285,21 @@ void ComponentStream::cr_connected()
 
 void ComponentStream::cr_error(Connector::ErrorType errcode)
 {
-	qDebug() << "[CS]" << "Connector error code" << errcode;
-	if ( errcode == Connector::ESocketError ) {
-		qDebug() << "[CS] Socket error: " << d->socket->errorString();
+	switch ( errcode ) {
+		case Connector::EConnectionTimeout:
+			qCritical( qPrintable(tr("[CS] Connection timeout")) );
+			break;
+		case Connector::EHostLookupFailed:
+			qCritical( qPrintable(tr("[CS] Host lookup failed")) );
+			break;
+		case Connector::EHostLookupTimeout:
+			qCritical( qPrintable(tr("[CS] Host lookup timeout")) );
+			break;
+		case Connector::ESocketError:
+			qCritical("[CS] Socket error: %s", qPrintable( d->socket->errorString() ) );
+			break;
 	}
+	exit(1);
 }
 
 /**

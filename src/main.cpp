@@ -41,7 +41,7 @@ void sighandler(int param)
 		QTimer::singleShot( 0, gw_ptr, SLOT( processShutdown() ) );
 	}
 	QCoreApplication::processEvents(QEventLoop::AllEvents, PROCESS_EVENTS_MAX_TIME);
-	QCoreApplication::exit();
+	exit(0);
 }
 
 int main(int argc, char **argv)

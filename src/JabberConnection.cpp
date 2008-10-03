@@ -456,7 +456,7 @@ void JabberConnection::stream_presence(const Presence& presence)
 	}
 
 	if ( presence.type() == Presence::Available ) {
-		emit userOnline( presence.from() );
+		emit userOnline( presence.from(), presence.show() );
 		return;
 	}
 	if ( presence.type() == Presence::Unavailable ) {

@@ -120,14 +120,33 @@ void GatewayTask::processUnregister(const QString& user)
 	query.exec();
 }
 
-void GatewayTask::processLogin(const Jid& user)
+void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 {
-	if ( d->jidIcqTable.contains( user.bare() ) ) {
-		qDebug() << "[GT] processLogin: user is already logged on, aborting login step";
-		return;
-	}
 	if ( d->icqHost.isEmpty() || !d->icqPort ) {
 		qDebug() << "[GT] processLogin: icq host and/or port values are not set. Aborting...";
+		return;
+	}
+	if ( d->jidIcqTable.contains( user.bare() ) ) {
+		ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+		int icqStatus;
+		switch ( showStatus ) {
+			case XMPP::Presence::None:
+				icqStatus = ICQ::UserInfo::Online;
+				break;
+			case XMPP::Presence::Chat:
+				icqStatus = ICQ::UserInfo::FreeForChat;
+				break;
+			case XMPP::Presence::Away:
+				icqStatus = ICQ::UserInfo::Away;
+				break;
+			case XMPP::Presence::NotAvailable:
+				icqStatus = ICQ::UserInfo::Away | ICQ::UserInfo::NotAvailable;
+				break;
+			case XMPP::Presence::DoNotDisturb:
+				icqStatus = ICQ::UserInfo::Away | ICQ::UserInfo::Occupied | ICQ::UserInfo::DoNotDisturb;
+				break;
+		}
+		conn->setOnlineStatus(icqStatus);
 		return;
 	}
 
@@ -158,7 +177,10 @@ void GatewayTask::processLogin(const Jid& user)
 	}
 }
 
-void GatewayTask::processLogout(const Jid& user)
+/**
+ * This slot is triggered when jabber user @a user goes offline.
+ */
+void GatewayTask::processUserOffline(const Jid& user)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	conn->signOff();
@@ -167,6 +189,9 @@ void GatewayTask::processLogout(const Jid& user)
 	conn->deleteLater();
 }
 
+/**
+ * This slot is triggered when jabber user @a user requests authorization/add-to-contact from icq user @a uin
+ */
 void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
 {
 	qDebug() << "[GT]" << user << "sent subscribe request to" << uin;
@@ -174,6 +199,9 @@ void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
 	conn->contactAdd(uin);
 }
 
+/**
+ * This slot is triggered when jabber user @a user requests to remove a contact @a uin from server.
+ */
 void GatewayTask::processUnsubscribeRequest(const Jid& user, const QString& uin)
 {
 	qDebug() << "[GT]" << user << "sent unsubscribe request to" << uin;

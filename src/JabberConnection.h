@@ -66,7 +66,7 @@ class JabberConnection : public QObject
 	signals:
 		void userUnregistered(const QString& jid);
 		void userRegistered(const QString& jid, const QString& uin, const QString& password);
-		void userOnline(const Jid& jid);
+		void userOnline(const Jid& jid, int showStatus);
 		void userOffline(const Jid& jid);
 		void userAdd(const Jid& jid, const QString& uin);
 		void userDel(const Jid& jid, const QString& uin);

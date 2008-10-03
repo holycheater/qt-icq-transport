@@ -44,8 +44,8 @@ class GatewayTask : public QObject
 	public slots:
 		void processRegister(const QString& user, const QString& uin, const QString& password);
 		void processUnregister(const QString& user);
-		void processLogin(const Jid& user);
-		void processLogout(const Jid& user);
+		void processUserOnline(const Jid& user, int showStatus);
+		void processUserOffline(const Jid& user);
 		void processSubscribeRequest(const Jid& user, const QString& uin);
 		void processUnsubscribeRequest(const Jid& user, const QString& uin);
 		void processAuthGrant(const Jid& user, const QString& uin);

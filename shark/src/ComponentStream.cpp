@@ -248,7 +248,7 @@ void ComponentStream::send_handshake()
  */
 void ComponentStream::write(const QByteArray& data)
 {
-	qDebug() << "[CS]" << "-send-" << data;
+	qDebug() << "[CS]" << "-send-" << QString::fromUtf8(data);
 	d->socket->write(data);
 }
 
@@ -260,7 +260,7 @@ void ComponentStream::bs_closed()
 void ComponentStream::bs_readyRead()
 {
 	QByteArray data = d->socket->readAll();
-	qDebug() << "[CS]" << "-recv-" << data;
+	qDebug() << "[CS]" << "-recv-" << QString::fromUtf8(data);
 
 	d->parser.appendData(data);
 

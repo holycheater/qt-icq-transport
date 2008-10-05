@@ -74,6 +74,8 @@ class Connection: public QObject
 
 		QString userId() const;
 
+		void setMessageCodec(QTextCodec *codec);
+
 		Connection* setUin(const QString& uin);
 		Connection* setPassword(const QString& password);
 		Connection* setServer(const QString& server);

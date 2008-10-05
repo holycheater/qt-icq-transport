@@ -11,6 +11,8 @@ namespace ICQ
 Connection::Private::Private(Connection* parent)
 	: QObject(parent)
 {
+	codec = 0;
+
 	ssiActivated = false;
 	loginFinished = false;
 	m_connectionStatus = Connection::Disconnected;
@@ -262,7 +264,12 @@ void Connection::Private::processLookupTimeout()
 
 void Connection::Private::processIncomingMessage(const Message& msg)
 {
-	emit q->incomingMessage( msg.sender(), msg.text( QTextCodec::codecForName("Windows-1251") ) );
+	if ( codec == 0 ) {
+		codec = QTextCodec::codecForName("Windows-1251");
+	}
+	Q_ASSERT(codec != 0);
+
+	emit q->incomingMessage( msg.sender(), msg.text(codec) );
 }
 
 void Connection::Private::processNewServer(QString newHost, quint16 newPort)

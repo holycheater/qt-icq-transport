@@ -199,6 +199,14 @@ QString Connection::userId() const
 }
 
 /**
+ * Sets codec for messages.
+ */
+void Connection::setMessageCodec(QTextCodec *codec)
+{
+	d->codec = codec;
+}
+
+/**
  * Sets connection ICQ user UIN to @a uin.
  *
  * @param uin			ICQ UIN

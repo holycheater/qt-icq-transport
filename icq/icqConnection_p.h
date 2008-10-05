@@ -62,6 +62,8 @@ class Connection::Private : public QObject
 		QTimer *keepAliveTimer;
 		QTimer *lookupTimer;
 
+		QTextCodec *codec;
+
 		bool ssiActivated, loginFinished;
 	public slots:
 		void incomingData();

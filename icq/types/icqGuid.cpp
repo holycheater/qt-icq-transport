@@ -134,10 +134,10 @@ QString Guid::toString() const
 {
 	QString uuid = m_data.toHex().toUpper();
 
-	uuid.insert(21, '-');
-	uuid.insert(17, '-');
-	uuid.insert(13, '-');
-	uuid.insert(9, '-');
+	uuid.insert(20, '-');
+	uuid.insert(16, '-');
+	uuid.insert(12, '-');
+	uuid.insert(8, '-');
 
 	return uuid;
 }

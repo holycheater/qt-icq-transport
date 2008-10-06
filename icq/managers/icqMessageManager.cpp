@@ -35,6 +35,10 @@ class MessageManager::Private {
 		void send_channel_1_message(const Message& msg);
 		void send_channel_2_message(const Message& msg);
 		void send_channel_4_message(const Message& msg);
+
+		void processServerAck(SnacBuffer& snac); /* SNAC(04,0B) */
+		void processMessageAck(SnacBuffer& snac); /* SNAC(04,0C) */
+
 		Connection *link;
 };
 
@@ -149,6 +153,28 @@ void MessageManager::Private::send_channel_4_message(const Message& msg)
 	/* TODO: Send channel 4 messages */
 }
 
+void MessageManager::Private::processServerAck(SnacBuffer& snac)
+{
+	snac.seekForward(8); // msg-id cookie
+
+	Word channel = snac.getWord();
+	QString uin = snac.read( snac.getByte() );
+	Word reason = snac.getWord();
+	snac.seekEnd();
+
+	qDebug() << "[ICQ:MM] Server ACK" << "channel" << channel << "uin" << uin << "reason" << reason;
+}
+
+void MessageManager::Private::processMessageAck(SnacBuffer& snac)
+{
+	QByteArray cookie = snac.read(8);
+	Word channel = snac.getWord();
+	Byte uinLen = snac.getByte();
+	QString uin = snac.read(uinLen);
+
+	qDebug() << "[ICQ:MM] Msg ACK." << "Msg delivered to" << uin << "via channel" << channel;
+}
+
 MessageManager::MessageManager(Connection *parent)
 	: QObject(parent)
 {
@@ -195,6 +221,8 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 		msg.setFlags(Message::AutoMessage);
 	}
 
+	bool offlineMsg = chain.hasTlv(0x06);
+
 	Tlv tlv02 = chain.getTlv(0x02);
 	tlv02.seekForward( sizeof(Byte) ); // fragment ident = 05 (capabilities array)
 	tlv02.seekForward( sizeof(Byte) ); // fragment version = 01
@@ -204,15 +232,34 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 	tlv02.seekForward( sizeof(Byte) ); // fragment ident = 01 (messageLen)
 	tlv02.seekForward( sizeof(Byte) ); // fragment version = 01
 	Word msgSize = tlv02.getWord() - sizeof(Word)*2;
-	tlv02.seekForward( sizeof(Word) ); // message charset number
-	tlv02.seekForward( sizeof(Word) ); // message charset subset
-	QByteArray message = tlv02.read(msgSize);
-	msg.setText(message);
+	Word msgCharset = tlv02.getWord();
+	Word msgSubset = tlv02.getWord();
+	switch ( msgCharset ) {
+		case 0x0002:
+			msg.setEncoding(Message::Ucs2);
+			break;
+		case 0x0003:
+		{
+			if ( offlineMsg ) {
+				msg.setEncoding(Message::UserDefined);
+			} else {
+				msg.setEncoding(Message::Latin1);
+			}
+			break;
+		}
+		default:
+			msg.setEncoding(Message::UserDefined);
+			break;
+	}
+	qDebug() << "msg charset" << QString::number(msgCharset, 16) << "subset" << QString::number(msgSubset, 16);
 
-	if ( chain.hasTlv(0x06) ) {
+	if ( offlineMsg ) {
 		Tlv tlv16 = chain.getTlv(0x16);
 		msg.setTimestamp( tlv16.getDWord() );
 	}
+
+	QByteArray message = tlv02.read(msgSize);
+	msg.setText(message);
 
 	return msg;
 }
@@ -227,6 +274,8 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	block.seekForward(8); // message cookie (same as in the snac data) Why do they need to repeat everything twice? I'm not stupid!
 	Guid cap = Guid::fromRawData( block.read(16) ); // capability, needed for this msg
 
+	qDebug() << "chan 2 msg capability" << cap.toString();
+
 	TlvChain msgChain( block.readAll() );
 
 	Tlv msgBlock = msgChain.getTlv(0x2711);
@@ -236,6 +285,10 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 		Word protocolVer = msgBlock.getLEWord(); // protocol version
 
 		Guid cap2 = Guid::fromRawData( msgBlock.read(16) );
+
+		if ( !cap2.isZero() ) {
+			qWarning() << "[ICQ:MM] Message contains unknown data";
+		}
 
 		msgBlock.seekForward( sizeof(Word) ); //unknown
 		DWord capFlags = msgBlock.getLEDWord();
@@ -262,6 +315,8 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	msgBlock.seekForward( sizeof(DWord) ); // bg color
 	DWord guidStrLen = msgBlock.getLEDWord();
 	QByteArray guidStr = msgBlock.read(guidStrLen);
+
+	msg.setEncoding(Message::Utf8);
 
 	return msg;
 }
@@ -381,8 +436,21 @@ void MessageManager::incomingMetaInfo(Word type, Buffer& data)
 
 void MessageManager::incomingSnac(SnacBuffer& snac)
 {
-	if ( snac.family() == 0x04 && snac.subtype() == 0x07 ) {
-		handle_incoming_message(snac);
+	if ( snac.family() != 0x04 ) {
+		return;
+	}
+	switch ( snac.subtype() ) {
+		case 0x07:
+			handle_incoming_message(snac);
+			break;
+		case 0x0b:
+			d->processServerAck(snac);
+			break;
+		case 0x0c:
+			d->processMessageAck(snac);
+			break;
+		default:
+			break;
 	}
 }
 

@@ -23,9 +23,12 @@
 
 #include "icqTypes.h"
 
-#include <QByteArray>
-#include <QDateTime>
 #include <QSharedDataPointer>
+
+class QByteArray;
+class QDateTime;
+class QString;
+class QTextCodec;
 
 namespace ICQ
 {
@@ -57,6 +60,9 @@ class Message
 		/* get/set message channel */
 		Byte channel() const;
 		void setChannel(Byte channel);
+
+		Encoding encoding() const;
+		void setEncoding(Encoding enc);
 
 		/* get/set message flags */
 		Byte flags() const;

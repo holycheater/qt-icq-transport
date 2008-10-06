@@ -20,7 +20,12 @@
 
 #include "icqMessage.h"
 
+#include <QByteArray>
+#include <QDateTime>
+#include <QString>
 #include <QTextCodec>
+
+#include <QtDebug>
 
 namespace ICQ
 {
@@ -106,6 +111,16 @@ void Message::setChannel(Byte channel)
 	d->channel = channel;
 }
 
+Message::Encoding Message::encoding() const
+{
+	return d->encoding;
+}
+
+void Message::setEncoding(Encoding enc)
+{
+	d->encoding = enc;
+}
+
 Byte Message::flags() const
 {
 	return d->flags;
@@ -166,15 +181,19 @@ QString Message::text(QTextCodec *codec) const
 	switch ( d->encoding )
 	{
 		case UserDefined:
+			qDebug() << "[ICQ:Message]" << "user-defined encoding";
 			return codec->toUnicode(d->text);
 			break;
 		case Ascii:
+			qDebug() << "[ICQ:Message]" << "ascii encoding";
 			return QString::fromAscii( d->text.data(), d->text.size() );
 			break;
 		case Latin1:
+			qDebug() << "[ICQ:Message]" << "latin1 encoding";
 			return QString::fromLatin1( d->text.data(), d->text.size() );
 			break;
 		case Utf8:
+			qDebug() << "[ICQ:Message]" << "utf-8 encoding";
 			return QString::fromUtf8( d->text.data(), d->text.size() );
 			break;
 		case Ucs2:

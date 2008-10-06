@@ -39,7 +39,22 @@ class Connection::Private : public QObject
 
 		/* SNAC(xx,01) */
 		void handle_error(SnacBuffer& snac);
+	public slots:
+		void incomingData();
+		void sendKeepAlive();
 
+		void processConnectionTimeout();
+		void processConnected();
+		void processDisconnected();
+		void processLookupResult(const QHostInfo& host);
+		void processLookupTimeout();
+		void processIncomingMessage(const Message& msg);
+		void processNewServer(QString server, quint16 port);
+		void processRatesRequest();
+		void processSsiActivated();
+		void processSignedOn();
+		void processSignedOff();
+	public:
 		LoginManager *loginManager;
 		RateManager *rateManager;
 		SSIManager *ssiManager;
@@ -65,21 +80,10 @@ class Connection::Private : public QObject
 		QTextCodec *codec;
 
 		bool ssiActivated, loginFinished;
-	public slots:
-		void incomingData();
-		void sendKeepAlive();
 
-		void processConnectionTimeout();
-		void processConnected();
-		void processDisconnected();
-		void processLookupResult(const QHostInfo& host);
-		void processLookupTimeout();
-		void processIncomingMessage(const Message& msg);
-		void processNewServer(QString server, quint16 port);
-		void processRatesRequest();
-		void processSsiActivated();
-		void processSignedOn();
-		void processSignedOff();
+		typedef QPair<Word, QString> IntStringPair;
+		static IntStringPair subtypeOneErrors[];
+		static QString errDescForCode(Word errorCode);
 	private:
 		Connection *q;
 		Word m_snacRequest;

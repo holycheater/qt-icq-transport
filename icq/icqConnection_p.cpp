@@ -115,12 +115,17 @@ void Connection::Private::startConnectionTimer()
 /* << SNAC(xx,01) - error handling */
 void Connection::Private::handle_error(SnacBuffer& snac)
 {
-	QString errmsg = "errCode " + QString::number(snac.getWord(), 16);
+	Word errorCode = snac.getWord();
 	TlvChain tlvs = snac.readAll();
+
+	QString errorText = "Error. SNAC family " + QString::number(snac.family(), 16)
+		+ ". Error code: " + QString::number(errorCode, 16) + " ("+ errDescForCode(errorCode) +")";
 	if ( tlvs.hasTlv(0x08) ) {
-		errmsg += " subcode" + tlvs.getTlvData(0x08).toHex();
+		errorText += ". Subcode: " + tlvs.getTlvData(0x08).toHex().toUpper();
 	}
-	qDebug() << "[ICQ:Connection] ERROR!!" << "family" << QString::number(snac.family(), 16) << errmsg;
+
+	qDebug() << "[ICQ:Connection]" << errorText;
+	emit q->error(errorText);
 }
 
 void Connection::Private::incomingData()
@@ -218,6 +223,8 @@ void Connection::Private::processConnectionTimeout()
 	socket->disconnectFromHost();
 	setConnectionStatus(Disconnected);
 
+	emit q->error( tr("Connection timeout") );
+
 	emit q->statusChanged(UserInfo::Offline);
 }
 
@@ -258,6 +265,8 @@ void Connection::Private::processLookupTimeout()
 	setConnectionStatus(Disconnected);
 
 	qDebug() << "[ICQ:Connection] Lookup timeout";
+
+	emit q->error( tr("Host lookup timeout") );
 
 	emit q->statusChanged(UserInfo::Offline);
 }
@@ -330,6 +339,43 @@ void Connection::Private::processSignedOff()
 	delete metaManager;
 
 	emit q->statusChanged(UserInfo::Offline);
+}
+
+Connection::Private::IntStringPair Connection::Private::subtypeOneErrors[] = {
+		IntStringPair(0x01, tr("Invalid SNAC header") ),
+		IntStringPair(0x02, tr("Server rate limit exceeded") ),
+		IntStringPair(0x03, tr("Client rate limit exceeded") ),
+		IntStringPair(0x04, tr("Recipient is not logged in") ),
+		IntStringPair(0x05, tr("Requested service unavailable") ),
+		IntStringPair(0x06, tr("Requested service is not defined") ),
+		IntStringPair(0x07, tr("You sent obsolete snac") ),
+		IntStringPair(0x08, tr("Not supported by server") ),
+		IntStringPair(0x09, tr("Not supported by client") ),
+		IntStringPair(0x0A, tr("Refused by client") ),
+		IntStringPair(0x0B, tr("Reply too big") ),
+		IntStringPair(0x0C, tr("Responses lost") ),
+		IntStringPair(0x0D, tr("Request denied") ),
+		IntStringPair(0x0E, tr("Incorrect SNAC format") ),
+		IntStringPair(0x0F, tr("Insufficient rights") ),
+		IntStringPair(0x10, tr("In local permit/deny (recipient blocked)") ),
+		IntStringPair(0x11, tr("Sender is too evil") ),
+		IntStringPair(0x12, tr("Receiver is too evil") ),
+		IntStringPair(0x13, tr("User temporarily unavailable") ),
+		IntStringPair(0x14, tr("No match") ),
+		IntStringPair(0x15, tr("List overflow") ),
+		IntStringPair(0x16, tr("Request ambiguous") ),
+		IntStringPair(0x17, tr("Server queue full") ),
+		IntStringPair(0x18, tr("Not while on AOL") )
+};
+
+QString Connection::Private::errDescForCode(Word errorCode)
+{
+	for ( Word i = 0; !subtypeOneErrors[i].second.isEmpty(); ++i ) {
+		if ( subtypeOneErrors[i].first == errorCode ) {
+			return subtypeOneErrors[i].second;
+		}
+	}
+	return tr("Unknown error");
 }
 
 

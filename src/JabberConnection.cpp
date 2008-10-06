@@ -404,7 +404,7 @@ void JabberConnection::stream_iq(const IQ& iq)
 			d->stream->sendStanza(reply);
 			return;
 		}
-		if ( d->vcard.isEmpty() ) {
+		if ( d->vcard.isEmpty() || !iq.to().node().isEmpty() ) {
 			IQ reply(iq);
 			reply.swapFromTo();
 			reply.setError(Stanza::Error::ItemNotFound);
@@ -427,6 +427,8 @@ void JabberConnection::stream_iq(const IQ& iq)
 			return;
 		}
 	}
+
+	qDebug() << "[JC]" << "unhandled IQ type" << iq.type() << "tag" << iq.childElement().tagName() << "nsuri" << iq.childElement().namespaceURI();
 }
 
 void JabberConnection::stream_message(const Message& msg)

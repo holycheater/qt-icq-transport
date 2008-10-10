@@ -350,6 +350,12 @@ void DiscoItems::addItem(const DiscoItem& item)
 	m_items << item;
 }
 
+DiscoItems& DiscoItems::operator<<(const DiscoItem& item)
+{
+	m_items << item;
+	return *this;
+}
+
 /**
  * Clears disco-items list.
  */

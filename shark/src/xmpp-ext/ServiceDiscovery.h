@@ -101,6 +101,7 @@ class DiscoItems
 		virtual ~DiscoItems();
 
 		void addItem(const DiscoItem& item);
+		DiscoItems& operator<<(const DiscoItem& item);
 
 		void clear();
 

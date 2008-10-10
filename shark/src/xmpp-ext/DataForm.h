@@ -77,9 +77,12 @@ class DataForm::Field
 
 		Field();
 		Field(const Field& other);
-		Field(FieldType type, const QString& name);
-		Field(FieldType type, const QString& name, const QString& label);
+		Field(const QString& name, FieldType type = TextSingle);
+		Field(const QString& name, const QString& label, FieldType type = TextSingle);
 		virtual ~Field();
+
+		static Field fromNameValue(const QString& name, const QString& value, FieldType type = TextSingle);
+		static Field fromNameLabelValue(const QString& name, const QString& label, const QString& value, FieldType type = TextSingle);
 
 		static Field fromDomElement(const QDomElement& field);
 		void toDomElement(QDomElement& element) const;

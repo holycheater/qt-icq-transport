@@ -498,7 +498,7 @@ DataForm::Field::Field(const Field& other)
 /**
  * Constructs data-form field object with given @a type and @a name.
  */
-DataForm::Field::Field(FieldType type, const QString& name)
+DataForm::Field::Field(const QString& name, FieldType type)
 	: d(new Private)
 {
 	d->type = type;
@@ -508,7 +508,7 @@ DataForm::Field::Field(FieldType type, const QString& name)
 /**
  * Constructs data-form field object with given @a type, @a name and @a label.
  */
-DataForm::Field::Field(FieldType type, const QString& name, const QString& label)
+DataForm::Field::Field(const QString& name, const QString& label, FieldType type)
 	: d(new Private)
 {
 	d->type = type;
@@ -521,6 +521,35 @@ DataForm::Field::Field(FieldType type, const QString& name, const QString& label
  */
 DataForm::Field::~Field()
 {
+}
+
+/**
+ * Constructs data-form field object with @a name, @a value and (optional) @a type parameters.
+ */
+DataForm::Field DataForm::Field::fromNameValue(const QString& name, const QString& value, FieldType type)
+{
+	Field fld;
+
+	fld.d->name = name;
+	fld.addValue(value);
+	fld.d->type = type;
+
+	return fld;
+}
+
+/**
+ * Constructs data-form field object with @a name, @a label, @a value and (optional) @a type parameters.
+ */
+DataForm::Field DataForm::Field::fromNameLabelValue(const QString& name, const QString& label, const QString& value, FieldType type)
+{
+	Field fld;
+
+	fld.d->name = name;
+	fld.d->label = label;
+	fld.addValue(value);
+	fld.d->type = type;
+
+	return fld;
 }
 
 /**

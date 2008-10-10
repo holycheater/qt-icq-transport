@@ -900,11 +900,19 @@ void DataForm::Item::toDomElement(QDomElement& element) const
 
 /**
  * Adds a @a field to item's field-list
- * @param field
  */
 void DataForm::Item::addField(const DataForm::Field& field)
 {
 	d->fields << field;
+}
+
+/**
+ * Adds a @a field to item's field-list
+ */
+DataForm::Item& DataForm::Item::operator<<(const DataForm::Field& field)
+{
+	d->fields << field;
+	return *this;
 }
 
 /**

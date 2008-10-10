@@ -122,6 +122,7 @@ class DataForm::Item
 		void toDomElement(QDomElement& element) const;
 
 		void addField(const Field& field);
+		Item& operator<<(const Field& field);
 		QList<Field> fields() const;
 		void setFields(const QList<Field>& flist);
 	private:

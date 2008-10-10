@@ -44,6 +44,7 @@ class DataForm
 		DataForm();
 		DataForm(const DataForm& other);
 		virtual ~DataForm();
+		DataForm& operator=(const DataForm& other);
 
 		static DataForm fromDomElement(const QDomElement& form);
 		void toDomElement(QDomElement& element) const;

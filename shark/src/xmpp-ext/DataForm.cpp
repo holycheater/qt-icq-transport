@@ -131,6 +131,15 @@ DataForm::~DataForm()
 }
 
 /**
+ * Assigns @a other data-form to this data-form object.
+ */
+DataForm& DataForm::operator=(const DataForm& other)
+{
+	d = other.d;
+	return *this;
+}
+
+/**
  * Constructs DataForm object from @a form dom-element. @a form should be dom-element which represent the form.
  */
 DataForm DataForm::fromDomElement(const QDomElement& form)

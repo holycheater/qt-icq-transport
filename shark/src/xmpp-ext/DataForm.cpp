@@ -234,6 +234,7 @@ void DataForm::toDomElement(QDomElement& element) const
 			ii.next().toDomElement(eForm);
 		}
 	}
+
 	if ( !d->fields.isEmpty() ) {
 		QListIterator<Field> fi(d->fields);
 		while ( fi.hasNext() ) {
@@ -924,7 +925,7 @@ void DataForm::Item::toDomElement(QDomElement& element) const
 	}
 
 	QDomElement eItem = element.ownerDocument().createElement("item");
-	eItem.appendChild(element);
+	element.appendChild(eItem);
 
 	QListIterator<Field> fi(d->fields);
 	while ( fi.hasNext() ) {

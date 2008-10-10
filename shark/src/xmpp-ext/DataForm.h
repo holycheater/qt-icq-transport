@@ -52,6 +52,9 @@ class DataForm
 		void addField(const Field& field);
 		void addItem(const Item& item);
 
+		DataForm& operator<<(const Field& field);
+		DataForm& operator<<(const Item& item);
+
 		QList<Field> fields() const;
 		QList<Item> items() const;
 

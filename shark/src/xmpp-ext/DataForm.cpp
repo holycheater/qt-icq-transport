@@ -259,6 +259,24 @@ void DataForm::addItem(const Item& item)
 }
 
 /**
+ * Adds a @a field to data-form.
+ */
+DataForm& DataForm::operator<<(const Field& field)
+{
+	d->fields << field;
+	return *this;
+}
+
+/**
+ * Adds an @a item to data-form.
+ */
+DataForm& DataForm::operator<<(const Item& item)
+{
+	d->items << item;
+	return *this;
+}
+
+/**
  * Adds a @a field to data-form \<reported/\> element.
  */
 void DataForm::addReportedField(const Field& field)

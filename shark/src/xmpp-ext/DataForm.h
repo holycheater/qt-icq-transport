@@ -63,9 +63,11 @@ class DataForm
 		void setReportedFields(const QList<Field>& reported);
 		void setReportedFields(const Field& field);
 
+		Type type() const;
 		QString title() const;
 		QString instructions() const;
 
+		void setType(Type type);
 		void setTitle(const QString& title);
 		void setInstructions(const QString& instructions);
 	private:

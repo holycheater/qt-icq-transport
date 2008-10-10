@@ -327,6 +327,14 @@ void DataForm::setReportedFields(const Field& field)
 }
 
 /**
+ * Returns data-form type.
+ */
+DataForm::Type DataForm::type() const
+{
+	return d->type;
+}
+
+/**
  * Returns data-form title string
  */
 QString DataForm::title() const
@@ -340,6 +348,14 @@ QString DataForm::title() const
 QString DataForm::instructions() const
 {
 	return d->instructions;
+}
+
+/**
+ * Sets data-form type to @a type.
+ */
+void DataForm::setType(Type type)
+{
+	d->type = type;
 }
 
 /**

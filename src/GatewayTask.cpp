@@ -184,6 +184,9 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 void GatewayTask::processUserOffline(const Jid& user)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	if ( !conn ) {
+		return;
+	}
 	conn->signOff();
 	d->jidIcqTable.remove( user.bare() );
 	d->icqJidTable.remove(conn);
@@ -195,8 +198,11 @@ void GatewayTask::processUserOffline(const Jid& user)
  */
 void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
 {
-	qDebug() << "[GT]" << user << "sent subscribe request to" << uin;
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	if ( !conn ) {
+		emit gatewayMessage(user, "Error. Contact add request: You are not logged on");
+		return;
+	}
 	conn->contactAdd(uin);
 }
 
@@ -205,20 +211,31 @@ void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
  */
 void GatewayTask::processUnsubscribeRequest(const Jid& user, const QString& uin)
 {
-	qDebug() << "[GT]" << user << "sent unsubscribe request to" << uin;
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	if ( !conn ) {
+		emit gatewayMessage(user, "Error. Contact delete request: You are not logged on");
+		return;
+	}
 	conn->contactDel(uin);
 }
 
 void GatewayTask::processAuthGrant(const Jid& user, const QString& uin)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	if ( !conn ) {
+		emit gatewayMessage(user, "Error. Auth Grant: You are not logged on");
+		return;
+	}
 	conn->grantAuth(uin);
 }
 
 void GatewayTask::processAuthDeny(const Jid& user, const QString& uin)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	if ( !conn ) {
+		emit gatewayMessage(user, "Error. Auth Deny: You are not logged on");
+		return;
+	}
 	conn->denyAuth(uin);
 }
 
@@ -228,6 +245,10 @@ void GatewayTask::processAuthDeny(const Jid& user, const QString& uin)
 void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const QString& message)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	if ( !conn ) {
+		emit gatewayMessage(user, "Error. Unable to send message: You are not logged on");
+		return;
+	}
 	conn->sendMessage(uin, message);
 }
 
@@ -239,7 +260,10 @@ void GatewayTask::processCmd_RosterRequest(const Jid& user)
 	qDebug() << "[GT]" << "Roster request from" << user;
 
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
-	Q_ASSERT( conn != 0 );
+	if ( !conn ) {
+		emit gatewayMessage(user, "Error. Unable to process roster-request command: You are not logged on");
+		return;
+	}
 
 	QStringList contacts = conn->contactList();
 	QStringListIterator ci(contacts);

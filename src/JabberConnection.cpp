@@ -26,6 +26,7 @@
 #include "xmpp-core/Message.h"
 #include "xmpp-core/Presence.h"
 
+#include "xmpp-ext/DataForm.h"
 #include "xmpp-ext/ServiceDiscovery.h"
 #include "xmpp-ext/Registration.h"
 #include "xmpp-ext/vCard.h"
@@ -36,13 +37,14 @@
 
 #include <QtDebug>
 
-#define NS_QUERY_ADHOC "http://jabber.org/protocol/commands"
-
 using namespace XMPP;
+
+#define NS_QUERY_ADHOC "http://jabber.org/protocol/commands"
 
 class JabberConnection::Private {
 
 	public:
+		void processAdHoc(const IQ& iq);
 		void processDiscoInfo(const IQ& iq);
 		void processDiscoItems(const IQ& iq);
 		void processRegisterRequest(const IQ& iq);
@@ -56,6 +58,9 @@ class JabberConnection::Private {
 		vCard vcard;
 		DiscoInfo disco;
 		QString secret;
+
+		/* list of adhoc commands */
+		QHash<QString,DiscoItem> commands;
 };
 
 /**
@@ -76,6 +81,9 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->vcard.setFullName("ICQ Transport");
 	d->vcard.setDescription("Qt ICQ Transport");
 	d->vcard.setUrl( QUrl("http://github.com/holycheater") );
+
+	d->commands.insert( "fetch-contacts", DiscoItem("icq.dragonfly", "fetch-contacts", "Fetch ICQ contacts") );
+	d->commands.insert( "say-cheese", DiscoItem("icq.dragonfly", "say-cheese", "Say 'cheese'") );
 
 	QObject::connect( d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
 	QObject::connect( d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
@@ -269,9 +277,66 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& message)
 	d->stream->sendStanza(msg);
 }
 
+void JabberConnection::Private::processAdHoc(const IQ& iq)
+{
+	if ( iq.childElement().tagName() != "command" ) {
+		qDebug() << "[JC] error.. not an adhoc command";
+		return;
+	}
+
+	QString command = iq.childElement().attribute("node");
+	qDebug() << "[JC]" << "Adhoc command from" << iq.from() << "command" << command;
+
+	if ( !commands.contains(command) ) {
+		IQ reply(iq);
+		reply.swapFromTo();
+		reply.setError(Stanza::Error::ItemNotFound);
+
+		stream->sendStanza(reply);
+		return;
+	}
+
+	if ( command == "say-cheese" ) {
+		Message msg;
+		msg.setTo( iq.from() );
+		msg.setFrom(jid);
+		msg.setBody("Cheese!.. n00b..");
+
+		stream->sendStanza(msg);
+	} else if ( command == "fetch-contacts" ) {
+		emit q->cmd_RosterRequest( iq.from() );
+	}
+
+	IQ completedNotify(iq);
+	completedNotify.swapFromTo();
+	completedNotify.setType(IQ::Result);
+	completedNotify.childElement().setAttribute("status", "completed");
+
+	stream->sendStanza(completedNotify);
+}
+
 void JabberConnection::Private::processDiscoInfo(const IQ& iq)
 {
 	qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
+
+	/* disco-info to command-node query handling */
+	QString node = iq.childElement().attribute("node");
+	if ( !node.isEmpty() & commands.contains(node) ) {
+		qDebug() << "[JC]" << "disco-info to command node: " << node;
+
+		IQ adhoc_info(iq);
+		adhoc_info.swapFromTo();
+		adhoc_info.setType(IQ::Result);
+
+		DiscoInfo info;
+		info << DiscoInfo::Identity("automation", "command-node", commands.value(node).name() );
+		info << NS_DATA_FORMS;
+		info << NS_QUERY_ADHOC;
+		info.pushToDomElement( adhoc_info.childElement() );
+
+		stream->sendStanza(adhoc_info);
+		return;
+	}
 
 	IQ reply(iq);
 	reply.swapFromTo();
@@ -286,6 +351,18 @@ void JabberConnection::Private::processDiscoItems(const IQ& iq)
 	IQ reply(iq);
 	reply.swapFromTo();
 	reply.setType(IQ::Result);
+
+	/* process disco-items to the service itself */
+	if ( iq.childElement().attribute("node").isEmpty() || iq.childElement().attribute("node") == NS_QUERY_ADHOC ) {
+		DiscoItems items;
+
+		QHashIterator<QString,DiscoItem> ci(commands);
+		while ( ci.hasNext() ) {
+			ci.next();
+			items << ci.value();
+		}
+		items.pushToDomElement( reply.childElement() );
+	}
 
 	stream->sendStanza(reply);
 }
@@ -426,6 +503,15 @@ void JabberConnection::stream_iq(const IQ& iq)
 			d->processRegisterForm(iq);
 			return;
 		}
+	}
+	if ( iq.childElement().tagName() == "command" && iq.type() == "set" && iq.childElement().namespaceURI() == NS_QUERY_ADHOC ) {
+		d->processAdHoc(iq);
+		return;
+	}
+
+	if ( iq.type() == "error" ) {
+		/* TODO: Error logging? */
+		return;
 	}
 
 	qDebug() << "[JC]" << "unhandled IQ type" << iq.type() << "tag" << iq.childElement().tagName() << "nsuri" << iq.childElement().namespaceURI();

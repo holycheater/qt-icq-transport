@@ -232,6 +232,23 @@ void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const 
 }
 
 /**
+ * Process legacy roster request from jabber user @a user.
+ */
+void GatewayTask::processCmd_RosterRequest(const Jid& user)
+{
+	qDebug() << "[GT]" << "Roster request from" << user;
+
+	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	Q_ASSERT( conn != 0 );
+
+	QStringList contacts = conn->contactList();
+	QStringListIterator ci(contacts);
+	while ( ci.hasNext() ) {
+		emit subscriptionRequest( user, ci.next() );
+	}
+}
+
+/**
  * Sends presence notification to all registered users.
  */
 void GatewayTask::processGatewayOnline()

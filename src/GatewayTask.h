@@ -52,6 +52,8 @@ class GatewayTask : public QObject
 		void processAuthDeny(const Jid& user, const QString& uin);
 		void processSendMessage(const Jid& user, const QString& uin, const QString& message);
 
+		void processCmd_RosterRequest(const Jid& user);
+
 		void processGatewayOnline();
 		void processShutdown();
 	signals:

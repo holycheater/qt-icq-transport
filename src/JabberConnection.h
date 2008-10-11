@@ -78,6 +78,8 @@ class JabberConnection : public QObject
 		void outgoingMessage(const Jid& fromUser, const QString& toUin, const QString& message);
 
 		void connected();
+
+		void cmd_RosterRequest(const Jid& user);
 	private slots:
 		void stream_error(const ComponentStream::Error&);
 		void stream_connected();

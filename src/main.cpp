@@ -25,7 +25,6 @@
 #include <QCoreApplication>
 #include <QTimer>
 #include <QtSql>
-#include <QtDebug>
 
 #include <signal.h>
 
@@ -53,8 +52,8 @@ int main(int argc, char **argv)
 	options->parseCommandLine();
 
 	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {
-		qCritical() << "Your Qt installation doesn't have the sqlite database driver";
-		QCoreApplication::exit(1);
+		qCritical("Your Qt installation doesn't have the sqlite database driver");
+		exit(1);
 	}
 
 	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -79,9 +78,11 @@ int main(int argc, char **argv)
 	QObject::connect( &conn, SIGNAL( userAdd(Jid,QString) ),					&gw, SLOT( processSubscribeRequest(Jid,QString) ) );
 	QObject::connect( &conn, SIGNAL( userDel(Jid,QString) ),					&gw, SLOT( processUnsubscribeRequest(Jid,QString) ) );
 	QObject::connect( &conn, SIGNAL( userAuthGrant(Jid,QString) ),				&gw, SLOT( processAuthGrant(Jid,QString) ) );
-	QObject::connect( &conn, SIGNAL( userAuthGrant(Jid,QString) ),				&gw, SLOT( processAuthDeny(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( userAuthDeny(Jid,QString) ),				&gw, SLOT( processAuthDeny(Jid,QString) ) );
 	QObject::connect( &conn, SIGNAL( outgoingMessage(Jid,QString,QString) ),	&gw, SLOT( processSendMessage(Jid,QString,QString) ) );
 	QObject::connect( &conn, SIGNAL( connected() ),								&gw, SLOT( processGatewayOnline() ) );
+
+	QObject::connect( &conn, SIGNAL( cmd_RosterRequest(Jid) ), &gw, SLOT( processCmd_RosterRequest(Jid) ) );
 
 	QObject::connect( &gw, SIGNAL( subscriptionReceived(Jid,QString) ),		&conn, SLOT( sendSubscribed(Jid,QString) ) );
 	QObject::connect( &gw, SIGNAL( subscriptionRemoved(Jid,QString) ),		&conn, SLOT( sendUnsubscribed(Jid,QString) ) );

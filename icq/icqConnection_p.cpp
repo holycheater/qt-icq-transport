@@ -72,7 +72,7 @@ void Connection::Private::startSignOn()
 	QObject::connect( lookupTimer, SIGNAL( timeout() ), SLOT( processLookupTimeout() ) );
 	lookupTimer->start(10000);
 
-	startConnectionTimer();
+	connectTimer->start(LOGIN_TIMEOUT);
 }
 
 Word Connection::Private::flapSequence()
@@ -104,12 +104,6 @@ void Connection::Private::setConnectionStatus(int status)
 	}
 
 	m_connectionStatus = status;
-}
-
-void Connection::Private::startConnectionTimer()
-{
-	connectTimer->stop();
-	connectTimer->start(CONNECTION_TIMEOUT);
 }
 
 /* << SNAC(xx,01) - error handling */
@@ -157,12 +151,10 @@ void Connection::Private::incomingData()
 		socket->disconnectFromHost();
 	}
 
-	if ( flap.channel() == FlapBuffer::KeepAliveChannel ) {
-		qDebug() << "[ICQ:Connection] Keep-alive received";
-	}
 	if ( connectionStatus() == Connected) {
-		keepAliveTimer->stop();
+		/* restart timers. one sends keep-alive, another kills connection if no data was received in a 90sec period. */
 		keepAliveTimer->start();
+		connectTimer->start();
 	}
 
 	/* now we emit an incoming flap signal, which will be catched by various
@@ -212,8 +204,7 @@ void Connection::Private::incomingData()
 
 void Connection::Private::sendKeepAlive()
 {
-	qDebug() << "[ICQ:Connection]" << "Keep-alive sent";
-	q->write ( FlapBuffer(FlapBuffer::KeepAliveChannel) );
+	q->snacRequest(0x01, 0x0E);
 }
 
 void Connection::Private::processConnectionTimeout()
@@ -223,7 +214,7 @@ void Connection::Private::processConnectionTimeout()
 	socket->disconnectFromHost();
 	setConnectionStatus(Disconnected);
 
-	emit q->error( tr("Connection timeout") );
+	emit q->error( tr("Connection timed out") );
 
 	emit q->statusChanged(UserInfo::Offline);
 }
@@ -285,7 +276,7 @@ void Connection::Private::processNewServer(QString newHost, quint16 newPort)
 {
 	socket->disconnectFromHost();
 	socket->connectToHost(QHostAddress(newHost), newPort);
-	startConnectionTimer();
+	connectTimer->start(LOGIN_TIMEOUT);
 }
 
 void Connection::Private::processRatesRequest()
@@ -307,7 +298,9 @@ void Connection::Private::processSsiActivated()
 void Connection::Private::processSignedOn()
 {
 	loginFinished = true;
-	delete connectTimer;
+
+	connectTimer->stop();
+	connectTimer->setInterval(CONNECTION_TIMEOUT); // connection dies if it doesn't receive anything in 90 sec.
 
 	keepAliveTimer = new QTimer(q);
 	keepAliveTimer->setInterval(KEEP_ALIVE_INTERVAL);

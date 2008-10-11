@@ -46,7 +46,9 @@ class Connection: public QObject
 	Q_OBJECT
 
 	static const int KEEP_ALIVE_INTERVAL = 60000;
-	static const int CONNECTION_TIMEOUT = 30000;
+	static const int LOGIN_TIMEOUT = 30000;
+	static const int CONNECTION_TIMEOUT = 90000;
+
 	public:
 		enum ConnectionStatus { Disconnected, Connecting, Connected };
 

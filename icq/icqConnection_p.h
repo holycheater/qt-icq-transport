@@ -35,8 +35,6 @@ class Connection::Private : public QObject
 		int connectionStatus() const;
 		void setConnectionStatus(int status);
 
-		void startConnectionTimer();
-
 		/* SNAC(xx,01) */
 		void handle_error(SnacBuffer& snac);
 	public slots:

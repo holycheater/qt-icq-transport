@@ -123,6 +123,10 @@ void SSIManager::Private::processSsiContact(SnacBuffer& reply)
 
 	Word listSize = reply.getWord();
 
+	existingGroups.clear();
+	existingItems.clear();
+	ssiList.clear();
+
 	for ( Word i = 0; i < listSize; i++ ) {
 		Word nameLen = reply.getWord();
 		QString name = reply.read(nameLen);

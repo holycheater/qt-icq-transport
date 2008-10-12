@@ -40,6 +40,7 @@
 using namespace XMPP;
 
 #define NS_QUERY_ADHOC "http://jabber.org/protocol/commands"
+#define NS_IQ_GATEWAY "jabber:iq:gateway"
 
 class JabberConnection::Private {
 
@@ -49,6 +50,8 @@ class JabberConnection::Private {
 		void processDiscoItems(const IQ& iq);
 		void processRegisterRequest(const IQ& iq);
 		void processRegisterForm(const Registration& iq);
+		void processPromptRequest(const IQ& iq);
+		void processPrompt(const IQ& iq);
 
 		JabberConnection *q;
 
@@ -76,7 +79,7 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->stream = new ComponentStream(d->connector);
 
 	d->disco << DiscoInfo::Identity("gateway", "icq", "ICQ Transport");
-	d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP;
+	d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP << NS_IQ_GATEWAY;
 
 	d->vcard.setFullName("ICQ Transport");
 	d->vcard.setDescription("Qt ICQ Transport");
@@ -440,16 +443,68 @@ void JabberConnection::Private::processRegisterForm(const Registration& iq)
 	stream->sendStanza(reply);
 
 	/* subscribe for user presence */
-	Presence presence;
-	presence.setFrom(jid);
-	presence.setTo( iq.from().bare() );
-	presence.setType(Presence::Subscribe);
-	stream->sendStanza(presence);
+	Presence subscribe;
+	subscribe.setFrom(jid);
+	subscribe.setTo( iq.from().bare() );
+	subscribe.setType(Presence::Subscribe);
+	stream->sendStanza(subscribe);
 
 	emit q->userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
 
+	Presence presence;
+	presence.setFrom(jid);
+	presence.setTo( iq.from().bare() );
+	stream->sendStanza(presence);
+
 	/* execute log-in case */
 	emit q->userOnline(iq.from().bare(), Presence::None);
+}
+
+void JabberConnection::Private::processPromptRequest(const IQ& iq)
+{
+	IQ prompt(iq);
+	prompt.swapFromTo();
+	prompt.setType(IQ::Result);
+
+	QDomDocument doc = prompt.childElement().ownerDocument();
+
+	QDomElement eDesc = doc.createElement("desc");
+	QDomText eDescText = doc.createTextNode("Please enter the ICQ Number of the person you would like to contact.");
+	prompt.childElement().appendChild(eDesc);
+	eDesc.appendChild(eDescText);
+
+	QDomElement ePrompt = doc.createElement("prompt");
+	QDomText ePromptText = doc.createTextNode("Contact ID");
+	prompt.childElement().appendChild(ePrompt);
+	ePrompt.appendChild(ePromptText);
+
+	stream->sendStanza(prompt);
+}
+
+void JabberConnection::Private::processPrompt(const IQ& iq)
+{
+	QString uin = iq.childElement().firstChildElement("prompt").text();
+
+	IQ reply(iq);
+	reply.swapFromTo();
+	reply.setType(IQ::Result);
+
+	bool ok;
+	int u = uin.toInt(&ok, 10);
+	if ( !ok && u <= 0 ) {
+		reply.setError(Stanza::Error::ItemNotFound);
+		stream->sendStanza(reply);
+		return;
+	}
+
+	reply.clearChild();
+	QDomDocument doc = reply.childElement().ownerDocument();
+	QDomElement eJid = doc.createElement("jid");
+	doc.appendChild(eJid);
+	QDomText eJidText = doc.createTextNode( jid.withNode(uin) );
+	doc.appendChild(eJidText);
+
+	stream->sendStanza(reply);
 }
 
 void JabberConnection::stream_iq(const IQ& iq)
@@ -466,6 +521,9 @@ void JabberConnection::stream_iq(const IQ& iq)
 		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
 			d->processRegisterRequest(iq);
 			return;
+		}
+		if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
+			d->processPromptRequest(iq);
 		}
 	}
 	if ( iq.childElement().tagName() == "vCard" && iq.type() == "get" ) {
@@ -498,6 +556,9 @@ void JabberConnection::stream_iq(const IQ& iq)
 		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
 			d->processRegisterForm(iq);
 			return;
+		}
+		if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
+			d->processPrompt(iq);
 		}
 	}
 	if ( iq.childElement().tagName() == "command" && iq.type() == "set" && iq.childElement().namespaceURI() == NS_QUERY_ADHOC ) {

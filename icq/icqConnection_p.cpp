@@ -11,6 +11,10 @@ namespace ICQ
 Connection::Private::Private(Connection* parent)
 	: QObject(parent)
 {
+	connectTimer = 0;
+	keepAliveTimer = 0;
+	lookupTimer = 0;
+
 	codec = 0;
 
 	ssiActivated = false;
@@ -226,7 +230,10 @@ void Connection::Private::processConnected()
 
 void Connection::Private::processDisconnected()
 {
-	delete connectTimer;
+	if ( connectTimer ) {
+		delete connectTimer;
+		connectTimer = 0;
+	}
 
 	socket->close();
 	qDebug() << "[ICQ:Connection] Disconnected";

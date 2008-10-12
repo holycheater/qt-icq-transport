@@ -454,6 +454,9 @@ void JabberConnection::Private::processRegisterForm(const Registration& iq)
 	stream->sendStanza(presence);
 
 	emit q->userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
+
+	/* execute log-in case */
+	emit q->userOnline(iq.from().bare(), Presence::None);
 }
 
 void JabberConnection::stream_iq(const IQ& iq)

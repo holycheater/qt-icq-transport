@@ -104,20 +104,41 @@ void GatewayTask::setIcqServer(const QString& host, quint16 port)
 
 void GatewayTask::processRegister(const QString& user, const QString& uin, const QString& password)
 {
+	if ( d->jidIcqTable.contains(user) ) {
+		ICQ::Connection *conn = d->jidIcqTable.value(user);
+		d->jidIcqTable.remove(user);
+		d->icqJidTable.remove(conn);
+
+		delete conn;
+	}
+
 	QSqlQuery query;
-	query.prepare("REPLACE INTO users VALUES('?', '?', '?')");
-	query.addBindValue(user);
-	query.addBindValue(uin);
-	query.addBindValue(password);
-	query.exec();
+	/* prepare + bindvalue doesn't work... */
+	query.exec( QString("REPLACE INTO users VALUES('_user', '_uin', '_pass')").replace("_user", user).replace("_uin", uin).replace("_pass", password) );
+
+	emit gatewayMessage( user, tr("You have been successfully registered") );
 }
 
+/**
+ * Process unregister actions with database and close the legacy connection.
+ */
 void GatewayTask::processUnregister(const QString& user)
 {
+	ICQ::Connection *conn = d->jidIcqTable.value(user);
+	if ( conn ) {
+		d->icqJidTable.remove(conn);
+		d->jidIcqTable.remove(user);
+		delete conn;
+	}
+
 	QSqlQuery query;
-	query.prepare("DELETE FROM users WHERE jid = '?'");
-	query.addBindValue(user);
-	query.exec();
+
+	query.exec( QString("SELECT * FROM users WHERE jid = '_user'").replace("_user", user) );
+	if ( !query.first() ) {
+		return;
+	}
+
+	query.exec( QString("DELETE FROM users WHERE jid = '_user'").replace("_user", user) );
 }
 
 void GatewayTask::processUserOnline(const Jid& user, int showStatus)
@@ -158,7 +179,6 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 		emit onlineNotifyFor(user);
 		QString uin = query.value(0).toString();
 		QString password = query.value(1).toString();
-		qDebug() << "[GT]" << "credentails for" << user.bare() << "are:" << uin << password;
 
 		ICQ::Connection *conn = new ICQ::Connection(uin, password, d->icqHost, d->icqPort);
 
@@ -280,6 +300,7 @@ void GatewayTask::processGatewayOnline()
 	QSqlQuery query;
 
 	query.exec("SELECT jid FROM users");
+	qDebug() << "number of registered users:" << query.size() << query.isActive();
 	while ( query.next() ) {
 		Jid user = query.value(0).toString();
 		emit onlineNotifyFor(user);
@@ -359,9 +380,6 @@ void GatewayTask::processContactOnline(const QString& uin, quint16 status)
 
 	int showStatus;
 	switch ( status ) {
-		case ICQ::UserInfo::Online:
-			showStatus = XMPP::Presence::None;
-			break;
 		case ICQ::UserInfo::Away:
 			showStatus = XMPP::Presence::Away;
 			break;
@@ -374,8 +392,8 @@ void GatewayTask::processContactOnline(const QString& uin, quint16 status)
 		case ICQ::UserInfo::FreeForChat:
 			showStatus = XMPP::Presence::Chat;
 			break;
+		case ICQ::UserInfo::Online:
 		default:
-			qDebug() << Q_FUNC_INFO << " - unknown contact status" << QString::number(status, 16) <<"for" << uin;
 			showStatus = XMPP::Presence::None;
 			break;
 	}

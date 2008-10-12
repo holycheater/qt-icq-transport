@@ -71,28 +71,27 @@ int main(int argc, char **argv)
 
 	delete options;
 
-	QObject::connect( &conn, SIGNAL( userRegistered(QString,QString,QString) ),	&gw, SLOT( processRegister(QString,QString,QString) ) );
-	QObject::connect( &conn, SIGNAL( userUnregistered(QString) ),				&gw, SLOT( processUnregister(QString) ) );
-	QObject::connect( &conn, SIGNAL( userOnline(Jid,int) ),							&gw, SLOT( processUserOnline(Jid,int) ) );
-	QObject::connect( &conn, SIGNAL( userOffline(Jid) ),						&gw, SLOT( processUserOffline(Jid) ) );
-	QObject::connect( &conn, SIGNAL( userAdd(Jid,QString) ),					&gw, SLOT( processSubscribeRequest(Jid,QString) ) );
-	QObject::connect( &conn, SIGNAL( userDel(Jid,QString) ),					&gw, SLOT( processUnsubscribeRequest(Jid,QString) ) );
-	QObject::connect( &conn, SIGNAL( userAuthGrant(Jid,QString) ),				&gw, SLOT( processAuthGrant(Jid,QString) ) );
-	QObject::connect( &conn, SIGNAL( userAuthDeny(Jid,QString) ),				&gw, SLOT( processAuthDeny(Jid,QString) ) );
-	QObject::connect( &conn, SIGNAL( outgoingMessage(Jid,QString,QString) ),	&gw, SLOT( processSendMessage(Jid,QString,QString) ) );
-	QObject::connect( &conn, SIGNAL( connected() ),								&gw, SLOT( processGatewayOnline() ) );
+	QObject::connect( &conn, SIGNAL( connected() ),                             &gw, SLOT( processGatewayOnline() ) );
+	QObject::connect( &conn, SIGNAL( userRegistered(QString,QString,QString) ), &gw, SLOT( processRegister(QString,QString,QString) ) );
+	QObject::connect( &conn, SIGNAL( userUnregistered(QString) ),               &gw, SLOT( processUnregister(QString) ) );
+	QObject::connect( &conn, SIGNAL( userOnline(Jid,int) ),                     &gw, SLOT( processUserOnline(Jid,int) ) );
+	QObject::connect( &conn, SIGNAL( userOffline(Jid) ),                        &gw, SLOT( processUserOffline(Jid) ) );
+	QObject::connect( &conn, SIGNAL( userAdd(Jid,QString) ),                    &gw, SLOT( processSubscribeRequest(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( userDel(Jid,QString) ),                    &gw, SLOT( processUnsubscribeRequest(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( userAuthGrant(Jid,QString) ),              &gw, SLOT( processAuthGrant(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( userAuthDeny(Jid,QString) ),               &gw, SLOT( processAuthDeny(Jid,QString) ) );
+	QObject::connect( &conn, SIGNAL( outgoingMessage(Jid,QString,QString) ),    &gw, SLOT( processSendMessage(Jid,QString,QString) ) );
+	QObject::connect( &conn, SIGNAL( cmd_RosterRequest(Jid) ),                  &gw, SLOT( processCmd_RosterRequest(Jid) ) );
 
-	QObject::connect( &conn, SIGNAL( cmd_RosterRequest(Jid) ), &gw, SLOT( processCmd_RosterRequest(Jid) ) );
-
-	QObject::connect( &gw, SIGNAL( subscriptionReceived(Jid,QString) ),		&conn, SLOT( sendSubscribed(Jid,QString) ) );
-	QObject::connect( &gw, SIGNAL( subscriptionRemoved(Jid,QString) ),		&conn, SLOT( sendUnsubscribed(Jid,QString) ) );
-	QObject::connect( &gw, SIGNAL( subscriptionRequest(Jid,QString) ),		&conn, SLOT( sendSubscribe(Jid,QString) ) );
-	QObject::connect( &gw, SIGNAL( contactOnline(Jid,QString,int) ),		&conn, SLOT( sendOnlinePresence(Jid,QString, int) ) );
-	QObject::connect( &gw, SIGNAL( contactOffline(Jid,QString) ),			&conn, SLOT( sendOfflinePresence(Jid,QString) ) );
-	QObject::connect( &gw, SIGNAL( onlineNotifyFor(Jid) ),					&conn, SLOT( sendOnlinePresence(Jid) ) );
-	QObject::connect( &gw, SIGNAL( offlineNotifyFor(Jid) ),					&conn, SLOT( sendOfflinePresence(Jid) ) );
-	QObject::connect( &gw, SIGNAL( incomingMessage(Jid,QString,QString) ),	&conn, SLOT( sendMessage(Jid,QString,QString) ) );
-	QObject::connect( &gw, SIGNAL( gatewayMessage(Jid,QString) ), &conn, SLOT( sendMessage(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( subscriptionReceived(Jid,QString) ),    &conn, SLOT( sendSubscribed(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( subscriptionRemoved(Jid,QString) ),     &conn, SLOT( sendUnsubscribed(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( subscriptionRequest(Jid,QString) ),     &conn, SLOT( sendSubscribe(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( contactOnline(Jid,QString,int) ),       &conn, SLOT( sendOnlinePresence(Jid,QString, int) ) );
+	QObject::connect( &gw, SIGNAL( contactOffline(Jid,QString) ),          &conn, SLOT( sendOfflinePresence(Jid,QString) ) );
+	QObject::connect( &gw, SIGNAL( onlineNotifyFor(Jid) ),                 &conn, SLOT( sendOnlinePresence(Jid) ) );
+	QObject::connect( &gw, SIGNAL( offlineNotifyFor(Jid) ),                &conn, SLOT( sendOfflinePresence(Jid) ) );
+	QObject::connect( &gw, SIGNAL( incomingMessage(Jid,QString,QString) ), &conn, SLOT( sendMessage(Jid,QString,QString) ) );
+	QObject::connect( &gw, SIGNAL( gatewayMessage(Jid,QString) ),          &conn, SLOT( sendMessage(Jid,QString) ) );
 
 	conn.login();
 

@@ -220,7 +220,7 @@ void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage(user, "Error. Contact add request: You are not logged on");
+		emit gatewayMessage( user, tr("Error. Contact add request: You are not logged on") );
 		return;
 	}
 	conn->contactAdd(uin);
@@ -233,7 +233,7 @@ void GatewayTask::processUnsubscribeRequest(const Jid& user, const QString& uin)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage(user, "Error. Contact delete request: You are not logged on");
+		emit gatewayMessage( user, tr("Error. Contact delete request: You are not logged on") );
 		return;
 	}
 	conn->contactDel(uin);
@@ -243,7 +243,7 @@ void GatewayTask::processAuthGrant(const Jid& user, const QString& uin)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage(user, "Error. Auth Grant: You are not logged on");
+		emit gatewayMessage( user, tr("Error. Auth Grant: You are not logged on") );
 		return;
 	}
 	conn->grantAuth(uin);
@@ -253,7 +253,7 @@ void GatewayTask::processAuthDeny(const Jid& user, const QString& uin)
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage(user, "Error. Auth Deny: You are not logged on");
+		emit gatewayMessage( user, tr("Error. Auth Deny: You are not logged on") );
 		return;
 	}
 	conn->denyAuth(uin);
@@ -266,7 +266,7 @@ void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const 
 {
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage(user, "Error. Unable to send message: You are not logged on");
+		emit gatewayMessage( user, tr("Error. Unable to send message: You are not logged on") );
 		return;
 	}
 	conn->sendMessage(uin, message);
@@ -281,7 +281,7 @@ void GatewayTask::processCmd_RosterRequest(const Jid& user)
 
 	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage(user, "Error. Unable to process roster-request command: You are not logged on");
+		emit gatewayMessage( user, tr("Error. Unable to process roster-request command: You are not logged on") );
 		return;
 	}
 

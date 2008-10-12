@@ -176,7 +176,6 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 	query.exec( QString("SELECT uin, password FROM users WHERE jid = '?' ").replace( "?", user.bare() ) );
 
 	if ( query.first() ) {
-		emit onlineNotifyFor(user);
 		QString uin = query.value(0).toString();
 		QString password = query.value(1).toString();
 
@@ -297,14 +296,6 @@ void GatewayTask::processCmd_RosterRequest(const Jid& user)
  */
 void GatewayTask::processGatewayOnline()
 {
-	QSqlQuery query;
-
-	query.exec("SELECT jid FROM users");
-	qDebug() << "number of registered users:" << query.size() << query.isActive();
-	while ( query.next() ) {
-		Jid user = query.value(0).toString();
-		emit onlineNotifyFor(user);
-	}
 	d->online = true;
 }
 
@@ -351,6 +342,8 @@ void GatewayTask::processIcqSignOn()
 	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
+	emit onlineNotifyFor(user);
+
 	QStringList contacts = conn->contactList();
 	QStringListIterator i(contacts);
 
@@ -364,12 +357,14 @@ void GatewayTask::processIcqStatus(int status)
 	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
 	qDebug() << "icq status for" << conn->userId() << "changed to" << status;
 	Jid user = d->icqJidTable.value(conn);
+
 	if ( status == ICQ::UserInfo::Offline ) {
 		QStringList contacts = conn->contactList();
 		QStringListIterator i(contacts);
 		while ( i.hasNext() ) {
 			emit contactOffline( user, i.next() );
 		}
+		emit offlineNotifyFor(user);
 	}
 }
 

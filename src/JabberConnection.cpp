@@ -226,13 +226,6 @@ void JabberConnection::sendOnlinePresence(const Jid& recipient)
 	presence.setTo(recipient);
 
 	d->stream->sendStanza(presence);
-
-	Presence probe;
-	probe.setFrom(d->jid);
-	probe.setTo(recipient);
-	probe.setType(Presence::Probe);
-
-	d->stream->sendStanza(probe);
 }
 
 /**

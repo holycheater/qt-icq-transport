@@ -170,9 +170,9 @@ void LoginManager::recv_auth_reply(SnacBuffer& reply)
 	reply.seekEnd();
 
 	if ( list.hasTlv(0x08) ) {
-		Word code = list.getTlvData(0x08).toUInt();
+		Word code = list.getTlvData(0x08).toHex().toUInt();
 		qCritical() << "[LoginManager] Error during authentication:" << list.getTlvData(0x08).toHex();
-		QString desc = tr("Authentication failure.") + " " + tr("Code: ") + "0x" + QString::number(code, 16).rightJustified(4, '0') + Private::authErrorString(code);
+		QString desc = tr("Authentication failure.") + " " + tr("Code: ") + "0x" + QString::number(code, 16).rightJustified(4, '0') + ". " + Private::authErrorString(code);
 		emit error(desc);
 		d->link->signOff();
 		return;

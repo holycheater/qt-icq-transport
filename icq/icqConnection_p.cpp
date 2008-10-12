@@ -226,6 +226,8 @@ void Connection::Private::processConnected()
 
 void Connection::Private::processDisconnected()
 {
+	delete connectTimer;
+
 	socket->close();
 	qDebug() << "[ICQ:Connection] Disconnected";
 

@@ -353,7 +353,7 @@ void GatewayTask::processIcqSignOn()
 	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
-	emit onlineNotifyFor(user);
+	emit onlineNotifyFor(user, XMPP::Presence::None);
 }
 
 void GatewayTask::processIcqSignOff()
@@ -398,6 +398,7 @@ void GatewayTask::processIcqStatus(int status)
 			show = XMPP::Presence::None;
 			break;
 	}
+	emit onlineNotifyFor(user, show);
 }
 
 void GatewayTask::processContactOnline(const QString& uin, int status)

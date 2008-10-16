@@ -64,7 +64,7 @@ class GatewayTask : public QObject
 		void contactOnline(const Jid& user, const QString& uin, int status);
 		void contactOffline(const Jid& user, const QString& uin);
 
-		void onlineNotifyFor(const Jid& user);
+		void onlineNotifyFor(const Jid& user, int show);
 		void offlineNotifyFor(const Jid& user);
 
 		void incomingMessage(const Jid& user, const QString& uin, const QString& text);

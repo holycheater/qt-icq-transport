@@ -222,11 +222,12 @@ void JabberConnection::sendOfflinePresence(const Jid& toUser, const QString& fro
 /**
  * Sends 'available' presence to @a toUser on behalf of component.
  */
-void JabberConnection::sendOnlinePresence(const Jid& recipient)
+void JabberConnection::sendOnlinePresence(const Jid& recipient, int showStatus)
 {
 	Presence presence;
 	presence.setFrom(d->jid);
 	presence.setTo(recipient);
+	presence.setShow( Presence::Show(showStatus) );
 
 	d->stream->sendStanza(presence);
 }

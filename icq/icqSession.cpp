@@ -212,12 +212,27 @@ void Session::contactAdd(const QString& uin)
 	if (!d->ssiManager) {
 		return;
 	}
+	Contact c = d->ssiManager->contactByUin(uin);
+
+	if ( !c.isValid() ) {
+		d->ssiManager->addContact(uin);
+	} else if ( c.awaitingAuth() ) {
+		d->ssiManager->requestAuthorization(uin);
+	} else {
+		emit authGranted(uin);
+	}
 }
 
 void Session::contactDel(const QString& uin)
 {
 	if (!d->ssiManager) {
 		return;
+	}
+
+	Contact c = d->ssiManager->contactByUin(uin);
+
+	if ( c.isValid() ) {
+		d->ssiManager->delContact(uin);
 	}
 }
 

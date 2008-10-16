@@ -49,7 +49,6 @@ class Socket : public QObject
 		void readyRead();
 	private slots:
 		void processIncomingData();
-		void processSocketDestroyed();
 	private:
 		Q_DISABLE_COPY(Socket)
 		class Private;

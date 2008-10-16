@@ -82,9 +82,9 @@ void Socket::disconnectFromHost()
 	if ( !d->socket ) {
 		return;
 	}
-	QObject::connect( d->socket, SIGNAL( destroyed() ), SLOT( processSocketDestroyed() ) );
 	d->socket->disconnectFromHost();
 	d->socket->deleteLater();
+	d->socket = 0;
 }
 
 void Socket::setRateManager(RateManager *ptr)
@@ -184,6 +184,9 @@ void Socket::processIncomingData()
 	/* now we emit an incoming flap signal, which will be catched by various
 	 * services (login manager, rate manager, etc) */
 	emit incomingFlap(flap);
+	if ( !d->socket ) {
+		return;
+	}
 
 	if ( flap.channel() == FlapBuffer::DataChannel && flap.pos() == 0 ) { // pos == 0 means that flap wasn't touched by flap handlers.
 		SnacBuffer snac = flap;
@@ -211,6 +214,9 @@ void Socket::processIncomingData()
 		}
 
 		emit incomingSnac(snac);
+		if ( !d->socket ) {
+			return;
+		}
 
 		if ( (snac.pos() + 1) < snac.dataSize() ) {
 			qDebug() << "[ICQ:Socket]" << (snac.pos() + 1) << snac.dataSize() << "unhandled snac" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
@@ -220,11 +226,6 @@ void Socket::processIncomingData()
 	if ( d->socket->bytesAvailable() > 0 ) {
 		emit readyRead();
 	}
-}
-
-void Socket::processSocketDestroyed()
-{
-	d->socket = 0;
 }
 
 

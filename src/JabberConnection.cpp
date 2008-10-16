@@ -274,6 +274,21 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& message)
 	d->stream->sendStanza(msg);
 }
 
+void JabberConnection::sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard)
+{
+	IQ reply;
+	reply.setFrom( d->jid.withNode(uin) );
+	reply.setTo(recipient);
+	reply.setId(requestID);
+
+	if ( vcard.isEmpty() ) {
+		reply.setError(Stanza::Error::ItemNotFound);
+		d->stream->sendStanza(reply);
+	}
+	vcard.toIQ(reply);
+	d->stream->sendStanza(reply);
+}
+
 void JabberConnection::Private::processAdHoc(const IQ& iq)
 {
 	if ( iq.childElement().tagName() != "command" ) {
@@ -536,13 +551,16 @@ void JabberConnection::stream_iq(const IQ& iq)
 			d->stream->sendStanza(reply);
 			return;
 		}
-		if ( d->vcard.isEmpty() || !iq.to().node().isEmpty() ) {
+		if ( d->vcard.isEmpty() ) {
 			IQ reply(iq);
 			reply.swapFromTo();
 			reply.setError(Stanza::Error::ItemNotFound);
 
 			d->stream->sendStanza(reply);
 			return;
+		}
+		if ( !iq.to().node().isEmpty() ) {
+			emit vCardRequest( iq.from(), iq.to().node(), iq.id() );
 		}
 
 		IQ reply(iq);

@@ -28,6 +28,7 @@
 namespace XMPP {
 	class Jid;
 	class Registration;
+	class vCard;
 }
 
 class JabberConnection : public QObject
@@ -41,6 +42,7 @@ class JabberConnection : public QObject
 	typedef XMPP::ComponentStream ComponentStream;
 	typedef XMPP::Registration Registration;
 	typedef XMPP::Jid Jid;
+	typedef XMPP::vCard vCard;
 
 	public:
 		JabberConnection(QObject *parent = 0);
@@ -65,6 +67,8 @@ class JabberConnection : public QObject
 
 		void sendMessage(const Jid& recipient, const QString& uin, const QString& message);
 		void sendMessage(const Jid& recipient, const QString& message);
+
+		void sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard);
 	signals:
 		void userUnregistered(const QString& jid);
 		void userRegistered(const QString& jid, const QString& uin, const QString& password);
@@ -74,6 +78,8 @@ class JabberConnection : public QObject
 		void userDel(const Jid& jid, const QString& uin);
 		void userAuthGrant(const Jid& jid, const QString& uin);
 		void userAuthDeny(const Jid& jid, const QString& uin);
+
+		void vCardRequest(const Jid& jid, const QString& uin, const QString& requestID);
 
 		void outgoingMessage(const Jid& fromUser, const QString& toUin, const QString& message);
 

@@ -22,6 +22,8 @@
 
 #include "xmpp-core/Jid.h"
 #include "xmpp-core/Presence.h"
+#include "xmpp-ext/vCard.h"
+
 #include "icqSession.h"
 
 #include <QHash>
@@ -276,6 +278,12 @@ void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const 
 		return;
 	}
 	conn->sendMessage(uin, message);
+}
+
+void GatewayTask::processVCardRequest(const Jid& user, const QString& uin, const QString& requestID)
+{
+	emit incomingVCard(user, uin, requestID, XMPP::vCard() );
+	/* TODO: process vcard request and redirect it to user details request on legacy server */
 }
 
 /**

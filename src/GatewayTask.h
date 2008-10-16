@@ -25,6 +25,7 @@
 
 namespace XMPP {
 	class Jid;
+	class vCard;
 }
 
 class QSqlDatabase;
@@ -34,6 +35,7 @@ class GatewayTask : public QObject
 	Q_OBJECT
 
 	typedef XMPP::Jid Jid;
+	typedef XMPP::vCard vCard;
 
 	public:
 		GatewayTask(QObject *parent = 0);
@@ -52,6 +54,8 @@ class GatewayTask : public QObject
 		void processAuthDeny(const Jid& user, const QString& uin);
 		void processSendMessage(const Jid& user, const QString& uin, const QString& message);
 
+		void processVCardRequest(const Jid& user, const QString& uin, const QString& requestID);
+
 		void processCmd_RosterRequest(const Jid& user);
 
 		void processGatewayOnline();
@@ -66,6 +70,8 @@ class GatewayTask : public QObject
 
 		void onlineNotifyFor(const Jid& user, int show);
 		void offlineNotifyFor(const Jid& user);
+
+		void incomingVCard(const Jid& user, const QString& uin, const QString& requestID, const vCard& vcard);
 
 		void incomingMessage(const Jid& user, const QString& uin, const QString& text);
 		void gatewayMessage(const Jid& user, const QString& text);

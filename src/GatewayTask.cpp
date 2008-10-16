@@ -22,8 +22,7 @@
 
 #include "xmpp-core/Jid.h"
 #include "xmpp-core/Presence.h"
-#include "icqConnection.h"
-#include "types/icqUserInfo.h"
+#include "icqSession.h"
 
 #include <QHash>
 #include <QStringList>
@@ -41,9 +40,9 @@ class GatewayTask::Private
 		~Private();
 
 		/* Jabber-ID-to-ICQ-Connection hash-table. */
-		QHash<QString, ICQ::Connection*> jidIcqTable;
+		QHash<QString, ICQ::Session*> jidIcqTable;
 		/* Connection & Jabber-ID hash-table */
-		QHash<ICQ::Connection*, QString> icqJidTable;
+		QHash<ICQ::Session*, QString> icqJidTable;
 
 		QString icqHost;
 		quint16 icqPort;
@@ -105,7 +104,7 @@ void GatewayTask::setIcqServer(const QString& host, quint16 port)
 void GatewayTask::processRegister(const QString& user, const QString& uin, const QString& password)
 {
 	if ( d->jidIcqTable.contains(user) ) {
-		ICQ::Connection *conn = d->jidIcqTable.value(user);
+		ICQ::Session *conn = d->jidIcqTable.value(user);
 		d->jidIcqTable.remove(user);
 		d->icqJidTable.remove(conn);
 
@@ -124,7 +123,7 @@ void GatewayTask::processRegister(const QString& user, const QString& uin, const
  */
 void GatewayTask::processUnregister(const QString& user)
 {
-	ICQ::Connection *conn = d->jidIcqTable.value(user);
+	ICQ::Session *conn = d->jidIcqTable.value(user);
 	if ( conn ) {
 		d->icqJidTable.remove(conn);
 		d->jidIcqTable.remove(user);
@@ -147,26 +146,27 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 		qDebug() << "[GT] processLogin: icq host and/or port values are not set. Aborting...";
 		return;
 	}
+	ICQ::Session::OnlineStatus icqStatus;
+	switch ( showStatus ) {
+		case XMPP::Presence::None:
+			icqStatus = ICQ::Session::Online;
+			break;
+		case XMPP::Presence::Chat:
+			icqStatus = ICQ::Session::FreeForChat;
+			break;
+		case XMPP::Presence::Away:
+			icqStatus = ICQ::Session::Away;
+			break;
+		case XMPP::Presence::NotAvailable:
+			icqStatus = ICQ::Session::NotAvailable;
+			break;
+		case XMPP::Presence::DoNotDisturb:
+			icqStatus = ICQ::Session::DoNotDisturb;
+			break;
+	}
+
 	if ( d->jidIcqTable.contains( user.bare() ) ) {
-		ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
-		int icqStatus;
-		switch ( showStatus ) {
-			case XMPP::Presence::None:
-				icqStatus = ICQ::UserInfo::Online;
-				break;
-			case XMPP::Presence::Chat:
-				icqStatus = ICQ::UserInfo::FreeForChat;
-				break;
-			case XMPP::Presence::Away:
-				icqStatus = ICQ::UserInfo::Away;
-				break;
-			case XMPP::Presence::NotAvailable:
-				icqStatus = ICQ::UserInfo::Away | ICQ::UserInfo::NotAvailable;
-				break;
-			case XMPP::Presence::DoNotDisturb:
-				icqStatus = ICQ::UserInfo::Away | ICQ::UserInfo::Occupied | ICQ::UserInfo::DoNotDisturb;
-				break;
-		}
+		ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 		conn->setOnlineStatus(icqStatus);
 		return;
 	}
@@ -179,21 +179,28 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 		QString uin = query.value(0).toString();
 		QString password = query.value(1).toString();
 
-		ICQ::Connection *conn = new ICQ::Connection(uin, password, d->icqHost, d->icqPort);
+		ICQ::Session *conn = new ICQ::Session(this);
+		conn->setUin(uin);
+		conn->setPassword(password);
+		conn->setServerHost(d->icqHost);
+		conn->setServerPort(d->icqPort);
+		conn->setOnlineStatus(ICQ::Session::Online);
 
-		QObject::connect( conn, SIGNAL( statusChanged(int) ), SLOT( processIcqStatus(int) ) );
-		QObject::connect( conn, SIGNAL( userOnline(QString,quint16) ), SLOT( processContactOnline(QString,quint16) ) );
-		QObject::connect( conn, SIGNAL( userOffline(QString) ), SLOT( processContactOffline(QString) ) );
-		QObject::connect( conn, SIGNAL( authGranted(QString) ), SLOT( processAuthGranted(QString) ) );
-		QObject::connect( conn, SIGNAL( authDenied(QString) ), SLOT( processAuthDenied(QString) ) );
-		QObject::connect( conn, SIGNAL( authRequest(QString) ), SLOT( processAuthRequest(QString) ) );
+		QObject::connect( conn, SIGNAL( statusChanged(int) ),               SLOT( processIcqStatus(int) ) );
+		QObject::connect( conn, SIGNAL( userOnline(QString,int) ),          SLOT( processContactOnline(QString,int) ) );
+		QObject::connect( conn, SIGNAL( userOffline(QString) ),             SLOT( processContactOffline(QString) ) );
+		QObject::connect( conn, SIGNAL( authGranted(QString) ),             SLOT( processAuthGranted(QString) ) );
+		QObject::connect( conn, SIGNAL( authDenied(QString) ),              SLOT( processAuthDenied(QString) ) );
+		QObject::connect( conn, SIGNAL( authRequest(QString) ),             SLOT( processAuthRequest(QString) ) );
 		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString) ), SLOT( processIncomingMessage(QString,QString) ) );
-		QObject::connect( conn, SIGNAL( signedOn() ), SLOT( processIcqSignOn() ) );
-		QObject::connect( conn, SIGNAL( error(QString) ), SLOT( processIcqError(QString) ) );
+		QObject::connect( conn, SIGNAL( connected() ),                      SLOT( processIcqSignOn() ) );
+		QObject::connect( conn, SIGNAL( disconnected() ),                   SLOT( processIcqSignOff() ) );
+		QObject::connect( conn, SIGNAL( error(QString) ),                   SLOT( processIcqError(QString) ) );
 
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
-		conn->setOnlineStatus(ICQ::UserInfo::Online);
+
+		conn->connect();
 	}
 }
 
@@ -202,11 +209,11 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
  */
 void GatewayTask::processUserOffline(const Jid& user)
 {
-	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		return;
 	}
-	conn->signOff();
+	conn->disconnect();
 	d->jidIcqTable.remove( user.bare() );
 	d->icqJidTable.remove(conn);
 	conn->deleteLater();
@@ -217,7 +224,7 @@ void GatewayTask::processUserOffline(const Jid& user)
  */
 void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
 {
-	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		emit gatewayMessage( user, tr("Error. Contact add request: You are not logged on") );
 		return;
@@ -230,7 +237,7 @@ void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
  */
 void GatewayTask::processUnsubscribeRequest(const Jid& user, const QString& uin)
 {
-	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		emit gatewayMessage( user, tr("Error. Contact delete request: You are not logged on") );
 		return;
@@ -240,22 +247,22 @@ void GatewayTask::processUnsubscribeRequest(const Jid& user, const QString& uin)
 
 void GatewayTask::processAuthGrant(const Jid& user, const QString& uin)
 {
-	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		emit gatewayMessage( user, tr("Error. Auth Grant: You are not logged on") );
 		return;
 	}
-	conn->grantAuth(uin);
+	conn->authGrant(uin);
 }
 
 void GatewayTask::processAuthDeny(const Jid& user, const QString& uin)
 {
-	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		emit gatewayMessage( user, tr("Error. Auth Deny: You are not logged on") );
 		return;
 	}
-	conn->denyAuth(uin);
+	conn->authDeny(uin);
 }
 
 /**
@@ -263,7 +270,7 @@ void GatewayTask::processAuthDeny(const Jid& user, const QString& uin)
  */
 void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const QString& message)
 {
-	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		emit gatewayMessage( user, tr("Error. Unable to send message: You are not logged on") );
 		return;
@@ -278,7 +285,7 @@ void GatewayTask::processCmd_RosterRequest(const Jid& user)
 {
 	qDebug() << "[GT]" << "Roster request from" << user;
 
-	ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
+	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		emit gatewayMessage( user, tr("Error. Unable to process roster-request command: You are not logged on") );
 		return;
@@ -307,31 +314,35 @@ void GatewayTask::processShutdown()
 	if ( !d->online ) {
 		return;
 	}
+
 	QSqlQuery query;
 	query.exec("SELECT jid FROM users");
+
+	d->online = false;
+
 	while ( query.next() ) {
 		Jid user = query.value(0).toString();
 		if ( d->jidIcqTable.contains( user.bare() ) ) {
-			ICQ::Connection *conn = d->jidIcqTable.value( user.bare() );
-			QStringListIterator i( conn->contactList() );
+			ICQ::Session *session = d->jidIcqTable.value( user.bare() );
+
+			QStringListIterator i( session->contactList() );
 			while ( i.hasNext() ) {
 				emit contactOffline( user, i.next() );
 			}
 
 			d->jidIcqTable.remove( user.bare() );
-			d->icqJidTable.remove(conn);
+			d->icqJidTable.remove(session);
 
-			conn->signOff();
-			conn->deleteLater();
+			session->disconnect();
+			session->deleteLater();
 		}
 		emit offlineNotifyFor(user);
 	}
-	d->online = false;
 }
 
 void GatewayTask::processIcqError(const QString& desc)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
 	emit gatewayMessage(user, desc);
@@ -339,14 +350,25 @@ void GatewayTask::processIcqError(const QString& desc)
 
 void GatewayTask::processIcqSignOn()
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
 	emit onlineNotifyFor(user);
+}
+
+void GatewayTask::processIcqSignOff()
+{
+	if ( !d->online ) {
+		return;
+	}
+
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
+	Jid user = d->icqJidTable.value(conn);
+
+	emit offlineNotifyFor(user);
 
 	QStringList contacts = conn->contactList();
 	QStringListIterator i(contacts);
-
 	while ( i.hasNext() ) {
 		emit contactOffline( user, i.next() );
 	}
@@ -354,40 +376,49 @@ void GatewayTask::processIcqSignOn()
 
 void GatewayTask::processIcqStatus(int status)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
-	qDebug() << "icq status for" << conn->userId() << "changed to" << status;
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
+	qDebug() << "icq status for" << conn->uin() << "changed to" << status;
 	Jid user = d->icqJidTable.value(conn);
 
-	if ( status == ICQ::UserInfo::Offline ) {
-		QStringList contacts = conn->contactList();
-		QStringListIterator i(contacts);
-		while ( i.hasNext() ) {
-			emit contactOffline( user, i.next() );
-		}
-		emit offlineNotifyFor(user);
+	int show;
+	switch ( status ) {
+		case ICQ::Session::Away:
+			show = XMPP::Presence::Away;
+			break;
+		case ICQ::Session::NotAvailable:
+			show = XMPP::Presence::NotAvailable;
+			break;
+		case ICQ::Session::FreeForChat:
+			show = XMPP::Presence::Chat;
+			break;
+		case ICQ::Session::DoNotDisturb:
+			show = XMPP::Presence::DoNotDisturb;
+			break;
+		default:
+			show = XMPP::Presence::None;
+			break;
 	}
 }
 
-void GatewayTask::processContactOnline(const QString& uin, quint16 status)
+void GatewayTask::processContactOnline(const QString& uin, int status)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
 	int showStatus;
 	switch ( status ) {
-		case ICQ::UserInfo::Away:
+		case ICQ::Session::Away:
 			showStatus = XMPP::Presence::Away;
 			break;
-		case ICQ::UserInfo::NotAvailable:
+		case ICQ::Session::NotAvailable:
 			showStatus = XMPP::Presence::NotAvailable;
 			break;
-		case ICQ::UserInfo::DoNotDisturb:
+		case ICQ::Session::DoNotDisturb:
 			showStatus = XMPP::Presence::DoNotDisturb;
 			break;
-		case ICQ::UserInfo::FreeForChat:
+		case ICQ::Session::FreeForChat:
 			showStatus = XMPP::Presence::Chat;
 			break;
-		case ICQ::UserInfo::Online:
 		default:
 			showStatus = XMPP::Presence::None;
 			break;
@@ -398,14 +429,14 @@ void GatewayTask::processContactOnline(const QString& uin, quint16 status)
 
 void GatewayTask::processContactOffline(const QString& uin)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 	emit contactOffline(user, uin);
 }
 
 void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 	emit incomingMessage(user, senderUin, message);
 }
@@ -415,7 +446,7 @@ void GatewayTask::processIncomingMessage(const QString& senderUin, const QString
  */
 void GatewayTask::processAuthGranted(const QString& uin)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
 	qDebug() << "[GT]" << user << "granted auth to" << uin;
@@ -427,7 +458,7 @@ void GatewayTask::processAuthGranted(const QString& uin)
  */
 void GatewayTask::processAuthDenied(const QString& uin)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
 	qDebug() << "[GT]" << user << "denied auth to" << uin;
@@ -439,7 +470,7 @@ void GatewayTask::processAuthDenied(const QString& uin)
  */
 void GatewayTask::processAuthRequest(const QString& uin)
 {
-	ICQ::Connection *conn = qobject_cast<ICQ::Connection*>( sender() );
+	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
 	emit subscriptionRequest(user, uin);

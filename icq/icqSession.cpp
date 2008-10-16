@@ -293,7 +293,7 @@ QStringList Session::contactList() const
 
 	QStringList contacts;
 
-	QList<Contact> cl;
+	QList<Contact> cl = d->ssiManager->contactList();
 	QListIterator<Contact> ci(cl);
 	while ( ci.hasNext() ) {
 		contacts << ci.next().name();

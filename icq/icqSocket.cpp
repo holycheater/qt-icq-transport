@@ -136,8 +136,8 @@ void Socket::writeForced(FlapBuffer* flap)
 {
 	flap->setSequence( d->flapID() );
 
-	// qDebug() << "[ICQ:Connection] >> flap channel" << flap->channel() << "len" << flap->size() << "sequence" << QByteArray::number(flap->sequence(), 16);
-	// qDebug() << "[ICQ:Connection] >> flap data" << flap->data().toHex().toUpper();
+	// qDebug() << "[ICQ:Socket] >> flap channel" << flap->channel() << "len" << flap->size() << "sequence" << QByteArray::number(flap->sequence(), 16);
+	// qDebug() << "[ICQ:Socket] >> flap data" << flap->data().toHex().toUpper();
 	d->socket->write( flap->data() );
 }
 
@@ -147,7 +147,7 @@ void Socket::writeForced(SnacBuffer* snac)
 
 	writeForced( dynamic_cast<FlapBuffer*>(snac) );
 
-	qDebug() << "[ICQ:Connection] >>"
+	qDebug() << "[ICQ:Socket] >>"
 		<< "snac head: family"
 		<< QByteArray::number(snac->family(),16)
 		<< "subtype" << QByteArray::number(snac->subtype(),16)
@@ -185,6 +185,7 @@ void Socket::processIncomingData()
 	 * services (login manager, rate manager, etc) */
 	emit incomingFlap(flap);
 	if ( !d->socket ) {
+		qDebug() << "[ICQ:Socket] Socket was closed after emitting incomingFlap signal";
 		return;
 	}
 
@@ -192,7 +193,7 @@ void Socket::processIncomingData()
 		SnacBuffer snac = flap;
 
 		qDebug()
-			<< "[ICQ:Connection] << snac head: family" << QByteArray::number(snac.family(), 16)
+			<< "[ICQ:Socket] << snac head: family" << QByteArray::number(snac.family(), 16)
 			<< "subtype" << QByteArray::number(snac.subtype(), 16)
 			<< "flags" << QByteArray::number(snac.flags(), 16)
 			<< "requestid" << QByteArray::number(snac.requestId(), 16)
@@ -215,6 +216,7 @@ void Socket::processIncomingData()
 
 		emit incomingSnac(snac);
 		if ( !d->socket ) {
+			qDebug() << "[ICQ:Socket] Socket was closed after emitting incomingSnac signal";
 			return;
 		}
 
@@ -224,7 +226,7 @@ void Socket::processIncomingData()
 	}
 
 	if ( d->socket->bytesAvailable() > 0 ) {
-		emit readyRead();
+		processIncomingData();
 	}
 }
 

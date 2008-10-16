@@ -21,8 +21,6 @@
 #ifndef ICQRATEMANAGER_H_
 #define ICQRATEMANAGER_H_
 
-#include "icqConnection.h"
-
 #include "types/icqTypes.h"
 #include "types/icqRateClass.h"
 #include "types/icqSnacBuffer.h"
@@ -34,13 +32,15 @@
 namespace ICQ
 {
 
+class Socket;
+
 
 class RateManager: public QObject
 {
 	Q_OBJECT
 
 	public:
-		RateManager(Connection* parent);
+		RateManager(Socket *socket, QObject *parent = 0);
 		~RateManager();
 
 		/* reset the rate manager */

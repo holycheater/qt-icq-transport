@@ -28,14 +28,18 @@
 namespace ICQ
 {
 
+class Socket;
+
 
 class MetaInfoManager : public QObject
 {
 	Q_OBJECT
 
 	public:
-		MetaInfoManager(Connection *parent);
+		MetaInfoManager(Socket *socket, QObject *parent = 0);
 		~MetaInfoManager();
+
+		void setUin(const QString uin);
 
 		void sendMetaRequest(Word type);
 		void sendMetaRequest(Word type, Buffer& metadata);

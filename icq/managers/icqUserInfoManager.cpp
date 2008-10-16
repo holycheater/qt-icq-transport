@@ -19,7 +19,7 @@
  */
 
 #include "icqUserInfoManager.h"
-#include "icqConnection.h"
+#include "icqSocket.h"
 
 #include "types/icqSnacBuffer.h"
 #include "types/icqUserInfo.h"
@@ -35,20 +35,17 @@ class UserInfoManager::Private {
 		QHash<QString, UserInfo> userInfoList;
 		QHash<QString, Word> statusList;
 		UserInfo ownInfo;
-		Connection *link;
+
+		Socket *socket;
 };
 
-UserInfoManager::UserInfoManager(Connection *parent)
+UserInfoManager::UserInfoManager(Socket *socket, QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
-	d->link = parent;
+	d->socket = socket;
 
-	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
-
-	QObject::connect( this, SIGNAL( statusChanged(int) ), d->link, SIGNAL( statusChanged(int) ) );
-	QObject::connect( this, SIGNAL( userOnline(QString,quint16) ), d->link, SIGNAL( userOnline(QString,quint16) ) );
-	QObject::connect( this, SIGNAL( userOffline(QString) ), d->link, SIGNAL( userOffline(QString) ) );
+	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 UserInfoManager::~UserInfoManager()
@@ -92,31 +89,7 @@ void UserInfoManager::handle_user_online_notification(SnacBuffer& snac)
 			d->statusList.insert( info.userId(), info.onlineStatus() );
 		}
 
-		/* hack: emit single status for userOnline signal instead a group of flags
-		 * Anyways, it's a mystery why ICQ needs flags for online status. You can't be Occuppied and DND at the same time */
-		quint16 singleStatus;
-		singleStatus = UserInfo::Online;
-		if ( info.onlineStatus() & UserInfo::Invisible ) {
-			singleStatus = UserInfo::Invisible;
-		} else if ( info.onlineStatus() & UserInfo::Away ) {
-			singleStatus = UserInfo::Away;
-			if ( info.onlineStatus() & UserInfo::NotAvailable ) {
-				singleStatus = UserInfo::NotAvailable;
-			} else if ( info.onlineStatus() & UserInfo::Occupied ) {
-				singleStatus = UserInfo::Occupied;
-				if ( info.onlineStatus() & UserInfo::DoNotDisturb ) {
-					singleStatus = UserInfo::DoNotDisturb;
-				}
-			}
-		} else if ( info.onlineStatus() & UserInfo::FreeForChat ) {
-			singleStatus = UserInfo::FreeForChat;
-		} else if ( info.onlineStatus() & UserInfo::Evil ) {
-			singleStatus = UserInfo::Evil;
-		} else if ( info.onlineStatus() & UserInfo::Depression ) {
-			singleStatus = UserInfo::Depression;
-		}
-		// qDebug() << info.onlineStatus() << "vs" << singleStatus;
-		emit userOnline( info.userId(), singleStatus );
+		emit userOnline( info.userId(), info.onlineStatus() );
 	}
 }
 

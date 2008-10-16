@@ -33,14 +33,16 @@ namespace ICQ
 {
 
 class Contact;
+class Socket;
 
 class SSIManager: public QObject
 {
 	Q_OBJECT
 
 	public:
-		SSIManager(Connection *parent);
+		SSIManager(QObject *parent = 0);
 		~SSIManager();
+		void setSocket(Socket *socket);
 
 		void addContact(const QString& uin);
 		void delContact(const QString& uin);

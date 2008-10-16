@@ -27,8 +27,8 @@
 namespace ICQ
 {
 
-class Connection;
 class SnacBuffer;
+class Socket;
 class UserInfo;
 
 class UserInfoManager : public QObject
@@ -36,14 +36,14 @@ class UserInfoManager : public QObject
 	Q_OBJECT
 
 	public:
-		UserInfoManager(Connection *parent);
+		UserInfoManager(Socket *socket, QObject *parent = 0);
 		~UserInfoManager();
 
 		UserInfo getUserInfo(const QString& uin);
 		quint16 getUserStatus(const QString& uin) const;
 	signals:
 		void statusChanged(int status);
-		void userOnline(QString userId, quint16 status);
+		void userOnline(QString userId, int status);
 		void userOffline(QString userId);
 	private:
 		void handle_own_user_info(SnacBuffer& snac); // SNAC(01,0F)

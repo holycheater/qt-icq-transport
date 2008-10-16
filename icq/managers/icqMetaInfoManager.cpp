@@ -19,6 +19,7 @@
  */
 
 #include "icqMetaInfoManager.h"
+#include "icqSocket.h"
 
 #include "types/icqSnacBuffer.h"
 #include "types/icqTlvChain.h"
@@ -30,18 +31,19 @@ namespace ICQ
 class MetaInfoManager::Private
 {
 	public:
-		Connection *link;
+		QString uin;
+		Socket *socket;
 		Word metaSequence;
 };
 
-MetaInfoManager::MetaInfoManager(Connection *parent)
+MetaInfoManager::MetaInfoManager(Socket *socket, QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
-	d->link = parent;
+	d->socket = socket;
 	d->metaSequence = 0;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
+	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 MetaInfoManager::~MetaInfoManager()
@@ -49,31 +51,36 @@ MetaInfoManager::~MetaInfoManager()
 	delete d;
 }
 
+void MetaInfoManager::setUin(const QString uin)
+{
+	d->uin = uin;
+}
+
 void MetaInfoManager::sendMetaRequest(Word type)
 {
 	Tlv tlv(0x01); // ENCAPSULATED_METADATA
 	tlv.addLEWord(8); // data chunk size (tlv size - 2 )
-	tlv.addLEDWord( d->link->userId().toUInt() ); // own UIN
+	tlv.addLEDWord( d->uin.toUInt() ); // own UIN
 	tlv.addLEWord(type);
 	tlv.addLEWord( ++(d->metaSequence) ); // request sequence number
 
 	SnacBuffer snac(0x15, 0x02);
 	snac.addTlv(tlv);
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 void MetaInfoManager::sendMetaRequest(Word type, Buffer& metadata)
 {
 	Tlv tlv(0x01); // ENCAPSULATED_METADATA
 	tlv.addLEWord( metadata.size() + 8 ); // data chunk size (tlv size - 2 )
-	tlv.addLEDWord( d->link->userId().toUInt() ); // own UIN
+	tlv.addLEDWord( d->uin.toUInt() ); // own UIN
 	tlv.addLEWord(type);
 	tlv.addLEWord( ++(d->metaSequence) ); // request sequence number
 	tlv.addData(metadata);
 
 	SnacBuffer snac(0x15, 0x02);
 	snac.addTlv(tlv);
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 void MetaInfoManager::handle_meta_info(SnacBuffer& snac)

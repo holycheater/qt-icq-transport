@@ -19,10 +19,10 @@
  */
 
 #include "icqRateManager.h"
+#include "icqSocket.h"
 
 #include <QList>
 #include <QtAlgorithms>
-#include <QtEndian>
 
 #include <QtDebug>
 
@@ -34,26 +34,27 @@ class RateManager::Private
 {
 	public:
 		RateClass* findRateClass(const SnacBuffer* snac) const; /* find rate class for the packet */
-
 		RateClass* findRateClass(Word rateClassId) const; /* get rate class by ID */
 
 		void recv_server_rates(SnacBuffer& reply); /* snac (01,07) handler */
-
 		void recv_rates_update(SnacBuffer& reply); /* snac (01,0a) handler */
 
 		RateManager *q;
 
 		QList<RateClass*> classList;
-		Connection* link;
+
+		Socket *socket;
 };
 
-RateManager::RateManager(Connection* parent)
+RateManager::RateManager(Socket* socket, QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->q = this;
-	d->link = parent;
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
+
+	d->socket = socket;
+	d->socket->setRateManager(this);
+	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 RateManager::~RateManager()
@@ -78,7 +79,7 @@ bool RateManager::canSend(const SnacBuffer& snac) const
 			return false;
 		}
 	} else {
-		//qDebug() << "[RateManager] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
+		qDebug() << "[RateManager] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
 		return true;
 	}
 }
@@ -98,12 +99,12 @@ void RateManager::enqueue(const SnacBuffer& packet)
 
 void RateManager::requestRates()
 {
-	d->link->snacRequest(0x01, 0x06);
+	d->socket->snacRequest(0x01, 0x06);
 }
 
 void RateManager::dataAvailable(SnacBuffer* packet)
 {
-	d->link->write(*packet);
+	d->socket->write(*packet);
 	delete packet; // delete packet after writing it to the buffer
 }
 
@@ -150,7 +151,6 @@ RateClass* RateManager::Private::findRateClass(Word rateClassId) const
  * >> SNAC (01,08) - CLI_RATES_ACK */
 void RateManager::Private::recv_server_rates(SnacBuffer& reply)
 {
-
 	Word rateCount = reply.getWord();
 	if ( rateCount == 0 ) {
 		return;
@@ -196,7 +196,7 @@ void RateManager::Private::recv_server_rates(SnacBuffer& reply)
 	}
 
 	/* send out CLI_RATES_ACK */
-	link->write(ratesAck);
+	socket->write(ratesAck);
 }
 
 /* << SNAC (01,0A) - SRV_RATE_LIMIT_WARN */

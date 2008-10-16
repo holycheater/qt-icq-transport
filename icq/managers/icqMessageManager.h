@@ -21,23 +21,28 @@
 #ifndef ICQMESSAGEMANAGER_H_
 #define ICQMESSAGEMANAGER_H_
 
-#include "icqConnection.h"
-
 #include <QObject>
+
+#include "types/icqTypes.h"
 
 namespace ICQ
 {
 
+class Buffer;
+class SnacBuffer;
 class TlvChain;
 class Message;
+class Socket;
 
 class MessageManager : public QObject
 {
 	Q_OBJECT
 
 	public:
-		MessageManager(Connection *parent);
+		MessageManager(Socket *socket, QObject *parent = 0);
 		~MessageManager();
+
+		void setUin(const QString& uin);
 
 		void requestOfflineMessages();
 		void sendMessage(const Message& msg);

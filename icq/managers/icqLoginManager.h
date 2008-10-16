@@ -18,33 +18,40 @@
  *
  */
 
-#ifndef ICQLOGINMANAGER_H_
-#define ICQLOGINMANAGER_H_
+#ifndef ICQ_LOGINMANAGER_H_
+#define ICQ_LOGINMANAGER_H_
 
-#include "icqConnection.h"
-
-#include <QByteArray>
-#include <QString>
 #include <QObject>
+
+class QByteArray;
+class QString;
 
 namespace ICQ
 {
+
+class FlapBuffer;
+class SnacBuffer;
+class Session;
+class Socket;
+
 
 class LoginManager: public QObject
 {
 	Q_OBJECT
 
 	public:
-		LoginManager(Connection *parent);
+		LoginManager(Session *sess);
 		~LoginManager();
 
+		void setSocket(Socket *socket);
 		void setUsername(const QString& uin);
 		void setPassword(const QString& password);
 	signals:
 		void error(const QString& desc);
 		void serverAvailable(const QString& host, quint16 port);
 		void ratesRequest();
-		void loginFinished();
+		void ssiRequest();
+		void finished();
 	private:
 		void recv_flap_version(FlapBuffer& reply);
 		void send_flap_version();
@@ -64,6 +71,7 @@ class LoginManager: public QObject
 		void incomingFlap(FlapBuffer& flap);
 		void incomingSnac(SnacBuffer& snac);
 	private:
+		Q_DISABLE_COPY(LoginManager)
 		class Private;
 		Private *d;
 };

@@ -19,6 +19,8 @@
  */
 
 #include "icqSsiManager.h"
+#include "icqSocket.h"
+
 #include "types/icqTlvChain.h"
 #include "types/icqContact.h"
 
@@ -75,7 +77,6 @@ class SSIManager::Private
 
 		SSIManager *q;
 
-		Connection *link;
 		QList<Contact> ssiList;
 		Contact masterGroup;
 		QSet<Word> existingGroups;
@@ -91,6 +92,8 @@ class SSIManager::Private
 		Word maxVisible;
 		Word maxInvisible;
 		Word maxIgnored;
+
+		Socket *socket;
 };
 
 void SSIManager::Private::sendContact(const Contact& contact, Word snacSubtype)
@@ -99,8 +102,7 @@ void SSIManager::Private::sendContact(const Contact& contact, Word snacSubtype)
 	snac.addData(contact);
 
 	outgoingContacts.enqueue(contact);
-	link->write(snac);
-	// qDebug() << snac.data().toHex();
+	socket->write(snac);
 }
 
 void SSIManager::Private::processSsiParameters(SnacBuffer& reply)
@@ -156,7 +158,7 @@ void SSIManager::Private::processSsiContact(SnacBuffer& reply)
 	lastUpdate = lastChangeTime;
 
 	/* SNAC(13,07) - SSI Activate */
-	link->snacRequest(0x13, 0x07);
+	socket->snacRequest(0x13, 0x07);
 	emit q->ssiActivated();
 }
 
@@ -314,7 +316,7 @@ void SSIManager::Private::processSsiUpToDate(SnacBuffer& reply)
 	qDebug() << "[ICQ:SSI]" << "SSI is up-to-date";
 
 	/* SNAC(13,07) - SSI Activate */
-	link->snacRequest(0x13, 0x07);
+	socket->snacRequest(0x13, 0x07);
 	emit q->ssiActivated();
 }
 
@@ -358,12 +360,12 @@ void SSIManager::Private::processAuthReply(SnacBuffer& reply)
 
 inline void SSIManager::Private::beginTransaction()
 {
-	link->snacRequest(0x13, 0x11);
+	socket->snacRequest(0x13, 0x11);
 }
 
 inline void SSIManager::Private::finishTransaction()
 {
-	link->snacRequest(0x13, 0x12);
+	socket->snacRequest(0x13, 0x12);
 }
 
 void SSIManager::Private::requestAuthorization(const QString& uin)
@@ -375,7 +377,7 @@ void SSIManager::Private::requestAuthorization(const QString& uin)
 	snac.addWord(0); // auth msg len
 	snac.addWord(0); // unknown
 
-	link->write(snac);
+	socket->write(snac);
 }
 
 Word SSIManager::Private::freeItemId() const
@@ -438,24 +440,22 @@ Contact SSIManager::Private::itemById(Word iid)
 	return Contact();
 }
 
-SSIManager::SSIManager(Connection* parent)
+SSIManager::SSIManager(QObject* parent)
 	: QObject(parent)
 {
 	d = new Private;
 	d->q = this;
-	d->link = parent;
-
-	QObject::connect(this, SIGNAL( contactAdded(QString) ), d->link, SIGNAL( contactAdded(QString) ) );
-	QObject::connect(this, SIGNAL( contactDeleted(QString) ), d->link, SIGNAL( contactDeleted(QString) ) );
-	QObject::connect(this, SIGNAL( authGranted(QString) ), d->link, SIGNAL( authGranted(QString) ) );
-	QObject::connect(this, SIGNAL( authDenied(QString) ), d->link, SIGNAL( authDenied(QString) ) );
-
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 SSIManager::~SSIManager()
 {
 	delete d;
+}
+
+void SSIManager::setSocket(Socket *socket)
+{
+	d->socket = socket;
+	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 void SSIManager::addContact(const QString& uin)
@@ -545,7 +545,7 @@ void SSIManager::grantAuthorization(const QString& uin)
 	snac.addWord(0); // auth msg len
 	snac.addWord(0); // unknown
 
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 void SSIManager::denyAuthorization(const QString& uin)
@@ -558,7 +558,7 @@ void SSIManager::denyAuthorization(const QString& uin)
 	snac.addWord(0); // auth msg len
 	snac.addWord(0); // unknown
 
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 void SSIManager::requestAuthorization(const QString& uin)
@@ -621,7 +621,7 @@ void SSIManager::checkContactList()
 	snac.addDWord( d->lastUpdate );
 	snac.addWord( d->ssiList.size() );
 
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 /**
@@ -629,7 +629,7 @@ void SSIManager::checkContactList()
  */
 void SSIManager::requestContactList()
 {
-	d->link->snacRequest(0x13, 0x04);
+	d->socket->snacRequest(0x13, 0x04);
 }
 
 /**
@@ -637,7 +637,7 @@ void SSIManager::requestContactList()
  */
 void SSIManager::requestParameters()
 {
-	d->link->snacRequest(0x13, 0x02);
+	d->socket->snacRequest(0x13, 0x02);
 }
 
 /**

@@ -19,12 +19,15 @@
  */
 
 #include "icqMessageManager.h"
+#include "icqSocket.h"
 
 #include "types/icqMessage.h"
 #include "types/icqSnacBuffer.h"
 #include "types/icqTlvChain.h"
 
 #include <QDateTime>
+
+#include <QtDebug>
 
 namespace ICQ
 {
@@ -39,7 +42,8 @@ class MessageManager::Private {
 		void processServerAck(SnacBuffer& snac); /* SNAC(04,0B) */
 		void processMessageAck(SnacBuffer& snac); /* SNAC(04,0C) */
 
-		Connection *link;
+		QString uin;
+		Socket *socket;
 };
 
 void MessageManager::Private::send_channel_1_message(const Message& msg)
@@ -74,7 +78,7 @@ void MessageManager::Private::send_channel_1_message(const Message& msg)
 	snac.addTlv(msgData);
 	snac.addTlv( Tlv(0x06) ); // store if recipient offline
 
-	link->write(snac);
+	socket->write(snac);
 }
 
 void MessageManager::Private::send_channel_2_message(const Message& msg)
@@ -145,7 +149,7 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 
 	snac.addData( msgTlv.data() );
 
-	link->write(snac);
+	socket->write(snac);
 }
 
 void MessageManager::Private::send_channel_4_message(const Message& msg)
@@ -175,14 +179,13 @@ void MessageManager::Private::processMessageAck(SnacBuffer& snac)
 	qDebug() << "[ICQ:MM] Msg ACK." << "Msg delivered to" << uin << "via channel" << channel;
 }
 
-MessageManager::MessageManager(Connection *parent)
+MessageManager::MessageManager(Socket *socket, QObject *parent)
 	: QObject(parent)
 {
 	d = new Private;
-	d->link = parent;
+	d->socket = socket;
 
-	QObject::connect(d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
-	QObject::connect(this, SIGNAL( incomingMessage(Message) ), d->link, SIGNAL( incomingMessage(Message) ) );
+	QObject::connect(d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 MessageManager::~MessageManager()
@@ -190,9 +193,14 @@ MessageManager::~MessageManager()
 	delete d;
 }
 
+void MessageManager::setUin(const QString& uin)
+{
+	d->uin = uin;
+}
+
 void MessageManager::requestOfflineMessages()
 {
-	d->link->sendMetaRequest(0x3C);
+	d->socket->sendMetaRequest(0x3C);
 }
 
 void MessageManager::sendMessage(const Message& msg)
@@ -380,7 +388,7 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 
 	msg.setChannel(msgChannel);
 	msg.setIcbmCookie(icbmCookie);
-	msg.setReceiver( d->link->userId() );
+	msg.setReceiver(d->uin);
 	msg.setSender(uin);
 	if ( msg.timestamp().isNull() ) {
 		msg.setTimestamp( QDateTime::currentDateTime() );
@@ -418,7 +426,7 @@ void MessageManager::handle_offline_message(Buffer& data)
 	msg.setType(msgType);
 	msg.setText(message);
 	msg.setSender(senderUin);
-	msg.setReceiver( d->link->userId() );
+	msg.setReceiver( d->uin );
 	msg.setTimestamp(timestamp);
 
 	emit incomingMessage(msg);
@@ -430,7 +438,7 @@ void MessageManager::incomingMetaInfo(Word type, Buffer& data)
 		handle_offline_message(data);
 	} else if ( type == 0x42 ) {
 		/* delete offline messages */
-		d->link->sendMetaRequest(0x3E);
+		d->socket->sendMetaRequest(0x3E);
 	}
 }
 

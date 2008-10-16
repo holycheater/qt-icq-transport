@@ -19,8 +19,15 @@
  */
 
 #include "icqLoginManager.h"
+
+#include "icqSession.h"
+#include "icqSocket.h"
+
 #include "icqRateManager.h"
 #include "icqSsiManager.h"
+
+#include "types/icqFlapBuffer.h"
+#include "types/icqSnacBuffer.h"
 #include "types/icqTlv.h"
 
 #include <QCryptographicHash>
@@ -41,7 +48,8 @@ class LoginManager::Private
 		QString uin;
 		QString password;
 
-		Connection *link;
+		Session *session;
+		Socket *socket;
 		loginStage loginStage;
 
 		struct AuthErrorDesc {
@@ -97,20 +105,26 @@ QString LoginManager::Private::authErrorString(Word code)
 	return tr("Unknown error");
 }
 
-LoginManager::LoginManager(Connection* parent)
-	: QObject(parent)
+LoginManager::LoginManager(Session* sess)
+	: QObject(sess)
 {
 	d = new Private;
-	d->link = parent;
 	d->loginStage = Private::stageAuth;
 
-	QObject::connect( d->link, SIGNAL( incomingFlap(FlapBuffer&) ), SLOT ( incomingFlap(FlapBuffer&) ) );
-	QObject::connect( d->link, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT ( incomingSnac(SnacBuffer&) ) );
+	d->session = sess;
+	d->socket = 0;
 }
 
 LoginManager::~LoginManager()
 {
 	delete d;
+}
+
+void LoginManager::setSocket(Socket *socket)
+{
+	d->socket = socket;
+	QObject::connect( d->socket, SIGNAL( incomingFlap(FlapBuffer&) ), SLOT ( incomingFlap(FlapBuffer&) ) );
+	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT ( incomingSnac(SnacBuffer&) ) );
 }
 
 void LoginManager::setUsername(const QString& uin)
@@ -128,6 +142,8 @@ void LoginManager::recv_flap_version(FlapBuffer& reply)
 	DWord flapVersion = reply.getDWord();
 	if ( flapVersion != 1 ) {
 		qCritical() << "[Critical ERROR] not an ICQ";
+		emit error( tr("Critical Error during authentication: The server you are trying to connect to seems to be not an ICQ server") );
+		d->session->disconnect();
 	}
 }
 
@@ -135,7 +151,7 @@ void LoginManager::send_flap_version()
 {
 	FlapBuffer flap(FlapBuffer::AuthChannel);
 	flap.addDWord(0x1);
-	d->link->write(flap);
+	d->socket->write(flap);
 }
 
 /* >> SNAC (17,06) - CLI_AUTH_KEY_REQUEST */
@@ -143,7 +159,7 @@ void LoginManager::send_cli_auth_request()
 {
 	SnacBuffer snac(0x17, 0x06);
 	snac.addTlv( (Tlv)Tlv(0x01).addData(d->uin) );
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 /* << SNAC (17,07) - SRV_AUTH_KEY_RESPONSE
@@ -160,7 +176,7 @@ void LoginManager::recv_auth_key(SnacBuffer& reply)
 	snac.addTlv( 0x25, md5password(authkey) );
 	snac.addTlv( (Tlv)Tlv(0x16).addWord(0x010B) );
 
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 /* << SNAC (17,03) - SRV_LOGIN_REPLY */
@@ -170,11 +186,11 @@ void LoginManager::recv_auth_reply(SnacBuffer& reply)
 	reply.seekEnd();
 
 	if ( list.hasTlv(0x08) ) {
-		Word code = list.getTlvData(0x08).toHex().toUInt();
+		Word code = list.getTlvData(0x08).toHex().toUInt(NULL, 16);
 		qCritical() << "[LoginManager] Error during authentication:" << list.getTlvData(0x08).toHex();
 		QString desc = tr("Authentication failure.") + " " + tr("Code: ") + "0x" + QString::number(code, 16).rightJustified(4, '0') + ". " + Private::authErrorString(code);
 		emit error(desc);
-		d->link->signOff();
+		d->session->disconnect();
 		return;
 	}
 
@@ -195,7 +211,7 @@ void LoginManager::send_cli_auth_cookie()
 	FlapBuffer flap(FlapBuffer::AuthChannel);
 	flap.addDWord(0x1);
 	flap.addTlv(0x06, d->authcookie);
-	d->link->write(flap);
+	d->socket->write(flap);
 }
 
 /* << SNAC(01,03) - SRV_FAMILIES
@@ -215,7 +231,7 @@ void LoginManager::recv_snac_list(SnacBuffer& reply)
 	snac.addWord(0x0013).addWord(0x0005);
 	snac.addWord(0x0015).addWord(0x0002);
 
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 /* << SNAC(01,18) - SRV_FAMILIES_VERSIONS
@@ -231,10 +247,10 @@ void LoginManager::recv_snac_versions(SnacBuffer& reply)
 	/* send out snac(01,06) - CLI_RATES_REQUEST */
 	emit ratesRequest();
 
-	d->link->snacRequest(0x02, 0x02);
-	d->link->snacRequest(0x03, 0x02);
-	d->link->snacRequest(0x04, 0x04);
-	d->link->snacRequest(0x09, 0x02);
+	d->socket->snacRequest(0x02, 0x02);
+	d->socket->snacRequest(0x03, 0x02);
+	d->socket->snacRequest(0x04, 0x04);
+	d->socket->snacRequest(0x09, 0x02);
 }
 
 /* << SNAC(02,03) - SRV_LOCATION_RIGHTS_REPLY
@@ -253,9 +269,7 @@ void LoginManager::recv_location_services_limits(SnacBuffer& reply)
 	snac.addTlv(tlv); // 0x05 - clsid values
 
 	/* send SNAC(02,04) */
-	d->link->write(snac);
-
-	login_final_actions();
+	d->socket->write(snac);
 }
 
 /* << SNAC(03,03) - SRV_BUDDYLIST_RIGHTS_REPLY */
@@ -296,7 +310,7 @@ void LoginManager::recv_icbm_parameters(SnacBuffer& reply)
 	snac.addWord(minMsgInterval);
 	snac.addWord(unknown);
 
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 /* << SNAC(09,03) - SRV_PRIVACY_RIGHTS_REPLY */
@@ -310,13 +324,16 @@ void LoginManager::recv_privacy_parameters(SnacBuffer& reply)
 
 	Q_UNUSED(maxVisibleList)
 	Q_UNUSED(maxInvisibleList)
+
+	emit ssiRequest();
+	login_final_actions();
 }
 
 /* >> SNAC(01,1E) - CLI_SETxSTATUS
  * >> SNAC(01,02) - CLI_READY */
 void LoginManager::login_final_actions()
 {
-	emit loginFinished();
+	emit finished();
 
 	SnacBuffer snac(0x01, 0x02);
 
@@ -328,7 +345,7 @@ void LoginManager::login_final_actions()
 	snac.addWord(0x0013).addWord(0x0005).addWord(0x0110).addWord(0x1246);
 	snac.addWord(0x0015).addWord(0x0001).addWord(0x0110).addWord(0x1246);
 
-	d->link->write(snac);
+	d->socket->write(snac);
 }
 
 QByteArray LoginManager::md5password(const QByteArray& AuthKey)

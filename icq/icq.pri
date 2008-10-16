@@ -5,9 +5,9 @@ include(managers/managers.pri)
 INCLUDEPATH += $$PWD
 
 HEADERS += \
-	$$PWD/icqConnection.h \
-	$$PWD/icqConnection_p.h
+	$$PWD/icqSession.h \
+	$$PWD/icqSocket.h
 SOURCES += \
-	$$PWD/icqConnection.cpp \
-	$$PWD/icqConnection_p.cpp
+	$$PWD/icqSession.cpp \
+	$$PWD/icqSocket.cpp
 

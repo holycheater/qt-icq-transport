@@ -244,9 +244,25 @@ void Session::setCodecForMessages(QTextCodec *codec)
 
 void Session::sendMessage(const QString& recipient, const QString& message)
 {
-	if (!d->msgManager) {
+	if (!d->msgManager || !d->userInfoManager) {
 		return;
 	}
+
+	Message msg;
+
+	if ( d->userInfoManager->getUserStatus(recipient) == UserInfo::Offline ) {
+		qDebug() << "[ICQ:Connection]" << "sending offline message via channel 1";
+		msg.setChannel(0x01);
+	} else {
+		qDebug() << "[ICQ:Connection]" << "sending message via channel 2";
+		msg.setChannel(0x02);
+	}
+
+	msg.setSender(d->uin);
+	msg.setReceiver(recipient);
+	msg.setType(Message::PlainText);
+	msg.setText( message.toUtf8() );
+	d->msgManager->sendMessage(msg);
 }
 
 Session::ConnectionStatus Session::connectionStatus() const

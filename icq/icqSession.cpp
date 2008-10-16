@@ -1,5 +1,5 @@
 /*
- * icqSession.h - ICQ user session.
+ * icqSession.cpp - ICQ user session.
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or

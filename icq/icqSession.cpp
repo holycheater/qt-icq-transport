@@ -316,10 +316,31 @@ void Session::setOnlineStatus(OnlineStatus status)
 		return;
 	}
 
-	SnacBuffer reqSetStatus(0x01, 0x1E);
-	Word flags = flagDCAuth;
-	reqSetStatus.addTlv( (Tlv)Tlv(0x06).addWord(flags).addWord(d->onlineStatus) );
+	Word realStatus;
+	switch ( d->onlineStatus ) {
+		case FreeForChat:
+			realStatus = UserInfo::FreeForChat;
+			break;
+		case Away:
+			realStatus = UserInfo::Away;
+			break;
+		case NotAvailable:
+			realStatus = UserInfo::Away | UserInfo::NotAvailable;
+			break;
+		case Occupied:
+			realStatus = UserInfo::Away | UserInfo::Occupied;
+			break;
+		case DoNotDisturb:
+			realStatus = UserInfo::Away | UserInfo::Occupied | UserInfo::DoNotDisturb;
+			break;
+		default:
+			realStatus = UserInfo::Online;
+			break;
+	}
 
+	SnacBuffer reqSetStatus(0x01, 0x1E);
+	Word flags = flagDCDisabled;
+	reqSetStatus.addTlv( (Tlv)Tlv(0x06).addWord(flags).addWord(realStatus) );
 	reqSetStatus.addTlv( (Tlv)Tlv(0x08).addWord(0x0) ); // unknown. Don't know what is that;
 
 	// dc info, some dummy data

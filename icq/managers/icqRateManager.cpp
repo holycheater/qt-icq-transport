@@ -79,7 +79,7 @@ bool RateManager::canSend(const SnacBuffer& snac) const
 			return false;
 		}
 	} else {
-		qDebug() << "[RateManager] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
+		// qDebug() << "[RateManager] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
 		return true;
 	}
 }
@@ -104,7 +104,7 @@ void RateManager::requestRates()
 
 void RateManager::dataAvailable(SnacBuffer* packet)
 {
-	d->socket->write(*packet);
+	d->socket->writeForced(packet);
 	delete packet; // delete packet after writing it to the buffer
 }
 

@@ -21,13 +21,15 @@
 #ifndef ICQMETAINFOMANAGER_H_
 #define ICQMETAINFOMANAGER_H_
 
-#include "icqConnection.h"
-
 #include <QObject>
+
+#include "types/icqTypes.h"
 
 namespace ICQ
 {
 
+class Buffer;
+class SnacBuffer;
 class Socket;
 
 

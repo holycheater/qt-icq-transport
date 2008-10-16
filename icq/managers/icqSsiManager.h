@@ -21,7 +21,6 @@
 #ifndef SSIMANAGER_H_
 #define SSIMANAGER_H_
 
-#include "icqConnection.h"
 #include "types/icqSnacBuffer.h"
 
 #include <QObject>

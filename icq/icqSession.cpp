@@ -36,6 +36,7 @@
 #include <QHostInfo>
 #include <QStringList>
 #include <QTimer>
+#include <QTextCodec>
 
 static const int LOOKUP_TIMEOUT = 15000;
 static const int LOGIN_TIMEOUT = 30000;
@@ -60,6 +61,9 @@ class Session::Private
 		QString server;
 		quint16 port;
 		QString uin, password;
+		QHostAddress peer;
+
+		Socket *socket;
 
 		LoginManager    *loginManager;
 		MetaInfoManager *metaManager;
@@ -73,9 +77,7 @@ class Session::Private
 		QTimer *connectTimer;
 		QTimer *keepAliveTimer;
 
-		QHostAddress peer;
-
-		Socket *socket;
+		QTextCodec *codec;
 	private:
 		Session *q;
 };
@@ -99,6 +101,8 @@ Session::Private::Private(Session *parent)
 	keepAliveTimer = 0;
 
 	socket = 0;
+
+	codec = 0;
 }
 
 Session::Private::~Private()
@@ -222,13 +226,20 @@ void Session::authGrant(const QString& toUin)
 	if (!d->ssiManager) {
 		return;
 	}
+	d->ssiManager->grantAuthorization(toUin);
 }
 
-void Session::authDeny(const QString& fromUin)
+void Session::authDeny(const QString& toUin)
 {
 	if (!d->ssiManager) {
 		return;
 	}
+	d->ssiManager->denyAuthorization(toUin);
+}
+
+void Session::setCodecForMessages(QTextCodec *codec)
+{
+	d->codec = codec;
 }
 
 void Session::sendMessage(const QString& recipient, const QString& message)
@@ -471,7 +482,12 @@ void Session::processSnac(SnacBuffer& snac)
 
 void Session::processIncomingMessage(const Message& msg)
 {
+	if ( !d->codec ) {
+		d->codec = QTextCodec::codecForName("Windows-1251");
+	}
+	Q_ASSERT(d->codec != 0);
 
+	emit incomingMessage( msg.sender(), msg.text(d->codec) );
 }
 
 void Session::processUserStatus(const QString& uin, int status)

@@ -26,6 +26,7 @@
 class QHostInfo;
 class QString;
 class QStringList;
+class QTextCodec;
 
 #include "types/icqTypes.h"
 
@@ -55,6 +56,7 @@ class Session : public QObject
 		void authGrant(const QString& toUin);
 		void authDeny(const QString& fromUin);
 
+		void setCodecForMessages(QTextCodec *codec);
 		void sendMessage(const QString& recipient, const QString& message);
 
 		ConnectionStatus connectionStatus() const;

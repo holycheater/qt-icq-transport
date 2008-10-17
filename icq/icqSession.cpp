@@ -138,6 +138,7 @@ void Session::Private::startLogin()
 
 
 	connectTimer = new QTimer(q);
+	connectTimer->setSingleShot(true);
 	QObject::connect( connectTimer, SIGNAL( timeout() ), q, SLOT( processConnectionTimeout() ) );
 	connectTimer->start(LOGIN_TIMEOUT);
 
@@ -266,10 +267,10 @@ void Session::sendMessage(const QString& recipient, const QString& message)
 	Message msg;
 
 	if ( d->userInfoManager->getUserStatus(recipient) == UserInfo::Offline ) {
-		qDebug() << "[ICQ:Connection]" << "sending offline message via channel 1";
+		qDebug() << "[ICQ:Session]" << "sending offline message via channel 1";
 		msg.setChannel(0x01);
 	} else {
-		qDebug() << "[ICQ:Connection]" << "sending message via channel 2";
+		qDebug() << "[ICQ:Session]" << "sending message via channel 2";
 		msg.setChannel(0x02);
 	}
 
@@ -420,14 +421,14 @@ void Session::processLookupResult(const QHostInfo& result)
 	d->lookupTimer = 0;
 
 	if ( result.error() != QHostInfo::NoError ) {
-		qDebug() << "[ICQ:Connection] Lookup failed:" << result.errorString();
+		qDebug() << "[ICQ:Session] Lookup failed:" << result.errorString();
 		emit error("Host lookup failed. " + result.errorString() );
 		disconnect();
 		return;
 	}
 
 	d->peer = result.addresses().value(0);
-	qDebug() << "[ICQ:Connection] Found address:" << d->peer.toString();
+	qDebug() << "[ICQ:Session] Found address:" << d->peer.toString();
 
 	d->startLogin();
 }
@@ -470,8 +471,8 @@ void Session::processSsiRequest()
 
 void Session::processLoginDone()
 {
-	/*d->loginManager->deleteLater();
-	d->loginManager = 0;*/
+	d->loginManager->deleteLater();
+	d->loginManager = 0;
 
 	d->connectTimer->start(CONNECTION_TIMEOUT);
 	d->keepAliveTimer = new QTimer(this);
@@ -496,14 +497,16 @@ void Session::processLoginDone()
 	d->connectionStatus = Connected;
 	setOnlineStatus(d->onlineStatus);
 
+	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( processSnac(SnacBuffer&) ) );
+
 	emit connected();
 }
 
 void Session::processSnac(SnacBuffer& snac)
 {
 	if ( d->connectionStatus == Connected ) {
-		d->connectTimer->start(CONNECTION_TIMEOUT);
 		d->keepAliveTimer->start(KEEP_ALIVE_INTERVAL);
+		d->connectTimer->start(CONNECTION_TIMEOUT);
 	}
 
 	if ( snac.subtype() == 0x01 ) {

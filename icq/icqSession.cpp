@@ -31,6 +31,8 @@
 #include "types/icqContact.h"
 #include "types/icqMessage.h"
 #include "types/icqUserInfo.h"
+#include "types/icqUserDetails.h"
+#include "types/icqShortUserDetails.h"
 
 #include <QHostAddress>
 #include <QHostInfo>
@@ -405,6 +407,61 @@ void Session::setOnlineStatus(OnlineStatus status)
 	d->socket->write(reqSetStatus);
 }
 
+void Session::requestOwnUserDetails()
+{
+	if ( !d->userInfoManager ) {
+		return;
+	}
+	d->userInfoManager->requestOwnUserDetails(d->uin);
+}
+
+void Session::requestUserDetails(const QString& uin)
+{
+	if ( !d->userInfoManager ) {
+		return;
+	}
+	d->userInfoManager->requestUserDetails(uin);
+}
+
+void Session::requestShortUserDetails(const QString& uin)
+{
+	if ( !d->userInfoManager ) {
+		return;
+	}
+	d->userInfoManager->requestShortDetails(uin);
+}
+
+ShortUserDetails Session::shortUserDetails(const QString& uin) const
+{
+	if ( !d->userInfoManager ) {
+		return ShortUserDetails();
+	}
+	return d->userInfoManager->shorUserDetails(uin);
+}
+
+UserDetails Session::userDetails(const QString& uin) const
+{
+	if ( !d->userInfoManager ) {
+		return UserDetails();
+	}
+	return d->userInfoManager->userDetails(uin);
+}
+
+void Session::removeUserDetails(const QString& uin)
+{
+	if ( !d->userInfoManager ) {
+		return;
+	}
+	d->userInfoManager->clearUserDetails(uin);
+}
+void Session::removeShortUserDetails(const QString& uin)
+{
+	if ( !d->userInfoManager ) {
+		return;
+	}
+	d->userInfoManager->clearShortUserDetails(uin);
+}
+
 void Session::processLookupTimeout()
 {
 	QHostInfo::abortHostLookup(d->lookupID);
@@ -487,6 +544,8 @@ void Session::processLoginDone()
 	QObject::connect( d->userInfoManager, SIGNAL( statusChanged(int) ),      SLOT( processStatusChanged(int) ) );
 	QObject::connect( d->userInfoManager, SIGNAL( userOnline(QString,int) ), SLOT( processUserStatus(QString,int) ) );
 	QObject::connect( d->userInfoManager, SIGNAL( userOffline(QString) ),    SIGNAL( userOffline(QString) ) );
+	QObject::connect( d->userInfoManager, SIGNAL( userDetailsAvailable(QString) ), SIGNAL( userDetailsAvailable(QString) ) );
+	QObject::connect( d->userInfoManager, SIGNAL( shortUserDetailsAvailable(QString) ), SIGNAL( shortUserDetailsAvailable(QString) ) );
 	QObject::connect( d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->userInfoManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );
 
 	d->msgManager = new MessageManager(d->socket, this);

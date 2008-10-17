@@ -51,8 +51,8 @@ class UserInfoManager : public QObject
 		void requestUserDetails(const QString& uin);
 		void requestShortDetails(const QString& uin);
 
-		ShortUserDetails shorUserDetails(const QString& uin);
-		UserDetails userDetails(const QString& uin);
+		ShortUserDetails shorUserDetails(const QString& uin) const;
+		UserDetails userDetails(const QString& uin) const;
 
 		void clearShortUserDetails(const QString& uin);
 		void clearUserDetails(const QString& uin);

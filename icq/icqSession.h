@@ -35,6 +35,8 @@ namespace ICQ
 
 class SnacBuffer;
 class Message;
+class ShortUserDetails;
+class UserDetails;
 
 class Session : public QObject
 {
@@ -72,6 +74,16 @@ class Session : public QObject
 		void setServerHost(const QString& server);
 		void setServerPort(quint16 port);
 		void setOnlineStatus(OnlineStatus status);
+
+		void requestOwnUserDetails();
+		void requestUserDetails(const QString& uin);
+		void requestShortUserDetails(const QString& uin);
+
+		ShortUserDetails shortUserDetails(const QString& uin) const;
+		UserDetails userDetails(const QString& uin) const;
+
+		void removeUserDetails(const QString& uin);
+		void removeShortUserDetails(const QString& uin);
 	signals:
 		void connected();
 		void disconnected();
@@ -87,6 +99,9 @@ class Session : public QObject
 		void authRequest(const QString& fromUin);
 
 		void incomingMessage(const QString& uin, const QString& msg);
+
+		void shortUserDetailsAvailable(const QString& uin);
+		void userDetailsAvailable(const QString& uin);
 	private slots:
 		void processLookupTimeout();
 		void processLookupResult(const QHostInfo& result);

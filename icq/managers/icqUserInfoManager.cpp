@@ -453,12 +453,12 @@ void UserInfoManager::requestShortDetails(const QString& uin)
 	d->uinRequests.enqueue(uin);
 }
 
-ShortUserDetails UserInfoManager::shorUserDetails(const QString& uin)
+ShortUserDetails UserInfoManager::shorUserDetails(const QString& uin) const
 {
 	return d->shortDetails.value(uin);
 }
 
-UserDetails UserInfoManager::userDetails(const QString& uin)
+UserDetails UserInfoManager::userDetails(const QString& uin) const
 {
 	return d->fullDetails.value(uin);
 }

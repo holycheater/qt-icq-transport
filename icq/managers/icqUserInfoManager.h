@@ -24,12 +24,17 @@
 #include <QObject>
 #include <QString>
 
+#include "types/icqTypes.h"
+
 namespace ICQ
 {
 
+class Buffer;
 class SnacBuffer;
 class Socket;
 class UserInfo;
+class ShortUserDetails;
+class UserDetails;
 
 class UserInfoManager : public QObject
 {
@@ -41,15 +46,25 @@ class UserInfoManager : public QObject
 
 		UserInfo getUserInfo(const QString& uin);
 		quint16 getUserStatus(const QString& uin) const;
+
+		void requestOwnUserDetails(const QString& uin);
+		void requestUserDetails(const QString& uin);
+		void requestShortDetails(const QString& uin);
+
+		ShortUserDetails shorUserDetails(const QString& uin);
+		UserDetails userDetails(const QString& uin);
+
+		void clearShortUserDetails(const QString& uin);
+		void clearUserDetails(const QString& uin);
 	signals:
 		void statusChanged(int status);
 		void userOnline(QString userId, int status);
 		void userOffline(QString userId);
-	private:
-		void handle_own_user_info(SnacBuffer& snac); // SNAC(01,0F)
-		void handle_user_online_notification(SnacBuffer& snac); // SNAC(03,0B)
-		void handle_user_offline_notification(SnacBuffer& snac); // SNAC(03,0C)
+
+		void shortUserDetailsAvailable(const QString& uin);
+		void userDetailsAvailable(const QString& uin);
 	private slots:
+		void incomingMetaInfo(Word type, Buffer& data);
 		void incomingSnac(SnacBuffer& snac);
 	private:
 		class Private;

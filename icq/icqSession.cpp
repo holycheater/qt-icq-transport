@@ -479,14 +479,15 @@ void Session::processLoginDone()
 	QObject::connect( d->keepAliveTimer, SIGNAL( timeout() ), SLOT( sendKeepAlive() ) );
 	d->keepAliveTimer->start(KEEP_ALIVE_INTERVAL);
 
+	d->metaManager = new MetaInfoManager(d->socket, this);
+	d->metaManager->setUin(d->uin);
+	d->socket->setMetaManager(d->metaManager);
+
 	d->userInfoManager = new UserInfoManager(d->socket, this);
 	QObject::connect( d->userInfoManager, SIGNAL( statusChanged(int) ),      SLOT( processStatusChanged(int) ) );
 	QObject::connect( d->userInfoManager, SIGNAL( userOnline(QString,int) ), SLOT( processUserStatus(QString,int) ) );
 	QObject::connect( d->userInfoManager, SIGNAL( userOffline(QString) ),    SIGNAL( userOffline(QString) ) );
-
-	d->metaManager = new MetaInfoManager(d->socket, this);
-	d->metaManager->setUin(d->uin);
-	d->socket->setMetaManager(d->metaManager);
+	QObject::connect( d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->userInfoManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );
 
 	d->msgManager = new MessageManager(d->socket, this);
 	QObject::connect( d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->msgManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );
@@ -498,6 +499,8 @@ void Session::processLoginDone()
 	setOnlineStatus(d->onlineStatus);
 
 	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( processSnac(SnacBuffer&) ) );
+
+	// d->userInfoManager->requestOwnUserDetails(d->uin);
 
 	emit connected();
 }

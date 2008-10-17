@@ -10,7 +10,8 @@ HEADERS += \
 	$$PWD/icqTlv.h \
 	$$PWD/icqTypes.h \
 	$$PWD/icqUserInfo.h \
-	$$PWD/icqShortUserDetails.h
+	$$PWD/icqShortUserDetails.h \
+	$$PWD/icqUserDetails.h
 
 SOURCES += \
 	$$PWD/icqBuffer.cpp \
@@ -23,4 +24,6 @@ SOURCES += \
 	$$PWD/icqTlvChain.cpp \
 	$$PWD/icqTlv.cpp \
 	$$PWD/icqUserInfo.cpp \
-	$$PWD/icqShortUserDetails.cpp
+	$$PWD/icqShortUserDetails.cpp \
+	$$PWD/icqUserDetails.cpp
+

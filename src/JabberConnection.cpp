@@ -154,13 +154,14 @@ void JabberConnection::sendSubscribe(const Jid& toUser, const QString& uin)
 /**
  * Sends 'subscribed' presence to @a toUser on behalf uin\@component.domain
  */
-void JabberConnection::sendSubscribed(const Jid& toUser, const QString& fromUin)
+void JabberConnection::sendSubscribed(const Jid& toUser, const QString& fromUin, const QString& nick)
 {
 	Presence subscribed;
 
 	subscribed.setType(Presence::Subscribed);
 	subscribed.setFrom( d->jid.withNode(fromUin) );
 	subscribed.setTo(toUser);
+	subscribed.setNick(nick);
 
 	d->stream->sendStanza(subscribed);
 }
@@ -196,12 +197,13 @@ void JabberConnection::sendUnsubscribed(const Jid& toUser, const QString& fromUi
 /**
  * Sends 'available' presence to @a toUser on behalf of '@a fromUin [at] component.domain'
  */
-void JabberConnection::sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus)
+void JabberConnection::sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus, const QString& nick)
 {
 	Presence presence;
 	presence.setFrom( d->jid.withNode(fromUin) );
 	presence.setTo(toUser);
 	presence.setShow( Presence::Show(showStatus) );
+	presence.setNick(nick);
 
 	d->stream->sendStanza(presence);
 }
@@ -251,12 +253,13 @@ void JabberConnection::sendOfflinePresence(const Jid& recipient)
  * @param recipient		Jabber user recipient's jabber-id.
  * @param message		Message itself.
  */
-void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, const QString& message)
+void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick)
 {
 	Message msg;
 	msg.setFrom( d->jid.withNode(uin) );
 	msg.setTo(recipient);
 	msg.setBody(message);
+	msg.setNick(nick);
 
 	d->stream->sendStanza(msg);
 }

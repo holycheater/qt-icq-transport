@@ -431,8 +431,8 @@ void GatewayTask::processIcqStatus(int status)
 
 void GatewayTask::processContactOnline(const QString& uin, int status)
 {
-	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-	Jid user = d->icqJidTable.value(conn);
+	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+	Jid user = d->icqJidTable.value(session);
 
 	int showStatus;
 	switch ( status ) {
@@ -453,7 +453,7 @@ void GatewayTask::processContactOnline(const QString& uin, int status)
 			break;
 	}
 
-	emit contactOnline(user, uin, showStatus);
+	emit contactOnline( user, uin, showStatus, session->contactName(uin) );
 }
 
 void GatewayTask::processContactOffline(const QString& uin)
@@ -465,9 +465,9 @@ void GatewayTask::processContactOffline(const QString& uin)
 
 void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message)
 {
-	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-	Jid user = d->icqJidTable.value(conn);
-	emit incomingMessage(user, senderUin, message);
+	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+	Jid user = d->icqJidTable.value(session);
+	emit incomingMessage(user, senderUin, message, session->contactName(senderUin) );
 }
 
 /**
@@ -475,11 +475,11 @@ void GatewayTask::processIncomingMessage(const QString& senderUin, const QString
  */
 void GatewayTask::processAuthGranted(const QString& uin)
 {
-	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-	Jid user = d->icqJidTable.value(conn);
+	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+	Jid user = d->icqJidTable.value(session);
 
-	qDebug() << "[GT]" << user << "granted auth to" << uin;
-	emit subscriptionReceived(user, uin);
+	qDebug() << "[GT]" << user << "granted auth to" << uin << "nick" << session->contactName(uin);
+	emit subscriptionReceived( user, uin, session->contactName(uin) );
 }
 
 /**

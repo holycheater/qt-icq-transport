@@ -61,11 +61,11 @@ class GatewayTask : public QObject
 		void processGatewayOnline();
 		void processShutdown();
 	signals:
-		void subscriptionReceived(const Jid& user, const QString& uin);
+		void subscriptionReceived(const Jid& user, const QString& uin, const QString& nick);
 		void subscriptionRemoved(const Jid& user, const QString& uin);
 		void subscriptionRequest(const Jid& user, const QString& uin);
 
-		void contactOnline(const Jid& user, const QString& uin, int status);
+		void contactOnline(const Jid& user, const QString& uin, int status, const QString& nick);
 		void contactOffline(const Jid& user, const QString& uin);
 
 		void onlineNotifyFor(const Jid& user, int show);
@@ -73,7 +73,7 @@ class GatewayTask : public QObject
 
 		void incomingVCard(const Jid& user, const QString& uin, const QString& requestID, const vCard& vcard);
 
-		void incomingMessage(const Jid& user, const QString& uin, const QString& text);
+		void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick);
 		void gatewayMessage(const Jid& user, const QString& text);
 	private slots:
 		void processIcqError(const QString& desc);

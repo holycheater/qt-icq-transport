@@ -55,17 +55,17 @@ class JabberConnection : public QObject
 		void setPassword(const QString& password);
 	public slots:
 		void sendSubscribe(const Jid& toUser, const QString& fromUin);
-		void sendSubscribed(const Jid& toUser, const QString& fromUin);
+		void sendSubscribed(const Jid& toUser, const QString& fromUin, const QString& nick);
 		void sendUnsubscribe(const Jid& toUser, const QString& fromUin);
 		void sendUnsubscribed(const Jid& toUser, const QString& fromUin);
 
-		void sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus);
+		void sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus, const QString& nick);
 		void sendOfflinePresence(const Jid& toUser, const QString& fromUin);
 
 		void sendOnlinePresence(const Jid& recipient, int showStatus);
 		void sendOfflinePresence(const Jid& recipient);
 
-		void sendMessage(const Jid& recipient, const QString& uin, const QString& message);
+		void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick);
 		void sendMessage(const Jid& recipient, const QString& message);
 
 		void sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard);

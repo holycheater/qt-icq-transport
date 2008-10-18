@@ -81,6 +81,8 @@ void UserInfoManager::Private::processOwnUserInfo(SnacBuffer& snac)
 		emit q->statusChanged( info.onlineStatus() );
 	}
 	ownInfo.mergeFrom(info);
+
+	snac.seekEnd(); //mark snac as handled
 }
 
 void UserInfoManager::Private::processUserOnlineNotification(SnacBuffer& snac)

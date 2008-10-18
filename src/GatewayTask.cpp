@@ -25,6 +25,7 @@
 #include "xmpp-ext/vCard.h"
 
 #include "icqSession.h"
+#include "types/icqShortUserDetails.h"
 
 #include <QHash>
 #include <QStringList>
@@ -45,6 +46,14 @@ class GatewayTask::Private
 		QHash<QString, ICQ::Session*> jidIcqTable;
 		/* Connection & Jabber-ID hash-table */
 		QHash<ICQ::Session*, QString> icqJidTable;
+
+
+		struct vCardRequestInfo {
+			QString requestID;
+			QString resource;
+		};
+		/* Queue of vcard requests. Key is "<jid>-<uin>", value - requestID */
+		QHash<QString,vCardRequestInfo> vCardRequests;
 
 		QString icqHost;
 		quint16 icqPort;
@@ -198,6 +207,7 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 		QObject::connect( conn, SIGNAL( connected() ),                      SLOT( processIcqSignOn() ) );
 		QObject::connect( conn, SIGNAL( disconnected() ),                   SLOT( processIcqSignOff() ) );
 		QObject::connect( conn, SIGNAL( error(QString) ),                   SLOT( processIcqError(QString) ) );
+		QObject::connect( conn, SIGNAL( shortUserDetailsAvailable(QString) ), SLOT( processShortUserDetails(QString) ) );
 
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
@@ -282,8 +292,18 @@ void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const 
 
 void GatewayTask::processVCardRequest(const Jid& user, const QString& uin, const QString& requestID)
 {
-	emit incomingVCard(user, uin, requestID, XMPP::vCard() );
-	/* TODO: process vcard request and redirect it to user details request on legacy server */
+	ICQ::Session *session = d->jidIcqTable.value( user.bare() );
+	if ( !session ) {
+		emit gatewayMessage( user, tr("Error. Unable to retrieve vCard: You are not logged on") );
+		emit incomingVCard(user, uin, requestID, XMPP::vCard() );
+		return;
+	}
+	QString key = user.bare()+"-"+uin;
+	Private::vCardRequestInfo info;
+	info.requestID = requestID;
+	info.resource = user.resource();
+	d->vCardRequests.insert(key, info);
+	session->requestShortUserDetails(uin);
 }
 
 /**
@@ -483,4 +503,32 @@ void GatewayTask::processAuthRequest(const QString& uin)
 	Jid user = d->icqJidTable.value(conn);
 
 	emit subscriptionRequest(user, uin);
+}
+
+void GatewayTask::processShortUserDetails(const QString& uin)
+{
+	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+	Jid user = d->icqJidTable.value(session);
+
+	QString key = QString(user)+"-"+uin;
+
+	if ( !d->vCardRequests.contains(key) ) {
+		qDebug() << "[GT]" << "Request was not logged";
+		return;
+	}
+
+	Private::vCardRequestInfo info = d->vCardRequests.take(key);
+
+	ICQ::ShortUserDetails details = session->shortUserDetails(uin);
+	XMPP::vCard vcard;
+	vcard.setNickname( details.nick() );
+	vcard.setFullName( QString( details.firstName() + " " + details.lastName() ).trimmed() );
+	vcard.setFamilyName( details.lastName() );
+	vcard.setGivenName( details.firstName() );
+
+	if ( !info.resource.isEmpty() ) {
+		user.setResource(info.resource);
+	}
+
+	emit incomingVCard(user, uin, info.requestID, vcard);
 }

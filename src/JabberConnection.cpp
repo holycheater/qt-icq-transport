@@ -280,6 +280,7 @@ void JabberConnection::sendVCard(const Jid& recipient, const QString& uin, const
 	reply.setFrom( d->jid.withNode(uin) );
 	reply.setTo(recipient);
 	reply.setId(requestID);
+	reply.setType(IQ::Result);
 
 	if ( vcard.isEmpty() ) {
 		reply.setError(Stanza::Error::ItemNotFound);
@@ -551,6 +552,11 @@ void JabberConnection::stream_iq(const IQ& iq)
 			d->stream->sendStanza(reply);
 			return;
 		}
+		if ( !iq.to().node().isEmpty() ) {
+			emit vCardRequest( iq.from(), iq.to().node(), iq.id() );
+			return;
+		}
+
 		if ( d->vcard.isEmpty() ) {
 			IQ reply(iq);
 			reply.swapFromTo();
@@ -558,9 +564,6 @@ void JabberConnection::stream_iq(const IQ& iq)
 
 			d->stream->sendStanza(reply);
 			return;
-		}
-		if ( !iq.to().node().isEmpty() ) {
-			emit vCardRequest( iq.from(), iq.to().node(), iq.id() );
 		}
 
 		IQ reply(iq);

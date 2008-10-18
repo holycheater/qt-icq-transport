@@ -88,6 +88,8 @@ class GatewayTask : public QObject
 		void processAuthGranted(const QString& uin);
 		void processAuthDenied(const QString& uin);
 		void processAuthRequest(const QString& uin);
+
+		void processShortUserDetails(const QString& uin);
 	private:
 		class Private;
 		Private *d;

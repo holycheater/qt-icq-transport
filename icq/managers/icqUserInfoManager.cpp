@@ -76,8 +76,6 @@ class UserInfoManager::Private {
 
 void UserInfoManager::Private::processOwnUserInfo(SnacBuffer& snac)
 {
-	// qDebug() << snac.data().toHex();
-
 	UserInfo info = UserInfo::fromBuffer(snac);
 	if ( info.hasTlv(0x06) && info.onlineStatus() != ownInfo.onlineStatus() ) {
 		emit q->statusChanged( info.onlineStatus() );
@@ -100,7 +98,6 @@ void UserInfoManager::Private::processUserOnlineNotification(SnacBuffer& snac)
 		}
 
 		emit q->userOnline( info.userId(), info.onlineStatus() );
-		// q->requestShortDetails( info.userId() );
 	}
 }
 
@@ -432,6 +429,11 @@ void UserInfoManager::requestOwnUserDetails(const QString& uin)
  */
 void UserInfoManager::requestUserDetails(const QString& uin)
 {
+	if ( d->fullDetails.contains(uin) ) {
+		emit userDetailsAvailable(uin);
+		return;
+	}
+
 	Buffer buf;
 	buf.addLEWord(0x04D0); // data subtype
 	buf.addLEDWord( uin.toUInt() );
@@ -445,6 +447,11 @@ void UserInfoManager::requestUserDetails(const QString& uin)
  */
 void UserInfoManager::requestShortDetails(const QString& uin)
 {
+	if ( d->shortDetails.contains(uin) ) {
+		emit shortUserDetailsAvailable(uin);
+		return;
+	}
+
 	Buffer buf;
 	buf.addLEWord(0x04BA); // data subtype
 	buf.addLEDWord( uin.toUInt() );

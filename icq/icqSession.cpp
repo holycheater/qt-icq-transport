@@ -223,6 +223,12 @@ void Session::contactAdd(const QString& uin)
 		d->ssiManager->requestAuthorization(uin);
 	} else {
 		emit authGranted(uin);
+		OnlineStatus status = onlineStatus(uin);
+		if ( status == Offline ) {
+			emit userOffline(uin);
+		} else {
+			emit userOnline(uin, status);
+		}
 	}
 }
 

@@ -520,9 +520,9 @@ void JabberConnection::Private::processPrompt(const IQ& iq)
 	reply.clearChild();
 	QDomDocument doc = reply.childElement().ownerDocument();
 	QDomElement eJid = doc.createElement("jid");
-	doc.appendChild(eJid);
+	reply.childElement().appendChild(eJid);
 	QDomText eJidText = doc.createTextNode( jid.withNode(uin) );
-	doc.appendChild(eJidText);
+	eJid.appendChild(eJidText);
 
 	stream->sendStanza(reply);
 }
@@ -544,6 +544,7 @@ void JabberConnection::stream_iq(const IQ& iq)
 		}
 		if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
 			d->processPromptRequest(iq);
+			return;
 		}
 	}
 	if ( iq.childElement().tagName() == "vCard" && iq.type() == "get" ) {
@@ -584,6 +585,7 @@ void JabberConnection::stream_iq(const IQ& iq)
 		}
 		if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
 			d->processPrompt(iq);
+			return;
 		}
 	}
 	if ( iq.childElement().tagName() == "command" && iq.type() == "set" && iq.childElement().namespaceURI() == NS_QUERY_ADHOC ) {

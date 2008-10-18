@@ -230,5 +230,26 @@ void Stanza::setProperty(const QString& name, const QString& value)
 	element.appendChild(text);
 }
 
+/**
+ * Returns nick string attached to stanza (XEP-0172)
+ */
+QString Stanza::nick() const
+{
+	return m_doc.documentElement().firstChildElement("nick").text();
+}
+
+/**
+ * Sets nick string for stanza (XEP-0172)
+ */
+void Stanza::setNick(const QString& nick)
+{
+	m_doc.documentElement().removeChild( m_doc.documentElement().firstChildElement("nick") );
+	QDomElement eNick = m_doc.createElementNS(NS_PROTOCOL_NICK, "nick");
+	QDomText eNickText = m_doc.createTextNode(nick);
+
+	m_doc.documentElement().appendChild(eNick);
+	eNick.appendChild(eNickText);
+}
+
 
 } /* end of namespace XMPP */

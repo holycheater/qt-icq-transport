@@ -47,6 +47,10 @@ class IQ : public Stanza
 		using Stanza::setType;
 		void setType(Type type);
 	private:
+		/* XEP-0172: User Nickname */
+		QString nick() const;
+		void setNick(const QString& nick);
+
 		static QString typeToString(Type type);
 		static int stringToType(const QString& type);
 

@@ -25,6 +25,7 @@
 #include <QSharedDataPointer>
 
 #define NS_STANZAS "urn:ietf:params:xml:ns:xmpp-stanzas"
+#define NS_PROTOCOL_NICK "http://jabber.org/protocol/nick"
 
 namespace XMPP {
 
@@ -62,6 +63,10 @@ class Stanza
 		QString toString() const;
 
 		Stanza& operator=(const Stanza& other);
+
+		/* XEP-0172: User Nickname */
+		QString nick() const;
+		void setNick(const QString& nick);
 	protected:
 		QDomDocument* doc();
 		QDomDocument* doc() const;

@@ -255,6 +255,21 @@ void Session::authDeny(const QString& toUin)
 	d->ssiManager->denyAuthorization(toUin);
 }
 
+/**
+ * Get contact name from ssi-list
+ */
+QString Session::contactName(const QString& uin) const
+{
+	if ( !d->ssiManager ) {
+		return QString();
+	}
+	Contact contact = d->ssiManager->contactByUin(uin);
+	if ( !contact.isValid() ) {
+		return QString();
+	}
+	return contact.displayName();
+}
+
 void Session::setCodecForMessages(QTextCodec *codec)
 {
 	d->codec = codec;

@@ -106,7 +106,9 @@ const QDomElement& IQ::childElement() const
  */
 void IQ::clearChild()
 {
-	doc()->documentElement().removeChild(m_element);
+	while ( m_element.hasChildNodes() ) {
+		m_element.removeChild( m_element.firstChild() );
+	}
 }
 
 /**

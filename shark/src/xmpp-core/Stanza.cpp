@@ -243,6 +243,10 @@ QString Stanza::nick() const
  */
 void Stanza::setNick(const QString& nick)
 {
+	if ( nick.isEmpty() ) {
+		return;
+	}
+
 	m_doc.documentElement().removeChild( m_doc.documentElement().firstChildElement("nick") );
 	QDomElement eNick = m_doc.createElementNS(NS_PROTOCOL_NICK, "nick");
 	QDomText eNickText = m_doc.createTextNode(nick);

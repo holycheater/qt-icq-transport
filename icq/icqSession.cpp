@@ -319,9 +319,48 @@ QStringList Session::contactList() const
 	return contacts;
 }
 
+/**
+ * Request own online status
+ */
 Session::OnlineStatus Session::onlineStatus() const
 {
 	return d->onlineStatus;
+}
+
+/**
+ * Request online status for selected @a uin.
+ * @note UIN should be in server roster.
+ * @overload
+ */
+Session::OnlineStatus Session::onlineStatus(const QString& uin) const
+{
+	if ( !d->userInfoManager ) {
+		return Offline;
+	}
+	quint16 status = d->userInfoManager->getUserStatus(uin);
+
+	if ( status == UserInfo::Online ) {
+		return Online;
+	}
+	if ( status == UserInfo::Offline ) {
+		return Offline;
+	}
+
+	OnlineStatus singleStatus = Online;
+	if ( status & UserInfo::Away ) {
+		singleStatus = Away;
+		if ( status & UserInfo::NotAvailable ) {
+			singleStatus = NotAvailable;
+		} else if ( status & UserInfo::Occupied ) {
+			singleStatus = Occupied;
+			if ( status & UserInfo::DoNotDisturb ) {
+				singleStatus = DoNotDisturb;
+			}
+		}
+	} else if ( status & UserInfo::FreeForChat ) {
+		singleStatus = FreeForChat;
+	}
+	return singleStatus;
 }
 
 QString Session::password() const

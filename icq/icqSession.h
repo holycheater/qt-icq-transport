@@ -66,6 +66,7 @@ class Session : public QObject
 		ConnectionStatus connectionStatus() const;
 		QStringList contactList() const;
 		OnlineStatus onlineStatus() const;
+		OnlineStatus onlineStatus(const QString& uin) const;
 		QString password() const;
 		QString serverHost() const;
 		quint16 serverPort() const;

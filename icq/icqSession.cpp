@@ -206,6 +206,7 @@ void Session::disconnect()
 	delete d->keepAliveTimer; d->keepAliveTimer = 0;
 
 	d->connectionStatus = Disconnected;
+	d->onlineStatus = Offline;
 
 	emit disconnected();
 }
@@ -615,11 +616,13 @@ void Session::processLoginDone()
 	d->msgManager->requestOfflineMessages();
 
 	d->connectionStatus = Connected;
-	setOnlineStatus(d->onlineStatus);
+
+	/* hack to force setting of online status */
+	OnlineStatus status = d->onlineStatus;
+	d->onlineStatus = Offline;
+	setOnlineStatus(status);
 
 	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( processSnac(SnacBuffer&) ) );
-
-	// d->userInfoManager->requestOwnUserDetails(d->uin);
 
 	emit connected();
 }

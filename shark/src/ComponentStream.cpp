@@ -112,6 +112,7 @@ void ComponentStream::connectToServer(const Jid& jid, const QString& secret)
 void ComponentStream::close()
 {
 	write("</stream:stream>");
+	d->socket->close();
 }
 
 /**

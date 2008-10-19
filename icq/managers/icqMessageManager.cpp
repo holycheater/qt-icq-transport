@@ -154,6 +154,7 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 
 void MessageManager::Private::send_channel_4_message(const Message& msg)
 {
+	Q_UNUSED(msg)
 	/* TODO: Send channel 4 messages */
 }
 
@@ -166,7 +167,10 @@ void MessageManager::Private::processServerAck(SnacBuffer& snac)
 	Word reason = snac.getWord();
 	snac.seekEnd();
 
-	qDebug() << "[ICQ:MM] Server ACK" << "channel" << channel << "uin" << uin << "reason" << reason;
+	Q_UNUSED(channel)
+	Q_UNUSED(reason)
+
+	// qDebug() << "[ICQ:MM] Server ACK" << "channel" << channel << "uin" << uin << "reason" << reason;
 }
 
 void MessageManager::Private::processMessageAck(SnacBuffer& snac)
@@ -176,7 +180,9 @@ void MessageManager::Private::processMessageAck(SnacBuffer& snac)
 	Byte uinLen = snac.getByte();
 	QString uin = snac.read(uinLen);
 
-	qDebug() << "[ICQ:MM] Msg ACK." << "Msg delivered to" << uin << "via channel" << channel;
+	Q_UNUSED(channel)
+
+	// qDebug() << "[ICQ:MM] Msg ACK." << "Msg delivered to" << uin << "via channel" << channel;
 }
 
 MessageManager::MessageManager(Socket *socket, QObject *parent)
@@ -242,6 +248,7 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 	Word msgSize = tlv02.getWord() - sizeof(Word)*2;
 	Word msgCharset = tlv02.getWord();
 	Word msgSubset = tlv02.getWord();
+	Q_UNUSED(msgSubset)
 	switch ( msgCharset ) {
 		case 0x0002:
 			msg.setEncoding(Message::Ucs2);
@@ -259,7 +266,7 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 			msg.setEncoding(Message::UserDefined);
 			break;
 	}
-	qDebug() << "msg charset" << QString::number(msgCharset, 16) << "subset" << QString::number(msgSubset, 16);
+	// qDebug() << "msg charset" << QString::number(msgCharset, 16) << "subset" << QString::number(msgSubset, 16);
 
 	if ( offlineMsg ) {
 		Tlv tlv16 = chain.getTlv(0x16);
@@ -351,14 +358,13 @@ Message MessageManager::handle_channel_4_msg(TlvChain& chain)
 
 void MessageManager::handle_incoming_message(SnacBuffer& snac)
 {
-	qDebug() << snac.data().toHex();
 	QByteArray icbmCookie = snac.read(8); // msg-id cookie
 	Word msgChannel = snac.getWord();
 	Byte uinLen = snac.getByte();
 	QString uin = snac.read(uinLen);
 	snac.seekForward( sizeof(Word) ); // warning level
 
-	qDebug() << "[ICQ:MM] Incoming msg. channel" << msgChannel << "from" << uin;
+	// qDebug() << "[ICQ:MM] Incoming msg. channel" << msgChannel << "from" << uin;
 
 	Word tlvCount = snac.getWord(); // number of tlvs in fixed part
 	for ( int i = 0; i < tlvCount; i++ ) {
@@ -394,7 +400,7 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 		msg.setTimestamp( QDateTime::currentDateTime() );
 	}
 
-	qDebug() << "[ICQ:MM]" << "type" << msg.type() << "flags" << msg.flags() << "message" << msg.text();
+	// qDebug() << "[ICQ:MM]" << "type" << msg.type() << "flags" << msg.flags() << "message" << msg.text();
 
 	emit incomingMessage(msg);
 }
@@ -412,7 +418,7 @@ void MessageManager::handle_offline_message(Buffer& data)
 	timestamp.setTimeSpec(Qt::UTC);
 	timestamp.setDate( QDate(dateYear, dateMonth, dateDay) );
 	timestamp.setTime( QTime(dateHour, dateMinute) );
-	qDebug() << timestamp << timestamp.toString() << timestamp.toLocalTime() << timestamp.toLocalTime().toString();
+	// qDebug() << timestamp << timestamp.toString() << timestamp.toLocalTime() << timestamp.toLocalTime().toString();
 
 	Byte msgType = data.getByte();
 	Byte msgFlags = data.getByte();

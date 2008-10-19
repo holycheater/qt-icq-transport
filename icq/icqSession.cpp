@@ -580,8 +580,9 @@ void Session::processSsiRequest()
 	d->ssiManager = new SSIManager(this);
 	d->ssiManager->setSocket(d->socket);
 
-	QObject::connect( d->ssiManager, SIGNAL( authGranted(QString) ),    SIGNAL( authGranted(QString) ) );
-	QObject::connect( d->ssiManager, SIGNAL( authDenied(QString) ),     SIGNAL( authDenied(QString) ) );
+	QObject::connect( d->ssiManager, SIGNAL( authGranted(QString) ), SIGNAL( authGranted(QString) ) );
+	QObject::connect( d->ssiManager, SIGNAL( authDenied(QString) ),  SIGNAL( authDenied(QString) ) );
+	QObject::connect( d->ssiManager, SIGNAL( ssiActivated() ),       SIGNAL( rosterAvailable() ) );
 
 	d->ssiManager->requestParameters();
 	d->ssiManager->requestContactList();

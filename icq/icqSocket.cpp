@@ -167,12 +167,12 @@ void Socket::writeForced(SnacBuffer* snac)
 
 	writeForced( dynamic_cast<FlapBuffer*>(snac) );
 
-	qDebug() << "[ICQ:Socket] >>"
+	/*qDebug() << "[ICQ:Socket] >>"
 		<< "snac head: family"
 		<< QByteArray::number(snac->family(),16)
 		<< "subtype" << QByteArray::number(snac->subtype(),16)
 		<< "flags" << QByteArray::number(snac->flags(), 16)
-		<< "requestid" << QByteArray::number(snac->requestId(), 16);
+		<< "requestid" << QByteArray::number(snac->requestId(), 16);*/
 }
 
 void Socket::processIncomingData()
@@ -212,12 +212,12 @@ void Socket::processIncomingData()
 	if ( flap.channel() == FlapBuffer::DataChannel && flap.pos() == 0 ) { // pos == 0 means that flap wasn't touched by flap handlers.
 		SnacBuffer snac = flap;
 
-		qDebug()
+		/*qDebug()
 			<< "[ICQ:Socket] << snac head: family" << QByteArray::number(snac.family(), 16)
 			<< "subtype" << QByteArray::number(snac.subtype(), 16)
 			<< "flags" << QByteArray::number(snac.flags(), 16)
 			<< "requestid" << QByteArray::number(snac.requestId(), 16)
-			<< "len" << snac.size();
+			<< "len" << snac.size();*/
 
 		if ( snac.flags() & 0x8000 ) {
 			Word unknownSize = snac.getWord();

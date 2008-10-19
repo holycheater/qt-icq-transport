@@ -91,6 +91,7 @@ class Session : public QObject
 		void connected();
 		void disconnected();
 		void error(const QString& errorString);
+		void rosterAvailable();
 
 		void statusChanged(int onlineStatus);
 

@@ -235,6 +235,37 @@ void GatewayTask::processUserOffline(const Jid& user)
 	conn->deleteLater();
 }
 
+void GatewayTask::processUserStatusRequest(const Jid& user)
+{
+	ICQ::Session *session = d->jidIcqTable.value( user.bare() );
+	if ( !session ) {
+		return;
+	}
+	if ( session->onlineStatus() == ICQ::Session::Offline ) {
+		emit offlineNotifyFor(user);
+	} else {
+		int show;
+		switch ( session->onlineStatus() ) {
+			case ICQ::Session::Away:
+				show = XMPP::Presence::Away;
+				break;
+			case ICQ::Session::NotAvailable:
+				show = XMPP::Presence::NotAvailable;
+				break;
+			case ICQ::Session::FreeForChat:
+				show = XMPP::Presence::Chat;
+				break;
+			case ICQ::Session::DoNotDisturb:
+				show = XMPP::Presence::DoNotDisturb;
+				break;
+			default:
+				show = XMPP::Presence::None;
+				break;
+		}
+		emit onlineNotifyFor(user, show);
+	}
+}
+
 /**
  * This slot is triggered when jabber user @a user requests authorization/add-to-contact from icq user @a uin
  */

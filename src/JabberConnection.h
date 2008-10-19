@@ -74,6 +74,7 @@ class JabberConnection : public QObject
 		void userRegistered(const QString& jid, const QString& uin, const QString& password);
 		void userOnline(const Jid& jid, int showStatus, bool first_login);
 		void userOffline(const Jid& jid);
+		void userOnlineStatusRequest(const Jid& jid);
 		void userAdd(const Jid& jid, const QString& uin);
 		void userDel(const Jid& jid, const QString& uin);
 		void userAuthGrant(const Jid& jid, const QString& uin);

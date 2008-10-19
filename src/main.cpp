@@ -76,6 +76,7 @@ int main(int argc, char **argv)
 	QObject::connect( &conn, SIGNAL( userUnregistered(QString) ),               &gw, SLOT( processUnregister(QString) ) );
 	QObject::connect( &conn, SIGNAL( userOnline(Jid,int,bool) ),                &gw, SLOT( processUserOnline(Jid,int,bool) ) );
 	QObject::connect( &conn, SIGNAL( userOffline(Jid) ),                        &gw, SLOT( processUserOffline(Jid) ) );
+	QObject::connect( &conn, SIGNAL( userOnlineStatusRequest(Jid) ),            &gw, SLOT( processUserStatusRequest(Jid) ) );
 	QObject::connect( &conn, SIGNAL( userAdd(Jid,QString) ),                    &gw, SLOT( processSubscribeRequest(Jid,QString) ) );
 	QObject::connect( &conn, SIGNAL( userDel(Jid,QString) ),                    &gw, SLOT( processUnsubscribeRequest(Jid,QString) ) );
 	QObject::connect( &conn, SIGNAL( userAuthGrant(Jid,QString) ),              &gw, SLOT( processAuthGrant(Jid,QString) ) );

@@ -633,10 +633,6 @@ void JabberConnection::stream_iq(const IQ& iq)
 void JabberConnection::stream_message(const Message& msg)
 {
 	qDebug() << "message from" << msg.from() << "to" << msg.to() << "subject" << msg.subject();
-	if ( msg.to().domain() != d->jid.domain() ) {
-		qDebug() << "We shouldn't receive this message";
-		return;
-	}
 	/* message for legacy user */
 	if ( !msg.to().node().isEmpty() ) {
 		emit outgoingMessage( msg.from(), msg.to().node(), msg.body() );
@@ -653,6 +649,7 @@ void JabberConnection::stream_presence(const Presence& presence)
 		approve.setFrom(d->jid);
 
 		d->stream->sendStanza(approve);
+		emit userOnlineStatusRequest( presence.from() );
 		return;
 	}
 	if ( presence.type() == Presence::Subscribe && !presence.to().node().isEmpty() ) {
@@ -688,5 +685,5 @@ void JabberConnection::stream_connected()
 void JabberConnection::stream_error(const ComponentStream::Error& err)
 {
 	qDebug() << "[JC] Stream error! Condition:" << err.conditionString();
-	qApp->quit();
+	exit(1);
 }

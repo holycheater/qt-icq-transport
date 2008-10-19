@@ -32,8 +32,10 @@
 #include "xmpp-ext/vCard.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QStringList>
 #include <QUrl>
+#include <qmath.h>
 
 #include <QtDebug>
 
@@ -41,6 +43,11 @@ using namespace XMPP;
 
 #define NS_QUERY_ADHOC "http://jabber.org/protocol/commands"
 #define NS_IQ_GATEWAY "jabber:iq:gateway"
+
+static const int SEC_MINUTE = 60;
+static const int SEC_HOUR   = 3600;
+static const int SEC_DAY    = 86400;
+static const int SEC_WEEK   = 604800;
 
 class JabberConnection::Private {
 
@@ -61,6 +68,8 @@ class JabberConnection::Private {
 		vCard vcard;
 		DiscoInfo disco;
 		QString secret;
+
+		QDateTime startTime;
 
 		/* list of adhoc commands */
 		QHash<QString,DiscoItem> commands;
@@ -87,6 +96,7 @@ JabberConnection::JabberConnection(QObject *parent)
 
 	d->commands.insert( "fetch-contacts", DiscoItem("icq.dragonfly", "fetch-contacts", "Fetch ICQ contacts") );
 	d->commands.insert( "say-cheese", DiscoItem("icq.dragonfly", "say-cheese", "Say 'cheese'") );
+	d->commands.insert( "cmd-uptime", DiscoItem("icq.dragonfly", "cmd-uptime", "Report service uptime") );
 
 	QObject::connect( d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
 	QObject::connect( d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
@@ -321,6 +331,25 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 		stream->sendStanza(msg);
 	} else if ( command == "fetch-contacts" ) {
 		emit q->cmd_RosterRequest( iq.from() );
+	} else if ( command == "cmd-uptime" ) {
+		uint uptime_t = QDateTime::currentDateTime().toTime_t() - startTime.toTime_t();
+		int weeks = qCeil(uptime_t / SEC_WEEK);
+		uptime_t -= weeks*SEC_WEEK;
+		int days = qCeil(uptime_t / SEC_DAY);
+		uptime_t -= days*SEC_DAY;
+		int hours = qCeil(uptime_t / SEC_HOUR);
+		uptime_t -= hours*SEC_HOUR;
+		int minutes = qCeil(uptime_t / SEC_MINUTE);
+		uptime_t -= minutes*SEC_MINUTE;
+		int seconds = uptime_t;
+
+		QString uptimeText = QString::number(weeks) + "w " + QString::number(days) + "d " + QString::number(hours) + "h " + QString::number(minutes) + "m " + QString::number(seconds)+"s.";
+
+		Message msg;
+		msg.setTo( iq.from() );
+		msg.setFrom(jid);
+		msg.setBody("Uptime: "+uptimeText);
+		stream->sendStanza(msg);
 	}
 
 	IQ completedNotify(iq);
@@ -652,6 +681,7 @@ void JabberConnection::stream_presence(const Presence& presence)
 
 void JabberConnection::stream_connected()
 {
+	d->startTime = QDateTime::currentDateTime();
 	qDebug() << "[JC] Component signed on";
 }
 

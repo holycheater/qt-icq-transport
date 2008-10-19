@@ -648,6 +648,9 @@ void Session::processIncomingMessage(const Message& msg)
 	Q_ASSERT(d->codec != 0);
 
 	if ( msg.channel() == 0x04 ) {
+		if ( msg.type() == Message::AuthRequest ) {
+			emit authRequest( msg.sender() );
+		}
 		return;
 	}
 

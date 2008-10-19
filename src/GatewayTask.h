@@ -46,7 +46,7 @@ class GatewayTask : public QObject
 	public slots:
 		void processRegister(const QString& user, const QString& uin, const QString& password);
 		void processUnregister(const QString& user);
-		void processUserOnline(const Jid& user, int showStatus);
+		void processUserOnline(const Jid& user, int showStatus, bool first_login);
 		void processUserOffline(const Jid& user);
 		void processSubscribeRequest(const Jid& user, const QString& uin);
 		void processUnsubscribeRequest(const Jid& user, const QString& uin);
@@ -80,6 +80,7 @@ class GatewayTask : public QObject
 		void processIcqSignOn();
 		void processIcqSignOff();
 		void processIcqStatus(int status);
+		void processIcqFirstLogin();
 
 		void processContactOnline(const QString& uin, int status);
 		void processContactOffline(const QString& uin);

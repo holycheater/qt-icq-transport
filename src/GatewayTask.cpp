@@ -151,7 +151,7 @@ void GatewayTask::processUnregister(const QString& user)
 	query.exec( QString("DELETE FROM users WHERE jid = '_user'").replace("_user", user) );
 }
 
-void GatewayTask::processUserOnline(const Jid& user, int showStatus)
+void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_login)
 {
 	if ( d->icqHost.isEmpty() || !d->icqPort ) {
 		qDebug() << "[GT] processLogin: icq host and/or port values are not set. Aborting...";
@@ -208,6 +208,10 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus)
 		QObject::connect( conn, SIGNAL( disconnected() ),                   SLOT( processIcqSignOff() ) );
 		QObject::connect( conn, SIGNAL( error(QString) ),                   SLOT( processIcqError(QString) ) );
 		QObject::connect( conn, SIGNAL( shortUserDetailsAvailable(QString) ), SLOT( processShortUserDetails(QString) ) );
+
+		if ( first_login ) {
+			QObject::connect( conn, SIGNAL( rosterAvailable() ), SLOT( processIcqFirstLogin() ) );
+		}
 
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
@@ -311,8 +315,6 @@ void GatewayTask::processVCardRequest(const Jid& user, const QString& uin, const
  */
 void GatewayTask::processCmd_RosterRequest(const Jid& user)
 {
-	qDebug() << "[GT]" << "Roster request from" << user;
-
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
 		emit gatewayMessage( user, tr("Error. Unable to process roster-request command: You are not logged on") );
@@ -405,7 +407,6 @@ void GatewayTask::processIcqSignOff()
 void GatewayTask::processIcqStatus(int status)
 {
 	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-	qDebug() << "icq status for" << conn->uin() << "changed to" << status;
 	Jid user = d->icqJidTable.value(conn);
 
 	int show;
@@ -427,6 +428,18 @@ void GatewayTask::processIcqStatus(int status)
 			break;
 	}
 	emit onlineNotifyFor(user, show);
+}
+
+void GatewayTask::processIcqFirstLogin()
+{
+	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+	Jid user = d->icqJidTable.value(session);
+
+	QStringList contacts = session->contactList();
+	QStringListIterator i(contacts);
+	while ( i.hasNext() ) {
+		emit subscriptionRequest( user, i.next() );
+	}
 }
 
 void GatewayTask::processContactOnline(const QString& uin, int status)

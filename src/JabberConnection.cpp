@@ -506,7 +506,7 @@ void JabberConnection::Private::processRegisterForm(const Registration& iq)
 	stream->sendStanza(presence);
 
 	/* execute log-in case */
-	emit q->userOnline(iq.from().bare(), Presence::None);
+	emit q->userOnline(iq.from().bare(), Presence::None, true);
 }
 
 void JabberConnection::Private::processPromptRequest(const IQ& iq)
@@ -670,7 +670,7 @@ void JabberConnection::stream_presence(const Presence& presence)
 	}
 
 	if ( presence.type() == Presence::Available ) {
-		emit userOnline( presence.from(), presence.show() );
+		emit userOnline(presence.from(), presence.show(), false);
 		return;
 	}
 	if ( presence.type() == Presence::Unavailable ) {

@@ -274,7 +274,6 @@ void GatewayTask::processSubscribeRequest(const Jid& user, const QString& uin)
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage( user, tr("Error. Contact add request: You are not logged on") );
 		return;
 	}
 	conn->contactAdd(uin);
@@ -287,7 +286,6 @@ void GatewayTask::processUnsubscribeRequest(const Jid& user, const QString& uin)
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage( user, tr("Error. Contact delete request: You are not logged on") );
 		return;
 	}
 	conn->contactDel(uin);
@@ -297,7 +295,6 @@ void GatewayTask::processAuthGrant(const Jid& user, const QString& uin)
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage( user, tr("Error. Auth Grant: You are not logged on") );
 		return;
 	}
 	conn->authGrant(uin);
@@ -307,7 +304,6 @@ void GatewayTask::processAuthDeny(const Jid& user, const QString& uin)
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage( user, tr("Error. Auth Deny: You are not logged on") );
 		return;
 	}
 	conn->authDeny(uin);
@@ -320,7 +316,6 @@ void GatewayTask::processSendMessage(const Jid& user, const QString& uin, const 
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage( user, tr("Error. Unable to send message: You are not logged on") );
 		return;
 	}
 	conn->sendMessage(uin, message);
@@ -330,7 +325,6 @@ void GatewayTask::processVCardRequest(const Jid& user, const QString& uin, const
 {
 	ICQ::Session *session = d->jidIcqTable.value( user.bare() );
 	if ( !session ) {
-		emit gatewayMessage( user, tr("Error. Unable to retrieve vCard: You are not logged on") );
 		emit incomingVCard(user, uin, requestID, XMPP::vCard() );
 		return;
 	}
@@ -349,7 +343,6 @@ void GatewayTask::processCmd_RosterRequest(const Jid& user)
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
-		emit gatewayMessage( user, tr("Error. Unable to process roster-request command: You are not logged on") );
 		return;
 	}
 

@@ -84,8 +84,8 @@ void Options::parseCommandLine()
 			m_options.insert( "jabber-port", i.next() );
 			continue;
 		}
-		if ( arg == "-jabber-user" ) {
-			m_options.insert( "jabber-user", i.next() );
+		if ( arg == "-jabber-domain" ) {
+			m_options.insert( "jabber-domain", i.next() );
 			continue;
 		}
 		if ( arg == "-jabber-secret" ) {
@@ -108,11 +108,11 @@ void Options::printUsage()
 	QTextStream stream(stdout, QIODevice::WriteOnly);
 	stream << "You can use the options below to override default settings or config file settings\n"
 		<< "Options:\n"
-		<< "   -database <file>          Path to database file \n"
-		<< "   -jabber-server <host>     Jabber server hostname/ip \n"
+		<< "   -database <file>          Service users database file (default: users.db)\n"
+		<< "   -jabber-server <host>     Jabber server hostname/ip\n"
 		<< "   -jabber-port <port>       Jabber server port\n"
-		<< "   -jabber-user <username>   Jabber username (domain name which is server by this component)\n"
+		<< "   -jabber-domain <domain>   Jabber domain name which is server by this component\n"
 		<< "   -jabber-secret <secret>   Secret passphrase for authenticating on the server\n"
-		<< "   -icq-server <host>        ICQ login server hostname\n"
-		<< "   -icq-port <port>          ICQ login server port\n";
+		<< "   -icq-server <host>        ICQ login server hostname (default: login.icq.com)\n"
+		<< "   -icq-port <port>          ICQ login server port(default: 5190)\n";
 }

@@ -24,7 +24,8 @@
 
 #include <QCoreApplication>
 #include <QTimer>
-#include <QtSql>
+#include <QSqlDatabase>
+#include <QStringList>
 
 #include <signal.h>
 
@@ -65,7 +66,7 @@ int main(int argc, char **argv)
 	gw_ptr = &gw;
 
 	JabberConnection conn;
-	conn.setUsername( options->getOption("jabber-user") );
+	conn.setUsername( options->getOption("jabber-domain") );
 	conn.setServer( options->getOption("jabber-server"), options->getOption("jabber-port").toUInt() );
 	conn.setPassword( options->getOption("jabber-secret") );
 

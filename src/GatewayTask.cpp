@@ -227,6 +227,7 @@ void GatewayTask::processUserOffline(const Jid& user)
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
 	if ( !conn ) {
+		emit offlineNotifyFor(user);
 		return;
 	}
 	conn->disconnect();

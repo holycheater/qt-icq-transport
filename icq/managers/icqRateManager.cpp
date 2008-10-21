@@ -79,7 +79,7 @@ bool RateManager::canSend(const SnacBuffer& snac) const
 			return false;
 		}
 	} else {
-		// qDebug() << "[RateManager] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
+		// qDebug() << "[ICQ:RM] no rate class for SNAC" << QByteArray::number(snac.family(), 16) << QByteArray::number(snac.subtype(), 16);
 		return true;
 	}
 }
@@ -90,7 +90,7 @@ void RateManager::enqueue(const SnacBuffer& packet)
 	RateClass *rc = d->findRateClass(p);
 
 	if ( rc ) {
-		qDebug() << "[RateManager] Enqueuing a packet" << p->channel() << "snac family" << p->family() << "subtype" << p->subtype();
+		qDebug() << "[ICQ:RM] Enqueuing a packet" << p->channel() << "snac family" << p->family() << "subtype" << p->subtype();
 		rc->enqueue(p);
 	} else {
 		dataAvailable(p);
@@ -184,7 +184,7 @@ void RateManager::Private::recv_server_rates(SnacBuffer& reply)
 
 		RateClass *rc = findRateClass(rateClassId);
 		if ( !rc ) {
-			qCritical() << "[RateManager]" << "[Critical Error]" << "rate class not found" << rateClassId;
+			qCritical() << "[ICQ:RM]" << "[Critical Error]" << "rate class not found" << rateClassId;
 			continue;
 		}
 
@@ -200,36 +200,56 @@ void RateManager::Private::recv_server_rates(SnacBuffer& reply)
 }
 
 /* << SNAC (01,0A) - SRV_RATE_LIMIT_WARN */
-void RateManager::Private::recv_rates_update(SnacBuffer& reply)
+void RateManager::Private::recv_rates_update(SnacBuffer& snac)
 {
-	Word msgCode = reply.getWord();
-	Word classId = reply.getWord();
+	Word msgCode = snac.getWord();
+	Word classId = snac.getWord();
 
-	qWarning() << "[RateManager] Received SRV_RATE_LIMIT_WARN. Msg code" << msgCode << "Rate class id" << classId;
+	QString codeDesc;
+	switch ( msgCode ) {
+		case 0x0001:
+			// qDebug() << "[ICQ:RM]" << "Rate limits parameters changed";
+			break;
+		case 0x0002:
+			qDebug() << "[ICQ:RM]" << "Rate limits warning (current-lvl < alert-lvl)";
+			break;
+		case 0x0003:
+			qDebug() << "[ICQ:RM]" << "Rate limit hit (current-lvl < limit-lvl)";
+			break;
+		case 0x0004:
+			qDebug() << "[ICQ:RM]" << "Rate limit clear (current-lvl > clear-lvl)";
+			break;
+		default:
+			break;
+	}
 	RateClass *rc = findRateClass(classId);
 	if ( rc ) {
 		rc
-			->setWindowSize( reply.getDWord() )
-			->setClearLevel( reply.getDWord() )
-			->setAlertLevel( reply.getDWord() )
-			->setLimitLevel( reply.getDWord() )
-			->setDisconnectLevel( reply.getDWord() )
-			->setCurrentLevel( reply.getDWord() )
-			->setMaxLevel( reply.getDWord() );
+			->setWindowSize( snac.getDWord() )
+			->setClearLevel( snac.getDWord() )
+			->setAlertLevel( snac.getDWord() )
+			->setLimitLevel( snac.getDWord() )
+			->setDisconnectLevel( snac.getDWord() )
+			->setCurrentLevel( snac.getDWord() )
+			->setMaxLevel( snac.getDWord() );
 
-		reply.getDWord(); // last time (not used)
-		reply.getByte(); // current state (not used)
+		snac.getDWord(); // last time (not used)
+		snac.getByte(); // current state (not used)
 
 		rc->updateRateInfo();
 	}
+	snac.seekEnd(); // mark as read.
 }
 
 void RateManager::incomingSnac(SnacBuffer& snac)
 {
-	if ( snac.family() == 0x01 && snac.subtype() == 0x07 ) {
+	if ( snac.family() != 0x01 ) {
+		return;
+	}
+	if ( snac.subtype() == 0x07 ) {
 		d->recv_server_rates(snac);
 	}
-	if ( snac.family() == 0x01 && snac.subtype() == 0x0A ) {
+	if ( snac.subtype() == 0x0A ) {
 		d->recv_rates_update(snac);
 	}
 }

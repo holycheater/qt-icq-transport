@@ -100,8 +100,8 @@ int main(int argc, char **argv)
 	conn.login();
 
 	/* try to catch terminate signals to send offline presence to users before quit */
-	if ( signal(SIGKILL, sighandler) == SIG_IGN ) {
-		signal(SIGKILL, SIG_IGN);
+	if ( signal(SIGTERM, sighandler) == SIG_IGN ) {
+		signal(SIGTERM, SIG_IGN);
 	}
 	if ( signal(SIGINT, sighandler) == SIG_IGN ) {
 		signal(SIGINT, SIG_IGN);

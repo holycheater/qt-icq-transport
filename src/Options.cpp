@@ -23,7 +23,6 @@
 #include <QCoreApplication>
 #include <QDomDocument>
 #include <QFile>
-#include <QFileInfo>
 #include <QStringList>
 #include <QTextStream>
 
@@ -65,11 +64,6 @@ void Options::parseCommandLine()
 		}
 		if ( arg == "-database" ) {
 			QString db = i.next();
-			QFileInfo fi(db);
-			if ( fi.exists() && !( fi.isReadable() && fi.isWritable() ) ) {
-				qCritical("Database file '%s' is not readable/writeable", qPrintable(db) );
-				exit(1);
-			}
 			m_options.insert( "database", db );
 			continue;
 		}

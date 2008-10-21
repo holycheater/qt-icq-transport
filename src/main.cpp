@@ -23,6 +23,7 @@
 #include "Options.h"
 
 #include <QCoreApplication>
+#include <QFileInfo>
 #include <QTimer>
 #include <QSqlDatabase>
 #include <QStringList>
@@ -51,6 +52,17 @@ int main(int argc, char **argv)
 	Options *options = new Options;
 
 	options->parseCommandLine();
+
+	QString dbFile = options->getOption("database");
+	if ( dbFile.isEmpty() ) {
+		qCritical("Error! Database not specified.");
+		exit(1);
+	}
+	QFileInfo fi(dbFile);
+	if ( fi.exists() && !( fi.isReadable() && fi.isWritable() ) ) {
+		qCritical("Database file '%s' is not readable/writeable", qPrintable(dbFile) );
+		exit(1);
+	}
 
 	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {
 		qCritical("Your Qt installation doesn't have the sqlite database driver");

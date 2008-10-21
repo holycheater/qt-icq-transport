@@ -171,10 +171,18 @@ void LoginManager::recv_auth_key(SnacBuffer& reply)
 
 	SnacBuffer snac(0x17, 0x02);
 
-	snac.addTlv(0x01, d->uin);
-	snac.addTlv( 0x03, QLatin1String("ICQBasic") );
+	snac.addTlv( 0x01, d->uin );
 	snac.addTlv( 0x25, md5password(authkey) );
-	snac.addTlv( (Tlv)Tlv(0x16).addWord(0x010B) );
+	snac.addTlv( 0x03, QLatin1String("ICQBasic") );
+	snac.addTlv( (Tlv)Tlv(0x16).addWord(0x010B) ); // client id
+	snac.addTlv( (Tlv)Tlv(0x17).addWord(0x14) ); // client major version
+	snac.addTlv( (Tlv)Tlv(0x18).addWord(0x22) ); // client minor version
+	snac.addTlv( (Tlv)Tlv(0x19).addWord(0x01) ); // client lesser version
+	snac.addTlv( (Tlv)Tlv(0x1A).addWord(0xFFFF) ); // client build number
+	snac.addTlv( (Tlv)Tlv(0x14).addDWord(0x666) ); // distribution number
+	snac.addTlv( 0x0F, QLatin1String("en") ); // client language
+	snac.addTlv( 0x0E, QLatin1String("us") ); // client country
+	snac.addTlv( (Tlv)Tlv(0x4A).addByte(0x1) ); // SSI use flag
 
 	d->socket->write(snac);
 }

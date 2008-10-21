@@ -21,25 +21,18 @@
 #include "Options.h"
 
 #include <QCoreApplication>
+#include <QDomDocument>
+#include <QFile>
 #include <QFileInfo>
 #include <QStringList>
 #include <QTextStream>
 
-/* TODO: Load parameters from config file */
-
-static QString defaultDatabase("users.db");
-static QString defaultJabberServer("localhost");
-static QString defaultJabberPort("5555");
-static QString defaultIcqServer("login.icq.com");
-static QString defaultIcqPort("5190");
+/* Default Parameters */
+static QString defaultConfigFile("config.xml");
 
 Options::Options()
 {
-	m_options.insert("database", defaultDatabase);
-	m_options.insert("jabber-server", defaultJabberServer);
-	m_options.insert("jabber-port", defaultJabberPort);
-	m_options.insert("icq-server", defaultIcqServer);
-	m_options.insert("icq-port", defaultIcqPort);
+	m_options.insert("config-file", defaultConfigFile);
 }
 
 Options::~Options()
@@ -64,7 +57,11 @@ void Options::parseCommandLine()
 		QString arg = i.next();
 		if ( arg == "-help" ) {
 			printUsage();
-			QCoreApplication::exit();
+			exit(0);
+		}
+		if ( arg == "-config-file" ) {
+			m_options.insert( "config-file", i.next() );
+			continue;
 		}
 		if ( arg == "-database" ) {
 			QString db = i.next();
@@ -101,6 +98,65 @@ void Options::parseCommandLine()
 			continue;
 		}
 	}
+	readXmlFile( m_options.value("config-file") );
+}
+
+void Options::readXmlFile(const QString& fileName)
+{
+	QDomDocument doc("qt-icq-transport");
+	QFile file(fileName);
+	if ( !file.open(QIODevice::ReadOnly) ) {
+		qWarning( "Unable to open config file: %s", qPrintable(file.errorString()) );
+		return;
+	}
+	QString errString;
+	int errLine, errColumn;
+	if ( !doc.setContent(&file, &errString, &errLine, &errColumn) ) {
+		qWarning("Unable to process config file content. Line: %d. Column: %d. Error string: %s", errLine, errColumn, qPrintable(errString));
+		file.close();
+		return;
+	}
+
+	QDomElement root = doc.documentElement();
+	if ( root.isNull() || root.tagName() != "qt-icq-transport" ) {
+		qWarning("Specified config file is not a valid config file");
+		return;
+	}
+	QDomNodeList nodes = root.childNodes();
+	for (uint i = 0; i < nodes.length(); ++i) {
+		QDomElement e = nodes.item(i).toElement();
+		if ( e.isNull() ) {
+			continue;
+		}
+		if ( !m_options.contains("database") && e.tagName() == "database" ) {
+			m_options.insert( "database", e.text() );
+			continue;
+		}
+		if ( !m_options.contains("jabber-server") && e.tagName() == "jabber-server" ) {
+			m_options.insert( "jabber-server", e.text() );
+			continue;
+		}
+		if ( !m_options.contains("jabber-port") && e.tagName() == "jabber-port" ) {
+			m_options.insert( "jabber-port", e.text() );
+			continue;
+		}
+		if ( !m_options.contains("jabber-domain") && e.tagName() == "jabber-domain" ) {
+			m_options.insert( "jabber-domain", e.text() );
+			continue;
+		}
+		if ( !m_options.contains("jabber-secret") && e.tagName() == "jabber-secret" ) {
+			m_options.insert( "jabber-secret", e.text() );
+			continue;
+		}
+		if ( !m_options.contains("icq-server") && e.tagName() == "icq-server" ) {
+			m_options.insert( "icq-server", e.text() );
+			continue;
+		}
+		if ( !m_options.contains("icq-port") && e.tagName() == "icq-port" ) {
+			m_options.insert( "icq-port", e.text() );
+			continue;
+		}
+	}
 }
 
 void Options::printUsage()
@@ -108,6 +164,7 @@ void Options::printUsage()
 	QTextStream stream(stdout, QIODevice::WriteOnly);
 	stream << "You can use the options below to override default settings or config file settings\n"
 		<< "Options:\n"
+		<< "   -config-file <file>       XML Configuration file (note: command-line options override xml configuration)\n"
 		<< "   -database <file>          Service users database file (default: users.db)\n"
 		<< "   -jabber-server <host>     Jabber server hostname/ip\n"
 		<< "   -jabber-port <port>       Jabber server port\n"

@@ -23,8 +23,6 @@
 
 #include <QHash>
 
-class QVariant;
-
 class Options
 {
 	public:
@@ -35,6 +33,7 @@ class Options
 
 		QString getOption(const QString& name) const;
 	private:
+		void readXmlFile(const QString& file);
 		static void printUsage();
 		QHash<QString, QString> m_options;
 };

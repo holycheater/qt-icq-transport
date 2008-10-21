@@ -27,7 +27,7 @@
 
 #include <QDateTime>
 
-#include <QtDebug>
+//#include <QtDebug>
 
 namespace ICQ
 {
@@ -222,7 +222,7 @@ void MessageManager::sendMessage(const Message& msg)
 			d->send_channel_4_message(msg);
 			break;
 		default:
-			qCritical() << "unknown msg channel" << msg.channel();
+			qCritical("[ICQ:MM] unknown msg channel: %d", msg.channel());
 			break;
 	}
 }
@@ -289,7 +289,7 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	block.seekForward(8); // message cookie (same as in the snac data) Why do they need to repeat everything twice? I'm not stupid!
 	Guid cap = Guid::fromRawData( block.read(16) ); // capability, needed for this msg
 
-	qDebug() << "chan 2 msg capability" << cap.toString();
+	// qDebug() << "chan 2 msg capability" << cap.toString();
 
 	TlvChain msgChain( block.readAll() );
 
@@ -302,7 +302,7 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 		Guid cap2 = Guid::fromRawData( msgBlock.read(16) );
 
 		if ( !cap2.isZero() ) {
-			qWarning() << "[ICQ:MM] Message contains unknown data";
+			qWarning("[ICQ:MM] Message contains unknown data");
 		}
 
 		msgBlock.seekForward( sizeof(Word) ); //unknown
@@ -388,7 +388,7 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 			msg = handle_channel_4_msg(chain);
 			break;
 		default:
-			qDebug() << "[ICQ:MM] Unknown channel for the incoming message" << msgChannel;
+			qWarning("[ICQ:MM] Unknown channel for the incoming message: %d", msgChannel);
 			break;
 	}
 

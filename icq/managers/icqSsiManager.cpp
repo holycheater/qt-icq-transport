@@ -150,7 +150,7 @@ void SSIManager::Private::processSsiContact(SnacBuffer& reply)
 			masterGroup = contact;
 		}
 
-		qDebug() << "[ICQ:SSI]" << "Contact: " << "name" << name << "gid" << groupId << "iid" << itemId << "type" << QString::number(itemType, 16);
+		// qDebug() << "[ICQ:SSI]" << "Contact: " << "name" << name << "gid" << groupId << "iid" << itemId << "type" << QString::number(itemType, 16);
 
 		ssiList.insert(itemId, contact);
 	}
@@ -191,7 +191,7 @@ void SSIManager::Private::processSsiAdd(SnacBuffer& reply)
 			qDebug() << "[ICQ:SSI]" << "Deleting contact type 19";
 			continue;
 		}
-		qDebug() << "[ICQ:SSI]" << "Contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name << "added";
+		qDebug() << "[ICQ:SSI]" << "Added contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name;
 	}
 }
 
@@ -226,7 +226,7 @@ void SSIManager::Private::processSsiUpdate(SnacBuffer& reply)
 				ssiList.removeOne(item);
 				ssiList << contact;
 				updated = true;
-				qDebug() << "[ICQ:SSI]" << "Contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name << "updated";
+				qDebug() << "[ICQ:SSI]" << "Updated contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name;
 				/* Mechanism of determining authorization grant */
 				if ( item.type() == Contact::Buddy && item.awaitingAuth() && !contact.awaitingAuth() ) {
 					qDebug() << "[ICQ:SSI]" << "Received auth-grant via ssi-update from" << contact.name();
@@ -273,7 +273,7 @@ void SSIManager::Private::processSsiRemove(SnacBuffer& reply)
 			emit q->contactDeleted(name);
 		}
 
-		qDebug() << "[ICQ:SSI]" << "Contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name << "deleted";
+		qDebug() << "[ICQ:SSI]" << "Deleted contact of type" << QString::number(itemType, 16) << "with id" << iid << "named" << name;
 	}
 }
 
@@ -326,7 +326,7 @@ void SSIManager::Private::processAuthGranted(SnacBuffer& snac)
 	QString uin = snac.read(uinLen);
 	snac.seekEnd();
 
-	qDebug() << "[ICQ:SSI]" << uin << "has granted you authorization";
+	qDebug() << "[ICQ:SSI] processAuthGranted:" << uin << "has granted you authorization";
 	emit q->authGranted(uin);
 }
 
@@ -350,10 +350,10 @@ void SSIManager::Private::processAuthReply(SnacBuffer& reply)
 	reply.seekEnd();
 
 	if ( accepted == 1 ) {
-		qDebug() << "[ICQ:SSI]" << uin << "has granted you authorization";
+		qDebug() << "[ICQ:SSI] processAuthReply:" << uin << "has granted you authorization";
 		emit q->authGranted(uin);
 	} else {
-		qDebug() << "[ICQ:SSI]" << uin << "has denied you authorization";
+		qDebug() << "[ICQ:SSI] processAuthReply:" << uin << "has denied you authorization";
 		emit q->authDenied(uin);
 	}
 }

@@ -208,6 +208,7 @@ void Session::disconnect()
 	d->connectionStatus = Disconnected;
 	d->onlineStatus = Offline;
 
+	qDebug() << "[ICQ:Session]" << "Disconnected.";
 	emit disconnected();
 }
 
@@ -291,10 +292,10 @@ void Session::sendMessage(const QString& recipient, const QString& message)
 	Message msg;
 
 	if ( d->userInfoManager->getUserStatus(recipient) == UserInfo::Offline ) {
-		qDebug() << "[ICQ:Session]" << "sending offline message via channel 1";
+		// qDebug() << "[ICQ:Session]" << "sending offline message via channel 1";
 		msg.setChannel(0x01);
 	} else {
-		qDebug() << "[ICQ:Session]" << "sending message via channel 2";
+		// qDebug() << "[ICQ:Session]" << "sending message via channel 2";
 		msg.setChannel(0x02);
 	}
 
@@ -556,7 +557,7 @@ void Session::processConnectionTimeout()
 	d->connectTimer->deleteLater();
 	d->connectTimer = 0;
 
-	emit error( tr("Connection timed out") );
+	emit error( tr("Connection timed out.") );
 	disconnect();
 }
 
@@ -625,6 +626,7 @@ void Session::processLoginDone()
 
 	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( processSnac(SnacBuffer&) ) );
 
+	qDebug() << "[ICQ:Session]" << "Connected.";
 	emit connected();
 }
 

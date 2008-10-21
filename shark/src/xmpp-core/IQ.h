@@ -37,6 +37,8 @@ class IQ : public Stanza
 		IQ(const QDomElement& element);
 		~IQ();
 
+		static IQ createReply(const IQ& iq, Type type = Result);
+
 		QDomElement& childElement();
 		const QDomElement& childElement() const;
 

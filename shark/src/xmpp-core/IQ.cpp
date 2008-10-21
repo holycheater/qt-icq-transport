@@ -81,6 +81,18 @@ IQ::~IQ()
 }
 
 /**
+ * Create a reply to @a iq with specified @a type.
+ */
+IQ IQ::createReply(const IQ& iq, Type type)
+{
+	IQ reply(iq);
+	reply.swapFromTo();
+	reply.setType(type);
+
+	return reply;
+}
+
+/**
  * Gives access to info/query stanza child element.
  *
  * @return Reference to stanza child element.

@@ -144,7 +144,7 @@ DataForm& DataForm::operator=(const DataForm& other)
  */
 DataForm DataForm::fromDomElement(const QDomElement& form)
 {
-	if ( form.attribute("xmlns") != NS_DATA_FORMS ) {
+	if ( form.namespaceURI() != NS_DATA_FORMS ) {
 		qWarning("Form is not jabber:x:data");
 	}
 
@@ -155,6 +155,10 @@ DataForm DataForm::fromDomElement(const QDomElement& form)
 	QDomNodeList childs = form.childNodes();
 	for (int i = 0; i < childs.count(); ++i) {
 		QDomNode node = childs.item(i);
+
+		if ( !node.isElement() ) {
+			continue;
+		}
 
 		if ( node.nodeName() == "field" ) {
 			dataForm.d->fields << Field::fromDomElement( node.toElement() );

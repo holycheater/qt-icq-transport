@@ -104,6 +104,12 @@ void GatewayTask::setDatabaseLink(const QSqlDatabase& sql)
 				"password TEXT,"
 				"PRIMARY KEY(jid)"
 				")");
+	query.exec("CREATE TABLE IF NOT EXISTS options ("
+				"jid TEXT,"
+				"option TEXT,"
+				"value TEXT,"
+				"PRIMARY KEY(jid,option)"
+				")");
 }
 
 void GatewayTask::setIcqServer(const QString& host, quint16 port)
@@ -149,6 +155,7 @@ void GatewayTask::processUnregister(const QString& user)
 	}
 
 	query.exec( QString("DELETE FROM users WHERE jid = '_user'").replace("_user", user) );
+	query.exec( QString("DELETE FROM options WHERE jid = '_user'").replace("_user", user) );
 }
 
 void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_login)

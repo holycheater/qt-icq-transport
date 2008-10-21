@@ -379,6 +379,18 @@ void DataForm::setInstructions(const QString& instructions)
 	d->instructions = instructions;
 }
 
+DataForm::Field DataForm::fieldByName(const QString& name)
+{
+	QListIterator<Field> fi(d->fields);
+	while ( fi.hasNext() ) {
+		if ( fi.peekNext().name() == name ) {
+			return fi.peekNext();
+		}
+		fi.next();
+	}
+	return Field();
+}
+
 /**
  * @enum DataForm::Type
  * Describes data-form type.
@@ -603,7 +615,7 @@ DataForm::Field DataForm::Field::fromDomElement(const QDomElement& field)
 	fld.d->label = field.attribute("label");
 
 	QDomNodeList options = field.elementsByTagName("option");
-	for (int i = 0; i < options.size(); ++i) {
+	for (uint i = 0; i < options.length(); ++i) {
 		QDomElement eOption = options.item(i).toElement();
 		QString option = eOption.attribute("label");
 		QString value = eOption.firstChildElement("value").text().trimmed();
@@ -612,8 +624,9 @@ DataForm::Field DataForm::Field::fromDomElement(const QDomElement& field)
 	}
 
 	QDomNodeList values = field.elementsByTagName("value");
-	for (int i = 0; i < values.size(); ++i) {
-		fld.d->values << options.item(i).toElement().text().trimmed();
+
+	for (uint i = 0; i < values.length(); ++i) {
+		fld.d->values << values.item(i).toElement().text().trimmed();
 	}
 
 	QDomElement eDesc = field.firstChildElement("desc");
@@ -699,6 +712,11 @@ void DataForm::Field::addOption(const QString& optionLabel, const QString& value
 void DataForm::Field::addValue(const QString& value)
 {
 	d->values << value;
+}
+
+QStringList DataForm::Field::values() const
+{
+	return d->values;
 }
 
 /**

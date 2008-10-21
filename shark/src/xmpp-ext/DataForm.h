@@ -70,6 +70,8 @@ class DataForm
 		void setType(Type type);
 		void setTitle(const QString& title);
 		void setInstructions(const QString& instructions);
+
+		Field fieldByName(const QString& name);
 	private:
 		class Private;
 		QSharedDataPointer<Private> d;

@@ -71,6 +71,7 @@ class GatewayTask : public QObject
 
 		void onlineNotifyFor(const Jid& user, int show);
 		void offlineNotifyFor(const Jid& user);
+		void probeRequest(const Jid& user);
 
 		void incomingVCard(const Jid& user, const QString& uin, const QString& requestID, const vCard& vcard);
 

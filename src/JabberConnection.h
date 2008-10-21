@@ -64,6 +64,7 @@ class JabberConnection : public QObject
 
 		void sendOnlinePresence(const Jid& recipient, int showStatus);
 		void sendOfflinePresence(const Jid& recipient);
+		void sendPresenceProbe(const Jid& user);
 
 		void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick);
 		void sendMessage(const Jid& recipient, const QString& message);

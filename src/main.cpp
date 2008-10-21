@@ -105,6 +105,7 @@ int main(int argc, char **argv)
 	QObject::connect( &gw, SIGNAL( contactOffline(Jid,QString) ),                  &conn, SLOT( sendOfflinePresence(Jid,QString) ) );
 	QObject::connect( &gw, SIGNAL( onlineNotifyFor(Jid,int) ),                     &conn, SLOT( sendOnlinePresence(Jid,int) ) );
 	QObject::connect( &gw, SIGNAL( offlineNotifyFor(Jid) ),                        &conn, SLOT( sendOfflinePresence(Jid) ) );
+	QObject::connect( &gw, SIGNAL( probeRequest(Jid) ),                            &conn, SLOT( sendPresenceProbe(Jid) )  );
 	QObject::connect( &gw, SIGNAL( incomingVCard(Jid,QString,QString,vCard) ),     &conn, SLOT( sendVCard(Jid,QString,QString,vCard) ) );
 	QObject::connect( &gw, SIGNAL( incomingMessage(Jid,QString,QString,QString) ), &conn, SLOT( sendMessage(Jid,QString,QString,QString) ) );
 	QObject::connect( &gw, SIGNAL( gatewayMessage(Jid,QString) ),                  &conn, SLOT( sendMessage(Jid,QString) ) );

@@ -366,6 +366,13 @@ void GatewayTask::processCmd_RosterRequest(const Jid& user)
 void GatewayTask::processGatewayOnline()
 {
 	d->online = true;
+	QSqlQuery query;
+	query.exec("SELECT jid FROM options WHERE option = 'auto-invite'");
+	while ( query.next() ) {
+		Jid jid = query.value(0).toString();
+		qDebug() << "[GT] processGatewayOnline: probing for" << jid;
+		emit probeRequest(jid);
+	}
 }
 
 /**

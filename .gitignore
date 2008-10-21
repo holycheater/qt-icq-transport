@@ -3,6 +3,7 @@
 /doc
 /iris
 /users.db
+/config.xml
 /.settings
 /run.sh
 src/Makefile*

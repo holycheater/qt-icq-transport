@@ -139,6 +139,22 @@ DataForm& DataForm::operator=(const DataForm& other)
 	return *this;
 }
 
+bool DataForm::isEmpty() const
+{
+	if ( d->fields.isEmpty() && d->items.isEmpty() && d->reported.isEmpty() && d->instructions.isEmpty() && d->title.isEmpty() ) {
+		return true;
+	}
+	return false;
+}
+
+bool DataForm::isValid() const
+{
+	if ( isEmpty() || d->type == Invalid ) {
+		return false;
+	}
+	return true;
+}
+
 /**
  * Constructs DataForm object from @a form dom-element. @a form should be dom-element which represent the form.
  */

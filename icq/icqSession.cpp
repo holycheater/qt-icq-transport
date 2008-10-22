@@ -36,6 +36,7 @@
 
 #include <QHostAddress>
 #include <QHostInfo>
+#include <QPair>
 #include <QStringList>
 #include <QTimer>
 #include <QTextCodec>
@@ -56,6 +57,11 @@ class Session::Private
 		~Private();
 
 		void startLogin();
+		void processSnacError(SnacBuffer& snac);
+
+		typedef QPair<Word, QString> IntStringPair;
+		static IntStringPair subtypeOneErrors[];
+		static QString errDescForCode(Word errorCode);
 
 		OnlineStatus onlineStatus;
 		ConnectionStatus connectionStatus;
@@ -148,6 +154,18 @@ void Session::Private::startLogin()
 	loginManager->setSocket(socket);
 	socket->connectToHost(peer, port);
 	qDebug() << "[ICQ:Session] connecting to" << peer.toString()+":"+QString::number(port,10);
+}
+
+void Session::Private::processSnacError(SnacBuffer& snac)
+{
+	Word code = snac.getWord();
+
+	TlvChain chain = snac.readAll();
+	QString text = "Error. SNAC family " + QString::number(snac.family(), 16) + ". Error Code: " + QString::number(code, 16) + "(" + errDescForCode(code) + ")";
+	if ( chain.hasTlv(0x08) ) {
+		text += ". Subcode: " + chain.getTlvData(0x08).toHex().toUpper();
+	}
+	emit q->error(text);
 }
 
 Session::Session(QObject *parent)
@@ -638,7 +656,7 @@ void Session::processSnac(SnacBuffer& snac)
 	}
 
 	if ( snac.subtype() == 0x01 ) {
-		// TODO: handle err;
+		d->processSnacError(snac);
 	}
 }
 
@@ -704,5 +722,43 @@ void Session::sendKeepAlive()
 {
 	d->socket->snacRequest(0x01, 0x0E);
 }
+
+Session::Private::IntStringPair Session::Private::subtypeOneErrors[] = {
+	IntStringPair(0x01, tr("Invalid SNAC header") ),
+	IntStringPair(0x02, tr("Server rate limit exceeded") ),
+	IntStringPair(0x03, tr("Client rate limit exceeded") ),
+	IntStringPair(0x04, tr("Recipient is not logged in") ),
+	IntStringPair(0x05, tr("Requested service unavailable") ),
+	IntStringPair(0x06, tr("Requested service is not defined") ),
+	IntStringPair(0x07, tr("You sent obsolete snac") ),
+	IntStringPair(0x08, tr("Not supported by server") ),
+	IntStringPair(0x09, tr("Not supported by client") ),
+	IntStringPair(0x0A, tr("Refused by client") ),
+	IntStringPair(0x0B, tr("Reply too big") ),
+	IntStringPair(0x0C, tr("Responses lost") ),
+	IntStringPair(0x0D, tr("Request denied") ),
+	IntStringPair(0x0E, tr("Incorrect SNAC format") ),
+	IntStringPair(0x0F, tr("Insufficient rights") ),
+	IntStringPair(0x10, tr("In local permit/deny (recipient blocked)") ),
+	IntStringPair(0x11, tr("Sender is too evil") ),
+	IntStringPair(0x12, tr("Receiver is too evil") ),
+	IntStringPair(0x13, tr("User temporarily unavailable") ),
+	IntStringPair(0x14, tr("No match") ),
+	IntStringPair(0x15, tr("List overflow") ),
+	IntStringPair(0x16, tr("Request ambiguous") ),
+	IntStringPair(0x17, tr("Server queue full") ),
+	IntStringPair(0x18, tr("Not while on AOL") )
+};
+
+QString Session::Private::errDescForCode(Word errorCode)
+{
+	for ( Word i = 0; !subtypeOneErrors[i].second.isEmpty(); ++i ) {
+		if ( subtypeOneErrors[i].first == errorCode ) {
+			return subtypeOneErrors[i].second;
+		}
+	}
+	return tr("Unknown error");
+}
+
 
 } /* end of namespace ICQ */

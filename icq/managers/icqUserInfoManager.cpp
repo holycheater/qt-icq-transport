@@ -107,6 +107,8 @@ void UserInfoManager::Private::processUserOfflineNotification(SnacBuffer& snac)
 {
 	while ( ! snac.atEnd() ) {
 		UserInfo info = UserInfo::fromBuffer(snac);
+		userInfoList.remove( info.userId() );
+		statusList.remove( info.userId() );
 		emit q->userOffline( info.userId() );
 	}
 }

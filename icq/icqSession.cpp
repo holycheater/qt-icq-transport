@@ -642,6 +642,7 @@ void Session::processLoginDone()
 	d->onlineStatus = Offline;
 	setOnlineStatus(status);
 
+	QObject::connect( d->socket, SIGNAL( incomingFlap(FlapBuffer&) ), SLOT( processFlap(FlapBuffer&) ) );
 	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( processSnac(SnacBuffer&) ) );
 
 	qDebug() << "[ICQ:Session]" << "Connected.";
@@ -675,6 +676,15 @@ void Session::processIncomingMessage(const Message& msg)
 	}
 
 	emit incomingMessage( msg.sender(), msg.text(d->codec) );
+}
+
+void Session::processFlap(FlapBuffer& flap)
+{
+	if ( flap.channel() == FlapBuffer::CloseChannel ) {
+		qDebug() << "[ICQ:Session]" << "Flap stream was by server.";
+		disconnect();
+	}
+
 }
 
 void Session::processUserStatus(const QString& uin, int status)

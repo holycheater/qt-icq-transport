@@ -197,16 +197,14 @@ void Socket::processIncomingData()
 
 	flap.setData( d->socket->read( flap.flapDataSize() ) );
 
-	if ( flap.channel() == FlapBuffer::CloseChannel ) {
-		d->socket->disconnectFromHost();
-	}
-
 	/* now we emit an incoming flap signal, which will be catched by various
 	 * services (login manager, rate manager, etc) */
-	emit incomingFlap(flap);
-	if ( !d->socket ) {
-		qDebug() << "[ICQ:Socket] Socket was closed after emitting incomingFlap signal";
-		return;
+	if ( flap.channel() != FlapBuffer::DataChannel ) {
+		emit incomingFlap(flap);
+		if ( !d->socket ) {
+			qDebug() << "[ICQ:Socket] Socket was closed after emitting incomingFlap signal";
+			return;
+		}
 	}
 
 	if ( flap.channel() == FlapBuffer::DataChannel && flap.pos() == 0 ) { // pos == 0 means that flap wasn't touched by flap handlers.

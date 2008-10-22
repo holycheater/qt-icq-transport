@@ -33,6 +33,7 @@ class QTextCodec;
 namespace ICQ
 {
 
+class FlapBuffer;
 class SnacBuffer;
 class Message;
 class ShortUserDetails;
@@ -115,6 +116,7 @@ class Session : public QObject
 		void processSsiRequest();
 		void processLoginDone();
 		void processSnac(SnacBuffer& snac);
+		void processFlap(FlapBuffer& flap);
 		void processIncomingMessage(const Message& msg);
 		void processUserStatus(const QString& uin, int status);
 		void processStatusChanged(int status);

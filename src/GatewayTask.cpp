@@ -519,7 +519,8 @@ void GatewayTask::processIncomingMessage(const QString& senderUin, const QString
 {
 	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(session);
-	emit incomingMessage(user, senderUin, message, session->contactName(senderUin) );
+	QString msg = QString(message).replace('\r', "");
+	emit incomingMessage(user, senderUin, msg, session->contactName(senderUin) );
 }
 
 /**

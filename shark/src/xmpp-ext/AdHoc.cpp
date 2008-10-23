@@ -209,8 +209,12 @@ void AdHoc::toIQ(IQ& iq)
 	iq.setChildElement("command", NS_QUERY_ADHOC);
 	QDomElement eCommand = iq.childElement();
 
-	eCommand.setAttribute("action", Private::actionToString(d->action) );
-	eCommand.setAttribute("status", Private::statusToString(d->status) );
+	if ( d->action != ActionNone ) {
+		eCommand.setAttribute("action", Private::actionToString(d->action) );
+	}
+	if ( d->status != StatusNone ) {
+		eCommand.setAttribute("status", Private::statusToString(d->status) );
+	}
 	eCommand.setAttribute("node", d->node);
 	eCommand.setAttribute("sessionid", d->sessionID);
 

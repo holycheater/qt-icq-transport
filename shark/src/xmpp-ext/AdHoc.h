@@ -37,7 +37,7 @@ class IQ;
 class AdHoc
 {
 	public:
-		enum Action { Cancel, Complete, Execute, Next, Prev };
+		enum Action { ActionNone, Cancel, Complete, Execute, Next, Prev };
 		enum Status { StatusNone, Canceled, Completed, Executing };
 
 		AdHoc();

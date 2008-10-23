@@ -114,7 +114,7 @@ JabberConnection::JabberConnection(QObject *parent)
 
 	d->vcard.setFullName("ICQ Transport");
 	d->vcard.setDescription("Qt ICQ Transport");
-	d->vcard.setUrl( QUrl("http://github.com/holycheater") );
+	d->vcard.setUrl( QUrl("http://github.com/holycheater/qt-icq-transport") );
 
 	d->commands.insert( "fetch-contacts", DiscoItem("icq.dragonfly", "fetch-contacts", "Fetch ICQ contacts") );
 	d->commands.insert( "say-cheese",     DiscoItem("icq.dragonfly", "say-cheese",     "Say 'cheese'") );

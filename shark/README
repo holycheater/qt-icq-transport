@@ -13,6 +13,7 @@ Description
   Features implemented:
   - XEP-0004 (Data Forms)
   - XEP-0030 (Feature Discovery)
+  - XEP-0050 (Ad-hoc command)
   - XEP-0054 (vcard-temp)
   - XEP-0077 (In-Band Registration)
   - XEP-0114 (Jabber Component Protocol)

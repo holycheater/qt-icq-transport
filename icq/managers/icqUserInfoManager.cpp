@@ -28,6 +28,7 @@
 
 #include <QHash>
 #include <QQueue>
+#include <QTextCodec>
 #include <QtDebug>
 
 /*
@@ -72,6 +73,8 @@ class UserInfoManager::Private {
 		Socket *socket;
 
 		UserInfoManager *q;
+
+		QTextCodec *codec;
 };
 
 void UserInfoManager::Private::processOwnUserInfo(SnacBuffer& snac)
@@ -121,15 +124,15 @@ void UserInfoManager::Private::processShortUserInfo(Buffer& buf)
 	}
 
 	Word nickLen = buf.getLEWord() - 1;
-	QString nick = buf.read(nickLen);
+	QString nick = codec->toUnicode( buf.read(nickLen) );
 	buf.seekForward( sizeof(Byte) );
 
 	Word fnLen = buf.getLEWord() - 1;
-	QString fn = buf.read(fnLen);
+	QString fn = codec->toUnicode( buf.read(fnLen) );
 	buf.seekForward( sizeof(Byte) );
 
 	Word lnLen = buf.getLEWord() - 1;
-	QString ln = buf.read(lnLen);
+	QString ln = codec->toUnicode( buf.read(lnLen) );
 	buf.seekForward( sizeof(Byte) );
 
 	Word emailLen = buf.getLEWord() - 1;
@@ -153,15 +156,15 @@ void UserInfoManager::Private::processShortUserInfo(Buffer& buf)
 
 void UserInfoManager::Private::processBasicUserInfo(Buffer& buf)
 {
-	QString nick = buf.read(buf.getLEWord() - 1);
+	QString nick = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setNick(nick);
 
-	QString firstname = buf.read(buf.getLEWord() - 1);
+	QString firstname = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setFirstName(firstname);
 
-	QString lastname = buf.read(buf.getLEWord() - 1);
+	QString lastname = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setLastName(lastname);
 
@@ -169,11 +172,11 @@ void UserInfoManager::Private::processBasicUserInfo(Buffer& buf)
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setEmail(email);
 
-	QString homecity = buf.read(buf.getLEWord() - 1);
+	QString homecity = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setHomeCity(homecity);
 
-	QString homestate = buf.read(buf.getLEWord() - 1);
+	QString homestate = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setHomeState(homestate);
 
@@ -185,7 +188,7 @@ void UserInfoManager::Private::processBasicUserInfo(Buffer& buf)
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setHomeFax(homefax);
 
-	QString homeaddress = buf.read(buf.getLEWord() - 1);
+	QString homeaddress = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setHomeAddress(homeaddress);
 
@@ -229,11 +232,11 @@ void UserInfoManager::Private::processMoreUserInfo(Buffer& buf)
 
 	buf.seekForward( sizeof(Word) ); // unknown data
 
-	QString origCity = buf.read(buf.getLEWord() - 1);
+	QString origCity = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setOriginalCity(origCity);
 
-	QString origState = buf.read(buf.getLEWord() - 1);
+	QString origState = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setOriginalState(origState);
 
@@ -271,11 +274,11 @@ void UserInfoManager::Private::processHomepageUserInfo(Buffer& buf)
 
 void UserInfoManager::Private::processWorkUserInfo(Buffer& buf)
 {
-	QString city = buf.read(buf.getLEWord() - 1);
+	QString city = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkCity(city);
 
-	QString state = buf.read(buf.getLEWord() - 1);
+	QString state = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkState(state);
 
@@ -287,7 +290,7 @@ void UserInfoManager::Private::processWorkUserInfo(Buffer& buf)
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkFax(fax);
 
-	QString address = buf.read(buf.getLEWord() - 1);
+	QString address = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkAddress(address);
 
@@ -299,15 +302,15 @@ void UserInfoManager::Private::processWorkUserInfo(Buffer& buf)
 	Q_UNUSED(countryCode)
 	/* TODO: process country-code */
 
-	QString company = buf.read(buf.getLEWord() - 1);
+	QString company = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkCompany(company);
 
-	QString department = buf.read(buf.getLEWord() - 1);
+	QString department = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkDepartment(department);
 
-	QString position = buf.read(buf.getLEWord() - 1);
+	QString position = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkPosition(position);
 
@@ -316,13 +319,11 @@ void UserInfoManager::Private::processWorkUserInfo(Buffer& buf)
 	QString webpage = buf.read(buf.getLEWord() - 1);
 	buf.seekForward( sizeof(Byte) );
 	lastUserDetails.setWorkWebpage(webpage);
-
-	qDebug() << "work info!" << company << "page" << webpage;
 }
 
 void UserInfoManager::Private::processNotesUserInfo(Buffer& buf)
 {
-	QString notes = buf.read(buf.getLEWord() - 1);
+	QString notes = codec->toUnicode( buf.read(buf.getLEWord() - 1) );
 	buf.seekForward( sizeof(Byte) );
 
 	qDebug() << "notes!" << notes;
@@ -400,6 +401,11 @@ UserInfoManager::UserInfoManager(Socket *socket, QObject *parent)
 
 UserInfoManager::~UserInfoManager()
 {
+}
+
+void UserInfoManager::setTextCodec(QTextCodec *codec)
+{
+	d->codec = codec;
 }
 
 UserInfo UserInfoManager::getUserInfo(const QString& uin)

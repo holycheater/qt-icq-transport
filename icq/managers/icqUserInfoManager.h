@@ -26,6 +26,8 @@
 
 #include "types/icqTypes.h"
 
+class QTextCodec;
+
 namespace ICQ
 {
 
@@ -43,6 +45,8 @@ class UserInfoManager : public QObject
 	public:
 		UserInfoManager(Socket *socket, QObject *parent = 0);
 		~UserInfoManager();
+
+		void setTextCodec(QTextCodec *codec);
 
 		UserInfo getUserInfo(const QString& uin);
 		quint16 getUserStatus(const QString& uin) const;

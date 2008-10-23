@@ -628,6 +628,7 @@ void Session::processLoginDone()
 	QObject::connect( d->userInfoManager, SIGNAL( userDetailsAvailable(QString) ), SIGNAL( userDetailsAvailable(QString) ) );
 	QObject::connect( d->userInfoManager, SIGNAL( shortUserDetailsAvailable(QString) ), SIGNAL( shortUserDetailsAvailable(QString) ) );
 	QObject::connect( d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->userInfoManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );
+	d->userInfoManager->setTextCodec(d->codec);
 
 	d->msgManager = new MessageManager(d->socket, this);
 	QObject::connect( d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->msgManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );

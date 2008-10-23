@@ -219,9 +219,7 @@ void AdHoc::toIQ(IQ& iq)
 	eCommand.setAttribute("sessionid", d->sessionID);
 
 	if ( d->form.isValid() ) {
-		QDomElement eForm = eCommand.ownerDocument().createElementNS(NS_DATA_FORMS, "x");
-		d->form.toDomElement(eForm);
-		eCommand.appendChild(eForm);
+		d->form.toDomElement(eCommand);
 	}
 }
 

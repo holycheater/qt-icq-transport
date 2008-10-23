@@ -26,6 +26,7 @@
 #include "xmpp-core/Message.h"
 #include "xmpp-core/Presence.h"
 
+#include "xmpp-ext/AdHoc.h"
 #include "xmpp-ext/DataForm.h"
 #include "xmpp-ext/ServiceDiscovery.h"
 #include "xmpp-ext/Registration.h"
@@ -43,7 +44,6 @@
 
 using namespace XMPP;
 
-#define NS_QUERY_ADHOC "http://jabber.org/protocol/commands"
 #define NS_IQ_GATEWAY "jabber:iq:gateway"
 
 static const int SEC_MINUTE = 60;
@@ -338,31 +338,25 @@ void JabberConnection::sendVCard(const Jid& recipient, const QString& uin, const
 
 void JabberConnection::Private::processAdHoc(const IQ& iq)
 {
-	if ( iq.childElement().tagName() != "command" ) {
-		qDebug() << "[JC] error.. not an adhoc command";
-		return;
-	}
+	AdHoc cmd = AdHoc::fromIQ(iq);
+	qDebug() << "[JC]" << "Adhoc command from" << iq.from() << "command" << cmd.node();
 
-	QString command = iq.childElement().attribute("node");
-	qDebug() << "[JC]" << "Adhoc command from" << iq.from() << "command" << command << "action" << iq.childElement().attribute("action", "execute");
-
-	if ( iq.childElement().attribute("action") == "cancel" ) {
-		qDebug() << "[JC]" << "Command" << iq.childElement().attribute("node") << "from" << iq.from() << "was canceled";
+	if ( cmd.action() == AdHoc::Cancel ) {
+		qDebug() << "[JC]" << "Command" << cmd.node() << "from" << iq.from() << "was canceled";
 
 		IQ reply = IQ::createReply(iq);
-		reply.clearChild();
-		reply.childElement().setAttribute("status", "canceled");
-		reply.childElement().removeAttribute("action");
+		cmd.setStatus(AdHoc::Canceled);
+		cmd.setAction(AdHoc::ActionNone);
+		cmd.toIQ(reply);
 
 		stream->sendStanza(reply);
 		return;
 	}
-
-	if ( iq.childElement().attribute("action", "execute") != "execute" ) {
+	if ( cmd.action() != AdHoc::Execute ) {
 		return;
 	}
 
-	if ( !commands.contains(command) ) {
+	if ( !commands.contains(cmd.node()) ) {
 		IQ reply = IQ::createReply(iq);
 		reply.setError(Stanza::Error::ItemNotFound);
 
@@ -370,14 +364,14 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 		return;
 	}
 
-	if ( command == "say-cheese" ) {
+	if ( cmd.node() == "say-cheese" ) {
 		Message msg;
 		msg.setTo( iq.from() );
 		msg.setFrom(jid);
 		msg.setBody("Cheese!.. n00b..");
 
 		stream->sendStanza(msg);
-	} else if ( command == "fetch-contacts" ) {
+	} else if ( cmd.node() == "fetch-contacts" ) {
 		if ( !checkRegistration(iq.from()) ) {
 			IQ err = IQ::createReply(iq);
 			err.setError(Stanza::Error::NotAuthorized);
@@ -386,7 +380,7 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 			return;
 		}
 		emit q->cmd_RosterRequest( iq.from() );
-	} else if ( command == "cmd-uptime" ) {
+	} else if ( cmd.node() == "cmd-uptime" ) {
 		uint uptime_t = QDateTime::currentDateTime().toTime_t() - startTime.toTime_t();
 		int weeks = qCeil(uptime_t / SEC_WEEK);
 		uptime_t -= weeks*SEC_WEEK;
@@ -405,7 +399,7 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 		msg.setFrom(jid);
 		msg.setBody("Uptime: "+uptimeText);
 		stream->sendStanza(msg);
-	} else if ( command == "set-options" ) {
+	} else if ( cmd.node() == "set-options" ) {
 		if ( !checkRegistration(iq.from()) ) {
 			IQ err = IQ::createReply(iq);
 			err.setError(Stanza::Error::NotAuthorized);
@@ -424,10 +418,8 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 				QSqlQuery( QString("DELETE FROM options WHERE jid = '_jid' AND option='auto-invite'").replace("_jid", iq.from().bare()) ).exec();
 			}
 		} else {
-			IQ reply = IQ::createReply(iq);
-			QDomElement eCommand = reply.childElement();
-			eCommand.setAttribute("status", "executing");
-			eCommand.setAttribute("sessionid", "set-options:"+QDateTime::currentDateTime().toString(Qt::ISODate));
+			cmd.setStatus(AdHoc::Executing);
+			cmd.setSessionID( "set-options:"+QDateTime::currentDateTime().toString(Qt::ISODate) );
 
 			DataForm form;
 			form.setTitle("Service configuration");
@@ -439,16 +431,19 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 			}
 			form.addField(fldAutoInvite);
 
-			form.toDomElement(eCommand);
+			cmd.setForm(form);
+
+			IQ reply = IQ::createReply(iq);
+			cmd.toIQ(reply);
 			stream->sendStanza(reply);
 			return;
 		}
 	}
 
-	IQ completedNotify = iq.createReply(iq);
-	completedNotify.childElement().setAttribute("status", "completed");
-	completedNotify.childElement().removeAttribute("action");
-	completedNotify.clearChild();
+	IQ completedNotify = IQ::createReply(iq);
+	cmd.setStatus(AdHoc::Completed);
+	cmd.setAction(AdHoc::ActionNone);
+	cmd.toIQ(completedNotify);
 
 	stream->sendStanza(completedNotify);
 }

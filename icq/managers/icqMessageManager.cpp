@@ -134,7 +134,7 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 	msgChunk.addDWord(0xffffff00); // bg color
 
 	QString guidStr = "{0946134E-4C7F-11D1-8222-444553540000}";
-	msgChunk.addLEWord( guidStr.length() );
+	msgChunk.addLEDWord( guidStr.length() );
 	msgChunk.addData(guidStr);
 
 	Tlv extData(0x2711); // TLV 0x2711

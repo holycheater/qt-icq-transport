@@ -685,8 +685,11 @@ void DataForm::Field::toDomElement(QDomElement& element) const
 			eField.appendChild(eOption);
 			eOption.setAttribute( "label", oi.key() );
 
-			QDomText eValue = doc.createTextNode( oi.value() );
+			QDomElement eValue = doc.createElement("value");
 			eOption.appendChild(eValue);
+
+			QDomText eValueText = doc.createTextNode( oi.value() );
+			eValue.appendChild(eValueText);
 		}
 	}
 

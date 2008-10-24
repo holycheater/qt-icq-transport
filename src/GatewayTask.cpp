@@ -32,7 +32,6 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QTextCodec>
 #include <QVariant>
 
 #include <QtDebug>
@@ -223,9 +222,6 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
-
-		// TODO: set codec from user settings.
-		conn->setCodecForMessages( QTextCodec::codecForName("Windows-1251") );
 
 		conn->connect();
 	}
@@ -539,7 +535,7 @@ void GatewayTask::processIncomingMessage(const QString& senderUin, const QString
 {
 	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(session);
-	QString msg = QString(message).replace('\r', "").replace('<', "&lt;").replace('>', "&gt;");
+	QString msg = QString(message).replace('\r', "");
 	emit incomingMessage(user, senderUin, msg, session->contactName(senderUin) );
 }
 

@@ -537,7 +537,7 @@ void GatewayTask::processContactOnline(const QString& uin, int status)
 void GatewayTask::processContactOffline(const QString& uin)
 {
 	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-	if ( !conn || d->icqJidTable.contains(conn) ) {
+	if ( !conn || !d->icqJidTable.contains(conn) ) {
 		return;
 	}
 	Jid user = d->icqJidTable.value(conn);

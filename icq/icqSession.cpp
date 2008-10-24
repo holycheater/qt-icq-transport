@@ -212,6 +212,11 @@ void Session::disconnect()
 		d->socket = 0;
 	}
 
+	QStringListIterator ci(contactList());
+	while ( ci.hasNext() ) {
+		emit userOffline( ci.next() );
+	}
+
 	delete d->loginManager; d->loginManager       = 0;
 	delete d->metaManager; d->metaManager         = 0;
 	delete d->msgManager; d->msgManager           = 0;

@@ -194,7 +194,9 @@ UserInfo UserInfo::fromBuffer(Buffer& buffer)
 	}
 	if ( chain.hasTlv(0x0D) ) {
 		Tlv tlv0D = chain.getTlv(0x0D);
-		info.d->capabilities << Guid::fromRawData( tlv0D.read(16) );
+		while ( !tlv0D.atEnd() ) {
+			info.d->capabilities << Guid::fromRawData( tlv0D.read(16) );
+		}
 		info.d->tlvSet.insert(0x0D);
 	}
 

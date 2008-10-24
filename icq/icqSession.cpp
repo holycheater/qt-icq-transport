@@ -314,7 +314,8 @@ void Session::sendMessage(const QString& recipient, const QString& message)
 
 	Message msg;
 
-	if ( d->userInfoManager->getUserStatus(recipient) == UserInfo::Offline ) {
+	UserInfo ui = d->userInfoManager->getUserInfo(recipient);
+	if ( d->userInfoManager->getUserStatus(recipient) == UserInfo::Offline || !ui.hasCapability( Capabilities[ccICQServerRelay] ) ) {
 		// qDebug() << "[ICQ:Session]" << "sending offline message via channel 1";
 		msg.setChannel(0x01);
 	} else {

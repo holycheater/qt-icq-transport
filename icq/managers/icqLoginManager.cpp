@@ -272,7 +272,6 @@ void LoginManager::recv_location_services_limits(SnacBuffer& reply)
 	tlv.addData( Capabilities[ccICQDirectConnect] );
 	tlv.addData( Capabilities[ccICQServerRelay] );
 	tlv.addData( Capabilities[ccUTF8Messages] );
-	tlv.addData( Capabilities[ccRTFMessages] );
 
 	snac.addTlv(tlv); // 0x05 - clsid values
 

@@ -241,9 +241,9 @@ void GatewayTask::processUserOffline(const Jid& user)
 		emit offlineNotifyFor(user);
 		return;
 	}
-	conn->disconnect();
 	d->jidIcqTable.remove( user.bare() );
 	d->icqJidTable.remove(conn);
+	conn->disconnect();
 	conn->deleteLater();
 }
 

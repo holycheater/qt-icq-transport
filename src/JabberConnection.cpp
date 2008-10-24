@@ -413,9 +413,15 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 			DataForm::Field fai = form.fieldByName("auto-invite");
 			QString auto_invite = fai.values().at(0);
 			if ( auto_invite == "true" || auto_invite == "1" ) {
-				QSqlQuery( QString("INSERT INTO options (jid,option,value) VALUES('_jid','auto-invite','enabled')").replace("_jid", iq.from().bare()) ).exec();
+				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('_jid','auto-invite','enabled')").replace("_jid", iq.from().bare()) ).exec();
 			} else {
 				QSqlQuery( QString("DELETE FROM options WHERE jid = '_jid' AND option='auto-invite'").replace("_jid", iq.from().bare()) ).exec();
+			}
+			QString auto_reconnect = form.fieldByName("auto-reconnect").values().at(0);
+			if ( auto_reconnect == "true" || auto_invite == "1" ) {
+				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('_jid','auto-reconnect','enabled')").replace("_jid", iq.from().bare()) ).exec();
+			} else {
+				QSqlQuery( QString("DELETE FROM options WHERE jid = '_jid' AND option='auto-reconnect'").replace("_jid", iq.from().bare()) ).exec();
 			}
 		} else {
 			cmd.setStatus(AdHoc::Executing);
@@ -431,6 +437,12 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 			}
 			form.addField(fldAutoInvite);
 
+			DataForm::Field fldAutoReconnect("auto-reconnect", "Automatically reconnect", DataForm::Field::Boolean);
+			if ( getUserSetting(iq.from(),"auto-reconnect") == "enabled" ) {
+				fldAutoReconnect.addValue("true");
+			}
+			form.addField(fldAutoReconnect);
+
 			cmd.setForm(form);
 
 			IQ reply = IQ::createReply(iq);
@@ -443,6 +455,7 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 	IQ completedNotify = IQ::createReply(iq);
 	cmd.setStatus(AdHoc::Completed);
 	cmd.setAction(AdHoc::ActionNone);
+	cmd.setForm( DataForm() );
 	cmd.toIQ(completedNotify);
 
 	stream->sendStanza(completedNotify);

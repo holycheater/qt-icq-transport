@@ -374,7 +374,6 @@ void GatewayTask::processGatewayOnline()
 	query.exec("SELECT jid FROM options WHERE option = 'auto-invite'");
 	while ( query.next() ) {
 		Jid jid = query.value(0).toString();
-		qDebug() << "[GT] processGatewayOnline: probing for" << jid;
 		emit probeRequest(jid);
 	}
 }
@@ -452,6 +451,14 @@ void GatewayTask::processIcqSignOff()
 
 	d->icqJidTable.remove(conn);
 	d->jidIcqTable.remove(user);
+	conn->deleteLater();
+
+	QSqlQuery query;
+	query.exec( QString("SELECT value FROM options WHERE jid='_jid' AND option='auto-reconnect'").replace("_jid",user) );
+	if ( query.first() && query.value(0).toString() == "enabled" ) {
+		// qDebug() << "[GT]" << "Processing auto-reconnect for user" << user;
+		emit probeRequest(user);
+	}
 }
 
 void GatewayTask::processIcqStatus(int status)

@@ -237,10 +237,16 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 void GatewayTask::processUserOffline(const Jid& user)
 {
 	ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
+	emit offlineNotifyFor(user);
 	if ( !conn ) {
-		emit offlineNotifyFor(user);
 		return;
 	}
+
+	QStringListIterator ci(conn->contactList());
+	while ( ci.hasNext() ) {
+		emit contactOffline( user, ci.next() );
+	}
+
 	d->jidIcqTable.remove( user.bare() );
 	d->icqJidTable.remove(conn);
 	conn->disconnect();
@@ -440,14 +446,7 @@ void GatewayTask::processIcqSignOff()
 	}
 
 	Jid user = d->icqJidTable.value(conn);
-
 	emit offlineNotifyFor(user);
-
-	QStringList contacts = conn->contactList();
-	QStringListIterator i(contacts);
-	while ( i.hasNext() ) {
-		emit contactOffline( user, i.next() );
-	}
 
 	d->icqJidTable.remove(conn);
 	d->jidIcqTable.remove(user);
@@ -529,6 +528,9 @@ void GatewayTask::processContactOnline(const QString& uin, int status)
 void GatewayTask::processContactOffline(const QString& uin)
 {
 	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
+	if ( !conn || d->icqJidTable.contains(conn) ) {
+		return;
+	}
 	Jid user = d->icqJidTable.value(conn);
 	emit contactOffline(user, uin);
 }

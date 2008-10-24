@@ -26,6 +26,7 @@
 
 #include "icqSession.h"
 #include "types/icqShortUserDetails.h"
+#include "types/icqUserInfo.h"
 
 #include <QHash>
 #include <QStringList>
@@ -607,6 +608,17 @@ void GatewayTask::processShortUserDetails(const QString& uin)
 	vcard.setFullName( QString( details.firstName() + " " + details.lastName() ).trimmed() );
 	vcard.setFamilyName( details.lastName() );
 	vcard.setGivenName( details.firstName() );
+
+	ICQ::UserInfo ui = session->userInfo(uin);
+	QList<ICQ::Guid> guids = ui.capabilities();
+	if ( guids.size() > 0  ) {
+		QString notes = QString("Capabilities:") + QChar(QChar::LineSeparator);
+		QListIterator<ICQ::Guid> i(guids);
+		while ( i.hasNext() ) {
+			notes += i.next().toString() + QChar(QChar::LineSeparator);
+		}
+		vcard.setDescription(notes);
+	}
 
 	if ( !info.resource.isEmpty() ) {
 		user.setResource(info.resource);

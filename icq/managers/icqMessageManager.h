@@ -25,6 +25,8 @@
 
 #include "types/icqTypes.h"
 
+class QTextCodec;
+
 namespace ICQ
 {
 
@@ -41,6 +43,8 @@ class MessageManager : public QObject
 	public:
 		MessageManager(Socket *socket, QObject *parent = 0);
 		~MessageManager();
+
+		void setTextCodec(QTextCodec *codec);
 
 		void setUin(const QString& uin);
 

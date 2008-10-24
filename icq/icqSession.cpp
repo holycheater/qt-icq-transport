@@ -638,6 +638,7 @@ void Session::processLoginDone()
 	d->msgManager = new MessageManager(d->socket, this);
 	QObject::connect( d->metaManager, SIGNAL( metaInfoAvailable(Word,Buffer&) ), d->msgManager, SLOT( incomingMetaInfo(Word,Buffer&) ) );
 	QObject::connect( d->msgManager, SIGNAL( incomingMessage(Message) ), SLOT( processIncomingMessage(Message) ) );
+	d->msgManager->setTextCodec(d->codec);
 	d->msgManager->setUin(d->uin);
 	d->msgManager->requestOfflineMessages();
 

@@ -26,6 +26,7 @@
 #include "types/icqTlvChain.h"
 
 #include <QDateTime>
+#include <QTextCodec>
 
 //#include <QtDebug>
 
@@ -44,6 +45,7 @@ class MessageManager::Private {
 
 		QString uin;
 		Socket *socket;
+		QTextCodec *codec;
 };
 
 void MessageManager::Private::send_channel_1_message(const Message& msg)
@@ -68,7 +70,7 @@ void MessageManager::Private::send_channel_1_message(const Message& msg)
 	Buffer msgChunk;
 	msgChunk.addWord(0x0000); // charset
 	msgChunk.addWord(0x0000); // lang num
-	msgChunk.addData( msg.text() );
+	msgChunk.addData( codec->fromUnicode( QString::fromUtf8(msg.text()) ) );
 
 	msgData.addByte(0x01); // fragment id: message
 	msgData.addByte(0x01); // fragment version
@@ -197,6 +199,11 @@ MessageManager::MessageManager(Socket *socket, QObject *parent)
 MessageManager::~MessageManager()
 {
 	delete d;
+}
+
+void MessageManager::setTextCodec(QTextCodec *codec)
+{
+	d->codec = codec;
 }
 
 void MessageManager::setUin(const QString& uin)

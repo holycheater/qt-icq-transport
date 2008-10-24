@@ -32,6 +32,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QTextCodec>
 #include <QVariant>
 
 #include <QtDebug>
@@ -223,6 +224,18 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
 
+		query.exec( QString("SELECT value FROM options WHERE jid='_jid' AND option='encoding'").replace( "_jid", user.bare() ) );
+		QTextCodec *codec;
+		if ( query.first() ) {
+			codec = QTextCodec::codecForName( query.value(0).toByteArray() );
+			if ( codec == 0 ) {
+				codec = QTextCodec::codecForName("windows-1251");
+			}
+		} else {
+			codec = QTextCodec::codecForName("windows-1251");
+		}
+		Q_ASSERT( codec != 0 );
+		conn->setCodecForMessages(codec);
 		conn->connect();
 	}
 }

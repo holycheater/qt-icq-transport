@@ -36,6 +36,7 @@
 #include <QDateTime>
 #include <QStringList>
 #include <QSqlQuery>
+#include <QTextCodec>
 #include <QUrl>
 #include <QVariant>
 #include <qmath.h>
@@ -423,6 +424,8 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 			} else {
 				QSqlQuery( QString("DELETE FROM options WHERE jid = '_jid' AND option='auto-reconnect'").replace("_jid", iq.from().bare()) ).exec();
 			}
+			QString encoding = form.fieldByName("encoding").values().at(0);
+			QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('_jid','encoding','_encoding')").replace("_jid", iq.from().bare()).replace("_encoding", encoding) ).exec();
 		} else {
 			cmd.setStatus(AdHoc::Executing);
 			cmd.setSessionID( "set-options:"+QDateTime::currentDateTime().toString(Qt::ISODate) );
@@ -442,6 +445,22 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 				fldAutoReconnect.addValue("true");
 			}
 			form.addField(fldAutoReconnect);
+
+			DataForm::Field fldEncoding("encoding", "Codepage", DataForm::Field::ListSingle);
+
+			QListIterator<QByteArray> ci( QTextCodec::availableCodecs() );
+			while ( ci.hasNext() ) {
+				QString enc = ci.next();
+				fldEncoding.addOption(enc,enc);
+			}
+			QString userEncoding = getUserSetting(iq.from(), "encoding");
+			if ( !userEncoding.isEmpty() ) {
+				fldEncoding.addValue(userEncoding);
+			} else {
+				fldEncoding.addValue("windows-1251");
+			}
+			fldEncoding.setDesc( tr("This option is used to set encoding for retrieving/sending offline messages and user details since ICQ service doesn't fully support UTF-8") );
+			form.addField(fldEncoding);
 
 			cmd.setForm(form);
 

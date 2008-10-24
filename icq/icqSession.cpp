@@ -532,6 +532,14 @@ UserDetails Session::userDetails(const QString& uin) const
 	return d->userInfoManager->userDetails(uin);
 }
 
+UserInfo Session::userInfo(const QString& uin) const
+{
+	if ( !d->userInfoManager ) {
+		return UserInfo();
+	}
+	return d->userInfoManager->getUserInfo(uin);
+}
+
 void Session::removeUserDetails(const QString& uin)
 {
 	if ( !d->userInfoManager ) {

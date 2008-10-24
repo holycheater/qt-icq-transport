@@ -38,6 +38,7 @@ class SnacBuffer;
 class Message;
 class ShortUserDetails;
 class UserDetails;
+class UserInfo;
 
 class Session : public QObject
 {
@@ -85,6 +86,7 @@ class Session : public QObject
 
 		ShortUserDetails shortUserDetails(const QString& uin) const;
 		UserDetails userDetails(const QString& uin) const;
+		UserInfo userInfo(const QString& uin) const;
 
 		void removeUserDetails(const QString& uin);
 		void removeShortUserDetails(const QString& uin);

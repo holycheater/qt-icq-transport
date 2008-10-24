@@ -436,6 +436,10 @@ void GatewayTask::processIcqSignOff()
 	}
 
 	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
+	if ( !d->icqJidTable.contains(conn) ) {
+		return;
+	}
+
 	Jid user = d->icqJidTable.value(conn);
 
 	emit offlineNotifyFor(user);
@@ -445,6 +449,9 @@ void GatewayTask::processIcqSignOff()
 	while ( i.hasNext() ) {
 		emit contactOffline( user, i.next() );
 	}
+
+	d->icqJidTable.remove(conn);
+	d->jidIcqTable.remove(user);
 }
 
 void GatewayTask::processIcqStatus(int status)

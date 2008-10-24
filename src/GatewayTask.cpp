@@ -65,6 +65,8 @@ class GatewayTask::Private
 		GatewayTask *q;
 
 		bool online;
+
+		QHash<QString, int> reconnects;
 };
 
 GatewayTask::Private::Private(GatewayTask *parent)
@@ -442,6 +444,8 @@ void GatewayTask::processIcqSignOn()
 	Jid user = d->icqJidTable.value(conn);
 
 	emit onlineNotifyFor(user, XMPP::Presence::None);
+
+	d->reconnects.remove( user.bare() );
 }
 
 void GatewayTask::processIcqSignOff()
@@ -465,6 +469,12 @@ void GatewayTask::processIcqSignOff()
 	QSqlQuery query;
 	query.exec( QString("SELECT value FROM options WHERE jid='_jid' AND option='auto-reconnect'").replace("_jid",user) );
 	if ( query.first() && query.value(0).toString() == "enabled" ) {
+		int rCount = d->reconnects.value( user.bare() );
+		if ( rCount >= 3 ) { // limit number of reconnects to 3.
+			emit gatewayMessage(user, "Tried to reconnect 3 times, but no result. Stopping reconnects.");
+			return;
+		}
+		d->reconnects.insert(user.bare(), ++rCount);
 		// qDebug() << "[GT]" << "Processing auto-reconnect for user" << user;
 		emit probeRequest(user);
 	}

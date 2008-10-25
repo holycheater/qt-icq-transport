@@ -83,14 +83,14 @@ class JabberConnection::Private {
 bool JabberConnection::Private::checkRegistration(const Jid& user)
 {
 	QSqlQuery query;
-	query.exec( QString("SELECT jid FROM users WHERE jid = '?'").replace("?", user.bare()) );
+	query.exec( QString("SELECT jid FROM users WHERE jid = '%1'").arg(user.bare()) );
 	return query.first();
 }
 
 QString JabberConnection::Private::getUserSetting(const Jid& user, const QString& setting)
 {
 	QSqlQuery query;
-	query.exec( QString("SELECT value FROM options WHERE jid = '_jid' AND option = '_option' ").replace("_jid", user.bare()).replace("_option",setting) );
+	query.exec( QString("SELECT value FROM options WHERE jid = '%1' AND option = '%2' ").arg(user.bare(), setting) );
 	if ( !query.first() ) {
 		return QString();
 	}
@@ -405,18 +405,18 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 			DataForm::Field fai = form.fieldByName("auto-invite");
 			QString auto_invite = fai.values().at(0);
 			if ( auto_invite == "true" || auto_invite == "1" ) {
-				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('_jid','auto-invite','enabled')").replace("_jid", iq.from().bare()) ).exec();
+				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('%1','auto-invite','enabled')").arg(iq.from().bare()) ).exec();
 			} else {
-				QSqlQuery( QString("DELETE FROM options WHERE jid = '_jid' AND option='auto-invite'").replace("_jid", iq.from().bare()) ).exec();
+				QSqlQuery( QString("DELETE FROM options WHERE jid = '%1' AND option='auto-invite'").arg(iq.from().bare()) ).exec();
 			}
 			QString auto_reconnect = form.fieldByName("auto-reconnect").values().at(0);
 			if ( auto_reconnect == "true" || auto_invite == "1" ) {
-				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('_jid','auto-reconnect','enabled')").replace("_jid", iq.from().bare()) ).exec();
+				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('%1','auto-reconnect','enabled')").arg(iq.from().bare()) ).exec();
 			} else {
-				QSqlQuery( QString("DELETE FROM options WHERE jid = '_jid' AND option='auto-reconnect'").replace("_jid", iq.from().bare()) ).exec();
+				QSqlQuery( QString("DELETE FROM options WHERE jid = '%1' AND option='auto-reconnect'").arg(iq.from().bare()) ).exec();
 			}
 			QString encoding = form.fieldByName("encoding").values().at(0);
-			QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('_jid','encoding','_encoding')").replace("_jid", iq.from().bare()).replace("_encoding", encoding) ).exec();
+			QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('%1','encoding','%2')").arg(iq.from().bare(), encoding) ).exec();
 		} else {
 			cmd.setStatus(AdHoc::Executing);
 			cmd.setSessionID( "set-options:"+QDateTime::currentDateTime().toString(Qt::ISODate) );

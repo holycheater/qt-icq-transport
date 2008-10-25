@@ -133,7 +133,7 @@ void GatewayTask::processRegister(const QString& user, const QString& uin, const
 
 	QSqlQuery query;
 	/* prepare + bindvalue doesn't work... */
-	query.exec( QString("REPLACE INTO users VALUES('_user', '_uin', '_pass')").replace("_user", user).replace("_uin", uin).replace("_pass", password) );
+	query.exec( QString("REPLACE INTO users VALUES('%1', '%2', '%3')").arg(user,uin,password) );
 
 	emit gatewayMessage( user, tr("You have been successfully registered") );
 }
@@ -152,13 +152,13 @@ void GatewayTask::processUnregister(const QString& user)
 
 	QSqlQuery query;
 
-	query.exec( QString("SELECT * FROM users WHERE jid = '_user'").replace("_user", user) );
+	query.exec( QString("SELECT * FROM users WHERE jid = '%1'").arg(user) );
 	if ( !query.first() ) {
 		return;
 	}
 
-	query.exec( QString("DELETE FROM users WHERE jid = '_user'").replace("_user", user) );
-	query.exec( QString("DELETE FROM options WHERE jid = '_user'").replace("_user", user) );
+	query.exec( QString("DELETE FROM users WHERE jid = '%1'").arg(user) );
+	query.exec( QString("DELETE FROM options WHERE jid = '%1'").arg(user) );
 }
 
 void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_login)
@@ -194,7 +194,7 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 
 	QSqlQuery query;
 	/* small hack with replace, because QSqlQuery somehow doesn't understand bindvalues there */
-	query.exec( QString("SELECT uin, password FROM users WHERE jid = '?' ").replace( "?", user.bare() ) );
+	query.exec( QString("SELECT uin, password FROM users WHERE jid = '%1' ").arg(user.bare()) );
 
 	if ( query.first() ) {
 		QString uin = query.value(0).toString();
@@ -226,7 +226,7 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
 
-		query.exec( QString("SELECT value FROM options WHERE jid='_jid' AND option='encoding'").replace( "_jid", user.bare() ) );
+		query.exec( QString("SELECT value FROM options WHERE jid='%1' AND option='encoding'").arg(user.bare()) );
 		QTextCodec *codec;
 		if ( query.first() ) {
 			codec = QTextCodec::codecForName( query.value(0).toByteArray() );
@@ -466,7 +466,7 @@ void GatewayTask::processIcqSignOff()
 	conn->deleteLater();
 
 	QSqlQuery query;
-	query.exec( QString("SELECT value FROM options WHERE jid='_jid' AND option='auto-reconnect'").replace("_jid",user) );
+	query.exec( QString("SELECT value FROM options WHERE jid='%1' AND option='auto-reconnect'").arg(user) );
 	if ( query.first() && query.value(0).toString() == "enabled" ) {
 		int rCount = d->reconnects.value( user.bare() );
 		if ( rCount >= 3 ) { // limit number of reconnects to 3.

@@ -194,6 +194,12 @@ ComponentStream::Error::~Error()
 {
 }
 
+ComponentStream::Error& ComponentStream::Error::operator=(const Error& other)
+{
+	d = other.d;
+	return *this;
+}
+
 /**
  * Returns application-specific error condition.
  *

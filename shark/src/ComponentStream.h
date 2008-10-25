@@ -104,6 +104,7 @@ class ComponentStream::Error
 		Error(const QDomDocument& document);
 		Error(const QDomElement& element);
 		~Error();
+		Error& operator=(const Error& other);
 
 		QString appSpec() const;
 		QString appSpecNS() const;

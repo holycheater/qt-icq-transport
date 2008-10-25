@@ -118,7 +118,6 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->vcard.setUrl( QUrl("http://github.com/holycheater/qt-icq-transport") );
 
 	d->commands.insert( "fetch-contacts", DiscoItem("icq.dragonfly", "fetch-contacts", "Fetch ICQ contacts") );
-	d->commands.insert( "say-cheese",     DiscoItem("icq.dragonfly", "say-cheese",     "Say 'cheese'") );
 	d->commands.insert( "cmd-uptime",     DiscoItem("icq.dragonfly", "cmd-uptime",     "Report service uptime") );
 	d->commands.insert( "set-options",    DiscoItem("icq.dragonfly", "set-options",    "Set service parameters") );
 
@@ -365,14 +364,7 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 		return;
 	}
 
-	if ( cmd.node() == "say-cheese" ) {
-		Message msg;
-		msg.setTo( iq.from() );
-		msg.setFrom(jid);
-		msg.setBody("Cheese!.. n00b..");
-
-		stream->sendStanza(msg);
-	} else if ( cmd.node() == "fetch-contacts" ) {
+	if ( cmd.node() == "fetch-contacts" ) {
 		if ( !checkRegistration(iq.from()) ) {
 			IQ err = IQ::createReply(iq);
 			err.setError(Stanza::Error::NotAuthorized);

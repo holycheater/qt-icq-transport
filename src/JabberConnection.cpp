@@ -790,4 +790,5 @@ void JabberConnection::stream_error(ComponentStream::ErrorType errType)
 		default:
 			break;
 	}
+	exit(1);
 }

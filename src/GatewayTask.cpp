@@ -36,8 +36,6 @@
 #include <QTextCodec>
 #include <QVariant>
 
-#include <QtDebug>
-
 class GatewayTask::Private
 {
 	public:
@@ -97,7 +95,8 @@ void GatewayTask::setDatabaseLink(const QSqlDatabase& sql)
 {
 	d->db = sql;
 	if ( !d->db.isOpen() && !d->db.open() ) {
-		qDebug() << "[GT]" << "Database open failed" << d->db.lastError();
+		qCritical( "[GT] Database open failed: %s", qPrintable(d->db.lastError().text()) );
+		exit(1);
 		return;
 	}
 
@@ -165,7 +164,7 @@ void GatewayTask::processUnregister(const QString& user)
 void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_login)
 {
 	if ( d->icqHost.isEmpty() || !d->icqPort ) {
-		qDebug() << "[GT] processLogin: icq host and/or port values are not set. Aborting...";
+		qCritical("[GT] processLogin: icq host and/or port values are not set. Aborting...");
 		return;
 	}
 	ICQ::Session::OnlineStatus icqStatus;
@@ -571,7 +570,7 @@ void GatewayTask::processAuthGranted(const QString& uin)
 	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(session);
 
-	qDebug() << "[GT]" << user << "granted auth to" << uin << "nick" << session->contactName(uin);
+	// qDebug() << "[GT]" << user << "granted auth to" << uin << "nick" << session->contactName(uin);
 	emit subscriptionReceived( user, uin, session->contactName(uin) );
 }
 
@@ -583,7 +582,7 @@ void GatewayTask::processAuthDenied(const QString& uin)
 	ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(conn);
 
-	qDebug() << "[GT]" << user << "denied auth to" << uin;
+	// qDebug() << "[GT]" << user << "denied auth to" << uin;
 	emit subscriptionRemoved(user, uin);
 }
 
@@ -606,7 +605,7 @@ void GatewayTask::processShortUserDetails(const QString& uin)
 	QString key = QString(user)+"-"+uin;
 
 	if ( !d->vCardRequests.contains(key) ) {
-		qDebug() << "[GT]" << "Request was not logged";
+		// qDebug() << "[GT]" << "Request was not logged";
 		return;
 	}
 

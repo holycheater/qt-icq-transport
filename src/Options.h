@@ -34,6 +34,7 @@ class Options
 		QString getOption(const QString& name) const;
 	private:
 		void readXmlFile(const QString& file);
+		void setOption(const QString& option, const QString& value, bool overwrite = false);
 		static void printUsage();
 		QHash<QString, QString> m_options;
 };

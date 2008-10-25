@@ -23,15 +23,22 @@
 #include <QCoreApplication>
 #include <QDomDocument>
 #include <QFile>
+#include <QSet>
 #include <QStringList>
 #include <QTextStream>
 
 /* Default Parameters */
 static QString defaultConfigFile("config.xml");
+static QString defaultLogFile("/tmp/qt-icq-transport.log");
+static QSet<QString> supportedOptions;
 
 Options::Options()
 {
 	m_options.insert("config-file", defaultConfigFile);
+	m_options.insert("log-file", defaultLogFile);
+	supportedOptions << "config-file" << "log-file" << "database"
+	                 << "jabber-server" << "jabber-port" << "jabber-domain" << "jabber-secret"
+	                 << "icq-server" << "icq-port";
 }
 
 Options::~Options()
@@ -58,39 +65,11 @@ void Options::parseCommandLine()
 			printUsage();
 			exit(0);
 		}
-		if ( arg == "-config-file" ) {
-			m_options.insert( "config-file", i.next() );
-			continue;
+		if ( !arg.startsWith("-") ) {
+			qCritical( "Unknown argument: %s", qPrintable(arg) );
+			exit(1);
 		}
-		if ( arg == "-database" ) {
-			QString db = i.next();
-			m_options.insert( "database", db );
-			continue;
-		}
-		if ( arg == "-jabber-server" ) {
-			m_options.insert( "jabber-server", i.next() );
-			continue;
-		}
-		if ( arg == "-jabber-port" ) {
-			m_options.insert( "jabber-port", i.next() );
-			continue;
-		}
-		if ( arg == "-jabber-domain" ) {
-			m_options.insert( "jabber-domain", i.next() );
-			continue;
-		}
-		if ( arg == "-jabber-secret" ) {
-			m_options.insert( "jabber-secret", i.next() );
-			continue;
-		}
-		if ( arg == "-icq-server" ) {
-			m_options.insert( "icq-server", i.next() );
-			continue;
-		}
-		if ( arg == "-icq-port" ) {
-			m_options.insert( "icq-port", i.next() );
-			continue;
-		}
+		setOption(arg.remove(0,1), i.next(), true);
 	}
 	readXmlFile( m_options.value("config-file") );
 }
@@ -122,35 +101,20 @@ void Options::readXmlFile(const QString& fileName)
 		if ( e.isNull() ) {
 			continue;
 		}
-		if ( !m_options.contains("database") && e.tagName() == "database" ) {
-			m_options.insert( "database", e.text() );
-			continue;
-		}
-		if ( !m_options.contains("jabber-server") && e.tagName() == "jabber-server" ) {
-			m_options.insert( "jabber-server", e.text() );
-			continue;
-		}
-		if ( !m_options.contains("jabber-port") && e.tagName() == "jabber-port" ) {
-			m_options.insert( "jabber-port", e.text() );
-			continue;
-		}
-		if ( !m_options.contains("jabber-domain") && e.tagName() == "jabber-domain" ) {
-			m_options.insert( "jabber-domain", e.text() );
-			continue;
-		}
-		if ( !m_options.contains("jabber-secret") && e.tagName() == "jabber-secret" ) {
-			m_options.insert( "jabber-secret", e.text() );
-			continue;
-		}
-		if ( !m_options.contains("icq-server") && e.tagName() == "icq-server" ) {
-			m_options.insert( "icq-server", e.text() );
-			continue;
-		}
-		if ( !m_options.contains("icq-port") && e.tagName() == "icq-port" ) {
-			m_options.insert( "icq-port", e.text() );
-			continue;
-		}
+		setOption( e.tagName(), e.text() );
 	}
+}
+
+void Options::setOption(const QString& option, const QString& value, bool overwrite)
+{
+	if ( !overwrite && m_options.contains(option) ) {
+		return;
+	}
+	if ( !supportedOptions.contains(option) ) {
+		qWarning( "Unsupported option: %s (value: %s)", qPrintable(option), qPrintable(value) );
+		return;
+	}
+	m_options.insert(option, value);
 }
 
 void Options::printUsage()
@@ -159,6 +123,7 @@ void Options::printUsage()
 	stream << "You can use the options below to override default settings or config file settings\n"
 		<< "Options:\n"
 		<< "   -config-file <file>       XML Configuration file (note: command-line options override xml configuration)\n"
+		<< "   -log-file <file>          Log file (default is /tmp/qt-icq-transport.log)\n"
 		<< "   -database <file>          Service users database file (default: users.db)\n"
 		<< "   -jabber-server <host>     Jabber server hostname/ip\n"
 		<< "   -jabber-port <port>       Jabber server port\n"

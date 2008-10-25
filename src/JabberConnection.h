@@ -89,7 +89,7 @@ class JabberConnection : public QObject
 
 		void cmd_RosterRequest(const Jid& user);
 	private slots:
-		void stream_error(const ComponentStream::Error&);
+		void stream_error(ComponentStream::ErrorType);
 		void stream_connected();
 		void stream_iq(const IQ&);
 		void stream_message(const Message&);

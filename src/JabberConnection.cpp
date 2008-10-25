@@ -777,11 +777,19 @@ void JabberConnection::stream_presence(const Presence& presence)
 void JabberConnection::stream_connected()
 {
 	d->startTime = QDateTime::currentDateTime();
-	qDebug() << "[JC] Component signed on";
+	qDebug("[JC] Component signed on");
 }
 
-void JabberConnection::stream_error(const ComponentStream::Error& err)
+void JabberConnection::stream_error(ComponentStream::ErrorType errType)
 {
-	qDebug() << "[JC] Stream error! Condition:" << err.conditionString();
-	exit(1);
+	switch (errType) {
+		case ComponentStream::EHandshakeFailed:
+			qCritical("[JC] Handshaking with jabber-server failed!");
+			break;
+		case ComponentStream::EStreamError:
+			qCritical("[JC] Stream error: %s",  qPrintable( d->stream->lastStreamError().conditionString() ) );
+			break;
+		default:
+			break;
+	}
 }

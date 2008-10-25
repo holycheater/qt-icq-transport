@@ -23,7 +23,9 @@
 #include "Options.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QFileInfo>
+#include <QTextStream>
 #include <QTimer>
 #include <QSqlDatabase>
 #include <QStringList>
@@ -31,6 +33,7 @@
 #include <signal.h>
 
 static GatewayTask *gw_ptr = 0;
+static QIODevice *log_device = 0;
 
 #define PROCESS_EVENTS_MAX_TIME 60000
 
@@ -45,6 +48,30 @@ void sighandler(int param)
 	exit(0);
 }
 
+void logMessageHandler(QtMsgType type, const char* msg)
+{
+	QString msgType;
+	switch ( type ) {
+		case QtDebugMsg:
+			msgType = "[DEBUG]";
+			break;
+		case QtWarningMsg:
+			msgType = "[WARN]";
+			break;
+		case QtCriticalMsg:
+			msgType = "[CRIT]";
+			break;
+		case QtFatalMsg:
+			msgType = "[FATAL]";
+		default:
+			break;
+	}
+	QTextStream(log_device) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << msgType << " " << msg << "\n";
+	if ( type == QtFatalMsg ) {
+		abort();
+	}
+}
+
 int main(int argc, char **argv)
 {
 	QCoreApplication app(argc, argv);
@@ -53,20 +80,27 @@ int main(int argc, char **argv)
 
 	options->parseCommandLine();
 
+	QString logfile = options->getOption("log-file");
+	QFileInfo lfi(logfile);
+	if ( lfi.exists() && !(lfi.isReadable() && lfi.isWritable()) ) {
+		qCritical( "Cannot read/write to log-file (%s)", qPrintable(logfile) );
+		exit(1);
+	}
+	log_device = new QFile(logfile);
+	log_device->open(QIODevice::Append);
+	qInstallMsgHandler(logMessageHandler);
+
 	QString dbFile = options->getOption("database");
 	if ( dbFile.isEmpty() ) {
-		qCritical("Error! Database not specified.");
-		exit(1);
+		qFatal("Error! Database not specified.");
 	}
 	QFileInfo fi(dbFile);
 	if ( fi.exists() && !( fi.isReadable() && fi.isWritable() ) ) {
-		qCritical("Database file '%s' is not readable/writeable", qPrintable(dbFile) );
-		exit(1);
+		qFatal("Database file '%s' is not readable/writeable", qPrintable(dbFile) );
 	}
 
 	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {
-		qCritical("Your Qt installation doesn't have the sqlite database driver");
-		exit(1);
+		qFatal("Your Qt installation doesn't have the sqlite database driver");
 	}
 
 	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");

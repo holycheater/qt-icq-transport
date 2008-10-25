@@ -34,14 +34,13 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QHash>
 #include <QStringList>
 #include <QSqlQuery>
 #include <QTextCodec>
 #include <QUrl>
 #include <QVariant>
 #include <qmath.h>
-
-#include <QtDebug>
 
 using namespace XMPP;
 
@@ -339,10 +338,10 @@ void JabberConnection::sendVCard(const Jid& recipient, const QString& uin, const
 void JabberConnection::Private::processAdHoc(const IQ& iq)
 {
 	AdHoc cmd = AdHoc::fromIQ(iq);
-	qDebug() << "[JC]" << "Adhoc command from" << iq.from() << "command" << cmd.node();
+	// qDebug() << "[JC]" << "Adhoc command from" << iq.from() << "command" << cmd.node();
 
 	if ( cmd.action() == AdHoc::Cancel ) {
-		qDebug() << "[JC]" << "Command" << cmd.node() << "from" << iq.from() << "was canceled";
+		// qDebug() << "[JC]" << "Command" << cmd.node() << "from" << iq.from() << "was canceled";
 
 		IQ reply = IQ::createReply(iq);
 		cmd.setStatus(AdHoc::Canceled);
@@ -474,12 +473,12 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 
 void JabberConnection::Private::processDiscoInfo(const IQ& iq)
 {
-	qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
+	// qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
 
 	/* disco-info to command-node query handling */
 	QString node = iq.childElement().attribute("node");
 	if ( !node.isEmpty() & commands.contains(node) ) {
-		qDebug() << "[JC]" << "disco-info to command node: " << node;
+		// qDebug() << "[JC]" << "disco-info to command node: " << node;
 
 		IQ adhoc_info = IQ::createReply(iq);
 
@@ -717,8 +716,7 @@ void JabberConnection::stream_iq(const IQ& iq)
 		/* TODO: Error logging? */
 		return;
 	}
-
-	qDebug() << "[JC]" << "unhandled IQ type" << iq.type() << "tag" << iq.childElement().tagName() << "nsuri" << iq.childElement().namespaceURI();
+	qWarning("[JC] Unhandled IQ from %s type:%s, tag:%s, nsuri:%s", qPrintable(iq.from().full()), qPrintable(iq.type()), qPrintable(iq.childElement().tagName()), qPrintable(iq.childElement().namespaceURI()) );
 }
 
 void JabberConnection::stream_message(const Message& msg)

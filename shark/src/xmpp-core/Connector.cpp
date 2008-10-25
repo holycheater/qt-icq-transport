@@ -22,8 +22,6 @@
 #include "Connector.h"
 #include "Connector_p.h"
 
-#include <QtDebug>
-
 using namespace XMPP;
 
 Connector::Connector(QObject *parent)
@@ -56,12 +54,12 @@ void Connector::setOptHostPort(const QString& host, quint16 port)
 void Connector::connectToServer(const QString& server)
 {
 	if (d->mode != Private::Idle) {
-		qDebug() << "[Connector] Already connected/connecting";
+		qWarning("[XMPP::Connector] Already connected/connecting");
 		return;
 	}
 	if ( server.isEmpty() ) {
-		qDebug() << "[Connector] Server string is empty";
 		emit error(EHostLookupFailed);
+		qWarning("[XMPP::Connector] Server address not specified");
 		return;
 	}
 	d->mode = Private::Connecting;

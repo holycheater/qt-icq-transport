@@ -20,8 +20,6 @@
 
 #include "Connector_p.h"
 
-#include <QtDebug>
-
 using namespace XMPP;
 
 Connector::Private::Private(Connector *parent)
@@ -41,9 +39,8 @@ Connector::Private::~Private()
 
 void Connector::Private::beginConnect()
 {
-	if ( socket ) {
-		delete socket;
-	}
+	delete socket; socket = 0;
+
 	connectTimer = new QTimer(q);
 	QObject::connect(connectTimer, SIGNAL( timeout() ), SLOT( processConnectionTimeout() ) );
 	connectTimer->setSingleShot(true);
@@ -62,9 +59,7 @@ void Connector::Private::reset()
 	mode = Idle;
 	addr.clear();
 
-	if ( socket ) {
-		delete socket;
-	}
+	delete socket; socket = 0;
 }
 
 void Connector::Private::processLookupResult(const QHostInfo& host)
@@ -72,12 +67,11 @@ void Connector::Private::processLookupResult(const QHostInfo& host)
 	delete lookupTimer;
 
 	if ( host.error() != QHostInfo::NoError ) {
-		qCritical() << "[Connector] Lookup failed:" << host.errorString();
 		emit q->error(EHostLookupFailed);
 		return;
 	}
 	addr = host.addresses().value(0);
-	qDebug() << "[Connector] Found address:" << addr.toString();
+	qWarning( "[XMPP::Connector] Found address: %s", qPrintable(addr.toString()) );
 
 	beginConnect();
 }
@@ -88,8 +82,6 @@ void Connector::Private::processLookupTimeout()
 	lookupTimer->deleteLater();
 	QHostInfo::abortHostLookup(lookupID);
 	emit q->error(EHostLookupTimeout);
-
-	qDebug() << "[Connector] host lookup timeout";
 }
 
 void Connector::Private::processConnectionTimeout()
@@ -97,8 +89,6 @@ void Connector::Private::processConnectionTimeout()
 	reset();
 	connectTimer->deleteLater();
 	emit q->error(EConnectionTimeout);
-
-	qDebug() << "[Connector] connection timeout";
 }
 
 void Connector::Private::processSocketError(QAbstractSocket::SocketError errcode)

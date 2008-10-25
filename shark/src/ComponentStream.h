@@ -49,10 +49,15 @@ class ComponentStream : public QObject
 	enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
 
 	public:
+		enum ErrorType { EStreamError, EHandshakeFailed };
+
 		ComponentStream(Connector *connector, QObject *parent = 0);
 		~ComponentStream();
 
 		class Error;
+
+		QString lastErrorString() const;
+		Error lastStreamError() const;
 
 		QString baseNS() const;
 
@@ -63,7 +68,7 @@ class ComponentStream : public QObject
 	signals:
 		void connected();
 		void disconnected();
-		void error(const ComponentStream::Error&);
+		void error(ComponentStream::ErrorType errType);
 		void stanzaIQ(const IQ&);
 		void stanzaMessage(const Message&);
 		void stanzaPresence(const Presence&);

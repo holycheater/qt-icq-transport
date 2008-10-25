@@ -30,8 +30,6 @@
 #include "xmpp-core/Message.h"
 #include "xmpp-core/Presence.h"
 
-#include <QtDebug>
-
 namespace XMPP {
 
 
@@ -58,6 +56,9 @@ class ComponentStream::Private
 
 		/* connection status from ComponentStream::ConnectionStatus */
 		int connectionStatus;
+
+		QString lastErrorString;
+		Error lastStreamError;
 };
 
 /**
@@ -81,6 +82,22 @@ ComponentStream::ComponentStream(Connector *connector, QObject *parent)
 ComponentStream::~ComponentStream()
 {
 	delete d;
+}
+
+/**
+ * Returns last error string (if any).
+ */
+QString ComponentStream::lastErrorString() const
+{
+	return d->lastErrorString;
+}
+
+/**
+ * Returns last (and the only possible) stream error (if any).
+ */
+ComponentStream::Error ComponentStream::lastStreamError() const
+{
+	return d->lastStreamError;
 }
 
 /**
@@ -113,6 +130,7 @@ void ComponentStream::close()
 {
 	write("</stream:stream>");
 	d->socket->close();
+	d->connectionStatus = Disconnected;
 }
 
 /**
@@ -130,7 +148,9 @@ void ComponentStream::sendStanza(const Stanza& stanza)
  */
 void ComponentStream::handleStreamError(const Parser::Event& event)
 {
-	emit error( Error( event.element() ) );
+	d->lastStreamError = Error( event.element() );
+	emit error(EStreamError);
+	close();
 }
 
 /**
@@ -150,14 +170,14 @@ void ComponentStream::processEvent(const Parser::Event& event)
 			break;
 
 		case Parser::Event::DocumentClose:
-			qDebug() << "[CS] we are kicked off";
+			qWarning("[XMPP::Stream] Remote entity has closed the stream");
 			close();
 			break;
 
 		case Parser::Event::Element:
-			// qDebug() << "[CS] incoming element" << event.qualifiedName();
 			if ( event.qualifiedName() == "stream:error" ) {
 				handleStreamError(event);
+				return;
 			}
 			if (d->connectionStatus == RecvHandshakeReply) {
 				recv_handshake_reply(event);
@@ -167,7 +187,7 @@ void ComponentStream::processEvent(const Parser::Event& event)
 			break;
 
 		case Parser::Event::Error:
-			qDebug() << "[CS] whoops.. error occured";
+			qCritical("[XMPP::Stream] Parser error");
 			close();
 			break;
 	}
@@ -205,10 +225,9 @@ void ComponentStream::recv_stream_open(const Parser::Event& event)
  */
 void ComponentStream::recv_handshake_reply(const Parser::Event& event)
 {
-	if ( event.qualifiedName()=="handshake" && !event.attributes().count() ) {
-		qDebug() << "[CS]" << "Handshaking success";
-	} else {
-		qDebug() << "[CS]" << "Error!" << "Handshake failed";
+	if ( event.qualifiedName() != "handshake") {
+		d->lastErrorString = "Handshake failed";
+		emit error(EHandshakeFailed);
 		close();
 	}
 
@@ -255,7 +274,8 @@ void ComponentStream::write(const QByteArray& data)
 
 void ComponentStream::bs_closed()
 {
-	qDebug() << "[CS]" << "Bytestream closed";
+	d->connectionStatus = Disconnected;
+	qDebug("[XMPP::Stream] Socket closed");
 }
 
 void ComponentStream::bs_readyRead()
@@ -288,19 +308,19 @@ void ComponentStream::cr_error(Connector::ErrorType errcode)
 {
 	switch ( errcode ) {
 		case Connector::EConnectionTimeout:
-			qCritical( qPrintable(tr("[CS] Connection timeout")) );
+			qCritical("[XMPP::Stream] Connection timeout");
 			break;
 		case Connector::EHostLookupFailed:
-			qCritical( qPrintable(tr("[CS] Host lookup failed")) );
+			qCritical("[XMPP::Stream] Host lookup failed");
 			break;
 		case Connector::EHostLookupTimeout:
-			qCritical( qPrintable(tr("[CS] Host lookup timeout")) );
+			qCritical("[XMPP::Stream] Host lookup timeout");
 			break;
 		case Connector::ESocketError:
-			qCritical("[CS] Socket error: %s", qPrintable( d->socket->errorString() ) );
+			qCritical("[XMPP::Stream] Socket error: %s", qPrintable( d->socket->errorString() ) );
 			break;
 	}
-	exit(1);
+	close();
 }
 
 /**
@@ -325,14 +345,6 @@ void ComponentStream::send_keepalive()
  * This signal is emitted when the stream is closed
  *
  * @sa connected()
- */
-
-/**
- * @fn void ComponentStream::error(const Error& streamError)
- *
- * This signal is emitted when there is an error on the stream(<stream:error/> element).
- *
- * @param streamError	Stream error object, containing error condition and (optionally) description.
  */
 
 /**

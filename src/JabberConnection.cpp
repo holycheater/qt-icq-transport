@@ -742,18 +742,26 @@ void JabberConnection::stream_presence(const Presence& presence)
 		emit userOnlineStatusRequest( presence.from() );
 		return;
 	}
-	if ( presence.type() == Presence::Subscribe && !presence.to().node().isEmpty() ) {
-		emit userAdd( presence.from(), presence.to().node() );
-	}
-	if ( presence.type() == Presence::Unsubscribe && !presence.to().node().isEmpty() ) {
-		qDebug() << "[JC]" << "User" << presence.from() << "requested contact delete of" << presence.to().node();
-		emit userDel( presence.from(), presence.to().node() );
-	}
-	if ( presence.type() == Presence::Unsubscribed && !presence.to().node().isEmpty() ) {
-		emit userAuthDeny( presence.from(), presence.to().node() );
-	}
-	if ( presence.type() == Presence::Subscribed && !presence.to().node().isEmpty() ) {
-		emit userAuthGrant( presence.from(), presence.to().node() );
+
+	/* process presence to icq-user */
+	if ( !presence.to().node().isEmpty() ) {
+		switch ( presence.type() ) {
+			case Presence::Subscribe:
+				emit userAdd( presence.from(), presence.to().node() );
+				break;
+			case Presence::Unsubscribe:
+				emit userDel( presence.from(), presence.to().node() );
+				break;
+			case Presence::Unsubscribed:
+				emit userAuthDeny( presence.from(), presence.to().node() );
+				break;
+			case Presence::Subscribed:
+				emit userAuthGrant( presence.from(), presence.to().node() );
+				break;
+			default:
+				break;
+		}
+		return;
 	}
 
 	if ( presence.type() == Presence::Available ) {

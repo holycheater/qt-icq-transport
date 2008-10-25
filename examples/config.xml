@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<qt-icq-transport>
+	<database>/var/lib/qt-icq-transport/users.db</database>
+	<log-file>/var/log/qt-icq-transport.log</log-file>
+	<jabber-domain>icq.example.org</jabber-domain>
+	<jabber-secret>somesecretpassphrase</jabber-secret>
+	<jabber-server>127.0.0.1</jabber-server>
+	<jabber-port>5555</jabber-port>
+	<icq-server>login.icq.com</icq-server>
+	<icq-port>5190</icq-port>
+</qt-icq-transport>

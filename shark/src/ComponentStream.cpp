@@ -20,6 +20,7 @@
 
 #include <QDomDocument>
 #include <QCryptographicHash>
+#include <QQueue>
 #include <QTcpSocket>
 #include <QXmlAttributes>
 
@@ -36,6 +37,8 @@ namespace XMPP {
 class ComponentStream::Private
 {
 	public:
+		void pushToStanzaCache(const QByteArray& data);
+
 		/* server connector (dns-lookups, connect) */
 		Connector *connector;
 
@@ -59,7 +62,17 @@ class ComponentStream::Private
 
 		QString lastErrorString;
 		Error lastStreamError;
+
+		QQueue<QString> stanzaCache;
 };
+
+void ComponentStream::Private::pushToStanzaCache(const QByteArray& data)
+{
+	if ( stanzaCache.size() > 10 ) {
+		stanzaCache.removeFirst();
+	}
+	stanzaCache.enqueue(data);
+}
 
 /**
  * Constructs stream object with @a connector to be used for initating
@@ -128,7 +141,6 @@ void ComponentStream::connectToServer(const Jid& jid, const QString& secret)
  */
 void ComponentStream::close()
 {
-	write("</stream:stream>");
 	d->socket->close();
 	d->connectionStatus = Disconnected;
 }
@@ -148,6 +160,11 @@ void ComponentStream::sendStanza(const Stanza& stanza)
  */
 void ComponentStream::handleStreamError(const Parser::Event& event)
 {
+	QListIterator<QString> i(d->stanzaCache);
+	while ( i.hasNext() ) {
+		qDebug( "[XMPP:Stream] Cache: %s", qPrintable(i.next()) );
+	}
+
 	d->lastStreamError = Error( event.element() );
 	emit error(EStreamError);
 	close();
@@ -160,7 +177,6 @@ void ComponentStream::handleStreamError(const Parser::Event& event)
  */
 void ComponentStream::processEvent(const Parser::Event& event)
 {
-	// qDebug() << "[CS]" << "processEvent()" << "type" << event.typeString();
 	switch ( event.type() ) {
 		case Parser::Event::DocumentOpen:
 			if (d->connectionStatus == InitIncomingStream) {
@@ -268,20 +284,22 @@ void ComponentStream::send_handshake()
  */
 void ComponentStream::write(const QByteArray& data)
 {
-	//qDebug() << "[CS]" << "-send-" << QString::fromUtf8(data);
+	// qDebug("[XMPP:Stream] -send-: %s", qPrintable(QString::fromUtf8(data)));
+	d->stanzaCache.enqueue( QString("-send-: ") + QString::fromUtf8(data) );
 	d->socket->write(data);
 }
 
 void ComponentStream::bs_closed()
 {
 	d->connectionStatus = Disconnected;
-	qDebug("[XMPP::Stream] Socket closed");
+	qDebug("[XMPP:Stream] Socket closed");
 }
 
 void ComponentStream::bs_readyRead()
 {
 	QByteArray data = d->socket->readAll();
-	//qDebug() << "[CS]" << "-recv-" << QString::fromUtf8(data);
+	// qDebug("[XMPP:Stream] -recv-: %s", qPrintable(QString::fromUtf8(data)));
+	d->stanzaCache.enqueue( QString("-recv-: ") + QString::fromUtf8(data) );
 
 	d->parser.appendData(data);
 

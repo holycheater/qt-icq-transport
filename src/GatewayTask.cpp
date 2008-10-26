@@ -388,6 +388,13 @@ void GatewayTask::processGatewayOnline()
 {
 	d->online = true;
 	QSqlQuery query;
+
+	query.exec("SELECT jid FROM users");
+	while ( query.next() ) {
+		Jid jid = query.value(0).toString();
+		emit offlineNotifyFor(jid);
+	}
+
 	query.exec("SELECT jid FROM options WHERE option = 'auto-invite'");
 	while ( query.next() ) {
 		Jid jid = query.value(0).toString();

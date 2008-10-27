@@ -691,7 +691,9 @@ void Session::processIncomingMessage(const Message& msg)
 		return;
 	}
 
-	emit incomingMessage( msg.sender(), msg.text(d->codec) );
+	if ( msg.type() == Message::PlainText ) {
+		emit incomingMessage( msg.sender(), msg.text(d->codec) );
+	}
 }
 
 void Session::processFlap(FlapBuffer& flap)

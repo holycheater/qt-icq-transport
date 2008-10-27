@@ -39,7 +39,7 @@ class Message
 	public:
 		enum Flag { Normal = 0x01, AutoMessage = 0x03, MultiMessage = 0x80 };
 
-		enum Type { PlainText = 0x01, ChatRequest, FileRequest, URL, AuthRequest = 0x06,
+		enum Type { InvalidType = 0xFF, PlainText = 0x01, ChatRequest, FileRequest, URL, AuthRequest = 0x06,
 			AuthDeny, AuthGranted, Server, YouWereAdded = 0x0C, WebPager,
 			EmailExpress, ContactList = 0x13, PluginMessage = 0x1A,
 			AutoAway = 0xE8, AutoBusy, AutoNA, AutoDND, AutoFFC };
@@ -56,6 +56,9 @@ class Message
 		Message(const Message& other);
 		Message& operator=(const Message& other);
 		~Message();
+
+		bool isEmpty() const;
+		bool isValid() const;
 
 		/* get/set message channel */
 		Byte channel() const;

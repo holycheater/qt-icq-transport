@@ -57,7 +57,7 @@ Message::Private::Private()
 {
 	channel = 0;
 
-	type = 0;
+	type = InvalidType;
 	flags = 0;
 
 	encoding = UserDefined;
@@ -99,6 +99,25 @@ Message& Message::operator=(const Message& other)
 
 Message::~Message()
 {
+}
+
+bool Message::isEmpty() const
+{
+	if ( d->text.isEmpty() ) {
+		return true;
+	}
+	return false;
+}
+
+bool Message::isValid() const
+{
+	if ( isEmpty() ) {
+		return false;
+	}
+	if ( d->type == InvalidType ) {
+		return false;
+	}
+	return true;
 }
 
 Byte Message::channel() const

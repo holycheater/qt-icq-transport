@@ -111,9 +111,6 @@ bool Message::isEmpty() const
 
 bool Message::isValid() const
 {
-	if ( isEmpty() ) {
-		return false;
-	}
 	if ( d->type == InvalidType ) {
 		return false;
 	}

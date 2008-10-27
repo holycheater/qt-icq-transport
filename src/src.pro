@@ -12,8 +12,11 @@ QMAKE_DEL_FILE = rm \
     -rf
 HEADERS += GatewayTask.h \
 	JabberConnection.h \
-	Options.h
+	Options.h \
+	TransportMain.h
+
 SOURCES += GatewayTask.cpp \
 	JabberConnection.cpp \
 	Options.cpp \
+	TransportMain.cpp \
 	main.cpp

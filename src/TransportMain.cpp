@@ -35,8 +35,6 @@
 #include <QTextStream>
 #include <QTimer>
 
-#include <QtDebug>
-
 TransportMain::TransportMain(int& argc, char **argv)
 	: QCoreApplication(argc, argv)
 {
@@ -52,10 +50,10 @@ TransportMain::TransportMain(int& argc, char **argv)
 		isFork = true;
 	}
 	if ( isFork ) {
-		qDebug() << "This is a fork. Start as transport.";
+		// qDebug() << "This is a fork. Start as transport.";
 		setup_transport();
 	} else {
-		qDebug() << "This is not a fork. Start as sandbox.";
+		// qDebug() << "This is not a fork. Start as sandbox.";
 		setup_sandbox();
 	}
 
@@ -105,13 +103,13 @@ void TransportMain::setup_sandbox()
 			abort();
 		}
 	}
-	qDebug() << "[Sandbox] Log-file check passed.";
+	// qDebug() << "[Sandbox] Log-file check passed.";
 
 	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {
 		fprintf( stderr, "Your Qt installation doesn't have the sqlite database driver" );
 		abort();
 	}
-	qDebug() << "[Sandbox] Sqlite driver check passed.";
+	// qDebug() << "[Sandbox] Sqlite driver check passed.";
 
 	QString dbfile = m_options->getOption("database");
 	if ( dbfile.isEmpty() ) {
@@ -135,13 +133,16 @@ void TransportMain::setup_sandbox()
 			abort();
 		}
 	}
-	qDebug() << "[Sandbox] Database file check passed.";
+	// qDebug() << "[Sandbox] Database file check passed.";
+
+	m_logfile = new QFile(logfile);
+	m_logfile->open(QIODevice::Append);
 
 	/* TODO: config variables check */
-	start_transport();
+	launchTransport();
 }
 
-void TransportMain::start_transport()
+void TransportMain::launchTransport()
 {
 	QString appFile = applicationFilePath();
 	QStringList args = arguments();
@@ -152,9 +153,7 @@ void TransportMain::start_transport()
 	QObject::connect( transport, SIGNAL( error(QProcess::ProcessError) ), SLOT( processTransportError(QProcess::ProcessError) ) );
 	QObject::connect( transport, SIGNAL( finished(int,QProcess::ExitStatus) ), SLOT( processTransportFinished(int,QProcess::ExitStatus) ) );
 	QObject::connect( transport, SIGNAL( started() ), SLOT( processTransportStarted() ) );
-	QObject::connect( transport, SIGNAL( stateChanged(QProcess::ProcessState) ), SLOT( processTransportStateChanged(QProcess::ProcessState) ) );
 
-	transport->setProcessChannelMode(QProcess::ForwardedChannels);
 	transport->start(appFile, args);
 }
 
@@ -253,20 +252,23 @@ void TransportMain::loghandler(QtMsgType type, const char *msg)
 
 void TransportMain::processTransportError(QProcess::ProcessError error)
 {
-	qDebug() << "[Sandbox]" << "Transport error" << error;
+	QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << "[Sandbox] " << "Transport error: " << error << "\n";
 }
 
 void TransportMain::processTransportFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-	qDebug() << "[Sandbox]" << "Transport finished" << exitCode << exitStatus;
+	QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << "[Sandbox] " << "Transport finished (exit code: " << exitCode << ")" << "\n";
+
+	QProcess *transport = qobject_cast<QProcess*>(sender());
+	delete transport;
+
+	if ( exitStatus != QProcess::NormalExit || exitCode != 0 ) {
+		QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << "[Sandbox] " << "Transport will be restarted in 30 seconds" << "\n";
+		QTimer::singleShot( 30000, this, SLOT( launchTransport() ) );
+	}
 }
 
 void TransportMain::processTransportStarted()
 {
-	qDebug() << "[Sandbox]" << "Transport started";
-}
-
-void TransportMain::processTransportStateChanged(QProcess::ProcessState newState)
-{
-	qDebug() << "[Sandbox]" << "Transport state changed" << newState;
+	QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << "[Sandbox] " << "Transport started" << "\n";
 }

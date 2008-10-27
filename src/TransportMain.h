@@ -38,9 +38,9 @@ class TransportMain : public QCoreApplication
 		~TransportMain();
 	public slots:
 		void shutdown();
+		void launchTransport();
 	private:
 		void setup_sandbox();
-		void start_transport();
 
 		void setup_transport();
 		void connect_signals();
@@ -51,7 +51,6 @@ class TransportMain : public QCoreApplication
 		void processTransportError(QProcess::ProcessError error);
 		void processTransportFinished(int exitCode, QProcess::ExitStatus exitStatus);
 		void processTransportStarted();
-		void processTransportStateChanged(QProcess::ProcessState newState);
 	private:
 		GatewayTask *m_gateway;
 		JabberConnection *m_connection;

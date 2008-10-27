@@ -64,9 +64,13 @@ void Options::parseCommandLine()
 			printUsage();
 			exit(0);
 		}
+		if ( arg == "-fork" ) {
+			m_options.insert("fork", "yes");
+			continue;
+		}
 		if ( !arg.startsWith("-") ) {
 			qCritical( "Unknown argument: %s", qPrintable(arg) );
-			exit(1);
+			abort();
 		}
 		setOption(arg.remove(0,1), i.next(), true);
 	}

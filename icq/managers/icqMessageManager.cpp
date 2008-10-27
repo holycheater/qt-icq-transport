@@ -341,11 +341,12 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	msgBlock.seekForward(1); // null-terminating char
 	msg.setText(message);
 
-	msgBlock.seekForward( sizeof(DWord) ); // text color
-	msgBlock.seekForward( sizeof(DWord) ); // bg color
-	DWord guidStrLen = msgBlock.getLEDWord();
-	QByteArray guidStr = msgBlock.read(guidStrLen);
-
+	if ( msg.type() == Message::PlainText ) {
+		msgBlock.seekForward( sizeof(DWord) ); // text color
+		msgBlock.seekForward( sizeof(DWord) ); // bg color
+		DWord guidStrLen = msgBlock.getLEDWord();
+		QByteArray guidStr = msgBlock.read(guidStrLen);
+	}
 	msg.setEncoding(Message::Utf8);
 
 	return msg;

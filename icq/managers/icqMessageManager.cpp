@@ -24,11 +24,10 @@
 #include "types/icqMessage.h"
 #include "types/icqSnacBuffer.h"
 #include "types/icqTlvChain.h"
+#include "types/icqTypes.h"
 
 #include <QDateTime>
 #include <QTextCodec>
-
-//#include <QtDebug>
 
 namespace ICQ
 {
@@ -99,7 +98,7 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 	msgTlv.addWord(0x00); // msg type - request
 	msgTlv.addDWord( r1 ); // cookie part1
 	msgTlv.addDWord( r2 ); // cookie part2
-	msgTlv.addData( Guid::fromString("09461349-4C7F-11D1-8222-444553540000") );
+	msgTlv.addData( Capabilities[ccICQServerRelay] );
 
 	Tlv tlv0A(0x0A);
 	tlv0A.addWord(0x01);
@@ -135,7 +134,7 @@ void MessageManager::Private::send_channel_2_message(const Message& msg)
 	msgChunk.addDWord(0x0); // text color
 	msgChunk.addDWord(0xffffff00); // bg color
 
-	QString guidStr = "{0946134E-4C7F-11D1-8222-444553540000}";
+	QString guidStr = "{" + Capabilities[ccUTF8Messages].toString() + "}"; // UTF-8
 	msgChunk.addLEDWord( guidStr.length() );
 	msgChunk.addData(guidStr);
 
@@ -296,9 +295,17 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 	block.seekForward(8); // message cookie (same as in the snac data) Why do they need to repeat everything twice? I'm not stupid!
 	Guid cap = Guid::fromRawData( block.read(16) ); // capability, needed for this msg
 
-	// qDebug() << "chan 2 msg capability" << cap.toString();
+	if ( cap != Capabilities[ccICQServerRelay] ) {
+		qWarning( "[ICQ:MM] [User: %s] Unknown channel 2 message capability: %s. Ignoring.", qPrintable(d->uin), qPrintable(cap.toString()) );
+		return Message();
+	}
 
 	TlvChain msgChain( block.readAll() );
+
+	if ( !msgChain.hasTlv(0x2711) ) {
+		qWarning( "[ICQ:MM] [User: %s] Channel-2 message doesn't contain TLV 0x2711. Ignoring.", qPrintable(d->uin) );
+		return Message();
+	}
 
 	Tlv msgBlock = msgChain.getTlv(0x2711);
 
@@ -309,7 +316,8 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
 		Guid cap2 = Guid::fromRawData( msgBlock.read(16) );
 
 		if ( !cap2.isZero() ) {
-			qWarning("[ICQ:MM] Message contains unknown data");
+			qWarning( "[ICQ:MM] [User: %s] Message contains unknown data (Capability: %s)", qPrintable(d->uin), qPrintable(cap2.toString()) );
+			return Message();
 		}
 
 		msgBlock.seekForward( sizeof(Word) ); //unknown
@@ -395,8 +403,14 @@ void MessageManager::handle_incoming_message(SnacBuffer& snac)
 			msg = handle_channel_4_msg(chain);
 			break;
 		default:
-			qWarning("[ICQ:MM] Unknown channel for the incoming message: %d", msgChannel);
+			qWarning("[ICQ:MM] [User: %s] Unknown channel for the incoming message: %d", qPrintable(d->uin), msgChannel);
 			break;
+	}
+
+	if ( !msg.isValid() ) {
+		qWarning( "[ICQ:MM] [User: %s] Incoming message processing failed. Message is not valid.", qPrintable(d->uin) );
+		qWarning( "[ICQ:MM] [User: %s] Dumping message SNAC: %s", qPrintable(d->uin), snac.data().toHex().constData() );
+		return;
 	}
 
 	msg.setChannel(msgChannel);

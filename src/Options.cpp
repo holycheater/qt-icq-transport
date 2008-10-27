@@ -35,7 +35,6 @@ static QSet<QString> supportedOptions;
 Options::Options()
 {
 	m_options.insert("config-file", defaultConfigFile);
-	m_options.insert("log-file", defaultLogFile);
 	supportedOptions << "config-file" << "log-file" << "database"
 	                 << "jabber-server" << "jabber-port" << "jabber-domain" << "jabber-secret"
 	                 << "icq-server" << "icq-port";
@@ -72,6 +71,9 @@ void Options::parseCommandLine()
 		setOption(arg.remove(0,1), i.next(), true);
 	}
 	readXmlFile( m_options.value("config-file") );
+	if ( !m_options.contains("log-file") ) {
+		m_options.insert("log-file", defaultLogFile);
+	}
 }
 
 void Options::readXmlFile(const QString& fileName)

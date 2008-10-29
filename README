@@ -1,0 +1,10 @@
+--- Install ---
+You need: libqt4-dev, libidn-dev.
+You also need qt sqlite database plugin.
+
+Install Steps:
+* qmake
+* make
+* make install
+* edit /etc/qt-icq-transport.xml
+* start the daemon: /etc/init.d/qt-icq-transport start

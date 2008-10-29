@@ -27,6 +27,8 @@
 #include <QStringList>
 #include <QTextStream>
 
+#include <stdlib.h>
+
 /* Default Parameters */
 static QString defaultConfigFile("config.xml");
 static QString defaultLogFile("/tmp/qt-icq-transport.log");
@@ -70,7 +72,7 @@ void Options::parseCommandLine()
 		}
 		if ( !arg.startsWith("-") ) {
 			qCritical( "Unknown argument: %s", qPrintable(arg) );
-			abort();
+			exit(1);
 		}
 		setOption(arg.remove(0,1), i.next(), true);
 	}

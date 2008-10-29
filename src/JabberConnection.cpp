@@ -42,6 +42,8 @@
 #include <QVariant>
 #include <qmath.h>
 
+#include <stdlib.h>
+
 using namespace XMPP;
 
 #define NS_IQ_GATEWAY "jabber:iq:gateway"

@@ -24,6 +24,7 @@
 #include "Options.h"
 
 #include <signal.h>
+#include <stdlib.h>
 
 #include <QDateTime>
 #include <QDir>

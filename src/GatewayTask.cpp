@@ -36,6 +36,8 @@
 #include <QTextCodec>
 #include <QVariant>
 
+#include <stdlib.h>
+
 class GatewayTask::Private
 {
 	public:

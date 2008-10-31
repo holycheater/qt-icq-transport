@@ -1,3 +1,7 @@
+Project: Qt ICQ Transport
+Desc: Jabber gateway service to icq written in C++ using Qt toolkit.
+Author: Alexander Saltykov <holy.cheater@gmail.com>
+Version: 0.1.0
 --- Install ---
 You need: libqt4-dev, libidn-dev.
 You also need qt sqlite database plugin.
@@ -6,5 +10,15 @@ Install Steps:
 * qmake
 * make
 * make install
+* copy /usr/share/doc/qt-icq-transport/qt-icq-transport.xml to /etc
+* copy /usr/share/doc/qt-icq-transport/init.d.ex to /etc/init.d/qt-icq-transport
 * edit /etc/qt-icq-transport.xml
+* edit /etc/init.d/qt-icq-transport if needed for your distribution.
 * start the daemon: /etc/init.d/qt-icq-transport start
+
+Small note:
+the default install prefix is /usr.
+If you need to change install prefix, run:
+qmake "install_base=<needed-prefix>"
+If you need to fakeroot (for packaging), run:
+make INSTALL_ROOT=/the/path/you/need install

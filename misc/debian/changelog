@@ -1,0 +1,6 @@
+qt-icq-transport (0.0.1-0~hcppa1) intrepid; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Alexander Saltykov <holy.cheater@gmail.com>  Fri, 31 Oct 2008 22:45:37 +0500
+

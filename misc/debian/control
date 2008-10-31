@@ -1,0 +1,14 @@
+Source: qt-icq-transport
+Section: universe/net
+Priority: extra
+Maintainer: Alexander Saltykov <holy.cheater@gmail.com>
+Build-Depends: debhelper (>= 6), libqt4-dev (>=4.4.0), libidn11-dev
+Standards-Version: 3.7.3
+Homepage: http://github.com/holycheater/qt-icq-transport
+
+Package: qt-icq-transport
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqt4-sql-sqlite
+Description: ICQ Gateway service for xmpp-server.
+ ICQ Gateway service for jabber-server written in C++
+ using Qt toolkit.

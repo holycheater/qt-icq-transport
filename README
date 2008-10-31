@@ -17,9 +17,11 @@ Install Steps:
 * edit /etc/init.d/qt-icq-transport if needed for your distribution.
 * start the daemon: /etc/init.d/qt-icq-transport start
 
-Small note:
-the default install prefix is /usr.
-If you need to change install prefix, run:
+Some notes:
+the default install prefix is /usr. If you need to change install prefix, run:
 qmake "install_base=<needed-prefix>"
+
 If you need to fakeroot (for packaging), run:
 make INSTALL_ROOT=/the/path/you/need install
+
+misc/debian contains example for debian-packaging.

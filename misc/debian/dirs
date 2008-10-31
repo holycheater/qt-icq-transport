@@ -1,0 +1,4 @@
+etc
+var/lib/qt-icq-transport
+var/run/qt-icq-transport
+var/log/qt-icq-transport

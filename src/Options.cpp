@@ -66,6 +66,9 @@ void Options::parseCommandLine()
 			printUsage();
 			exit(0);
 		}
+		if ( arg == "--" ) {
+			continue;
+		}
 		if ( arg == "-fork" ) {
 			m_options.insert("fork", "yes");
 			continue;

@@ -37,7 +37,7 @@ static QSet<QString> supportedOptions;
 Options::Options()
 {
 	m_options.insert("config-file", defaultConfigFile);
-	supportedOptions << "config-file" << "log-file" << "database"
+	supportedOptions << "config-file" << "log-file" << "pid-file" << "database"
 	                 << "jabber-server" << "jabber-port" << "jabber-domain" << "jabber-secret"
 	                 << "icq-server" << "icq-port";
 }
@@ -135,6 +135,7 @@ void Options::printUsage()
 		<< "Options:\n"
 		<< "   -config-file <file>       XML Configuration file (note: command-line options override xml configuration)\n"
 		<< "   -log-file <file>          Log file (default is /tmp/qt-icq-transport.log)\n"
+		<< "   -pid-file <file>          PID file"
 		<< "   -database <file>          Service users database file (default: users.db)\n"
 		<< "   -jabber-server <host>     Jabber server hostname/ip\n"
 		<< "   -jabber-port <port>       Jabber server port\n"

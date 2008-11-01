@@ -33,6 +33,8 @@ class TransportMain : public QCoreApplication
 {
 	Q_OBJECT
 
+	enum RunMode { Sandbox, Transport };
+
 	public:
 		TransportMain(int& argc, char **argv);
 		~TransportMain();
@@ -56,6 +58,7 @@ class TransportMain : public QCoreApplication
 		JabberConnection *m_connection;
 		Options *m_options;
 		QFile *m_logfile;
+		RunMode m_runmode;
 };
 
 #endif /* TRANSPORT_MAIN_H_ */

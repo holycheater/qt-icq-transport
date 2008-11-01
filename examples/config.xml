@@ -2,6 +2,7 @@
 <qt-icq-transport>
 	<database>/var/lib/qt-icq-transport/users.db</database>
 	<log-file>/var/log/qt-icq-transport.log</log-file>
+	<pid-file>/var/run/qt-icq-transport.pid</pid-file>
 	<jabber-domain>icq.example.org</jabber-domain>
 	<jabber-secret>somesecretpassphrase</jabber-secret>
 	<jabber-server>127.0.0.1</jabber-server>

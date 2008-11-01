@@ -36,6 +36,28 @@
 #include <QTextStream>
 #include <QTimer>
 
+enum { PermOk, PermErrIsDir, PermErrDir, PermErrFile };
+
+static int checkFilePermissions(const QString& fileName)
+{
+	QFileInfo info(fileName);
+
+	if ( info.exists() ) {
+		if ( info.isDir() ) {
+			return PermErrIsDir;
+		}
+		if ( !info.isReadable() || !info.isWritable() ) {
+			return PermErrFile;
+		}
+	} else {
+		QFileInfo parent = QFileInfo( info.absolutePath() );
+		if ( !parent.isExecutable() || !parent.isReadable() || !parent.isWritable() ) {
+			return PermErrDir;
+		}
+	}
+	return PermOk;
+}
+
 TransportMain::TransportMain(int& argc, char **argv)
 	: QCoreApplication(argc, argv)
 {
@@ -46,15 +68,13 @@ TransportMain::TransportMain(int& argc, char **argv)
 	m_connection = 0;
 	m_logfile = 0;
 
-	bool isFork = false;
+	m_runmode = Sandbox;
 	if ( m_options->getOption("fork") == "yes" ) {
-		isFork = true;
+		m_runmode = Transport;
 	}
-	if ( isFork ) {
-		// qDebug() << "This is a fork. Start as transport.";
+	if ( m_runmode == Transport ) {
 		setup_transport();
 	} else {
-		// qDebug() << "This is not a fork. Start as sandbox.";
 		setup_sandbox();
 	}
 
@@ -77,64 +97,94 @@ TransportMain::~TransportMain()
 
 void TransportMain::shutdown()
 {
-	if ( !m_gateway ) {
-		return;
+	if ( m_runmode == Transport ) {
+		Q_ASSERT(m_gateway != 0);
+		m_gateway->processShutdown();
+	} else if ( m_runmode == Sandbox ) {
+		QFile(m_options->getOption("pid-file")).remove();
 	}
-	m_gateway->processShutdown();
 }
 
 void TransportMain::setup_sandbox()
 {
 	QString logfile = m_options->getOption("log-file");
-	QFileInfo info(logfile);
-
-	if ( info.exists() ) {
-		if ( info.isDir() ) {
-			fprintf( stderr, "Log-file \"%s\" is a directory.\n", qPrintable(logfile) );
+	switch ( checkFilePermissions(logfile) ) {
+		case PermErrIsDir:
+			qCritical("Log-file '%s' is a directory", qPrintable(logfile));
 			abort();
-		}
-		if ( !info.isReadable() || !info.isWritable() ) {
-			fprintf( stderr, "Process doesn't have permissions to read/write log-file: %s.\n", qPrintable(logfile) );
+			break;
+		case PermErrFile:
+			qCritical("Process doesn't have permissions to read/write log-file: %s",
+					  qPrintable(logfile));
 			abort();
-		}
-	} else {
-		QFileInfo parent = QFileInfo(info.absolutePath());
-		if ( !parent.isExecutable() || !parent.isReadable() || !parent.isWritable() ) {
-			fprintf( stderr, "Process doesn't have permissions to read/write/execute on log-directory: %s.\n", qPrintable(parent.absoluteFilePath()) );
+			break;
+		case PermErrDir:
+			qCritical("Process doesn't have permissions to read/write/execute log-directory: %s",
+					  qPrintable( QFileInfo(logfile).absolutePath() ));
 			abort();
-		}
+			break;
+		case PermOk:
+		default:
+			break;
 	}
-	// qDebug() << "[Sandbox] Log-file check passed.";
+
+	QString pidfile = m_options->getOption("pid-file");
+	if ( pidfile.isEmpty() ) {
+		qCritical("Pid-file is not specified");
+		abort();
+	}
+	switch ( checkFilePermissions(pidfile) ) {
+		case PermErrIsDir:
+			qCritical("Pid-file '%s' is a directory", qPrintable(pidfile));
+			abort();
+			break;
+		case PermErrFile:
+			qCritical("Process doesn't have permissions to read/write pid-file: %s",
+					  qPrintable(pidfile));
+			abort();
+			break;
+		case PermErrDir:
+			qCritical("Process doesn't have permissions to read/write/execute pid-directory: %s",
+					  qPrintable( QFileInfo(pidfile).absolutePath() ));
+			abort();
+			break;
+		case PermOk:
+		default:
+			break;
+	}
+	QFile fPid(pidfile);
+	if ( fPid.exists() ) {
+		qWarning("Warning. Pid-file '%s' already exists. Overwriting", qPrintable(pidfile));
+	}
+	fPid.open(QIODevice::WriteOnly);
+	fPid.write( QByteArray::number(QCoreApplication::applicationPid(), 10) );
+	fPid.close();
 
 	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {
 		fprintf( stderr, "Your Qt installation doesn't have the sqlite database driver" );
 		abort();
 	}
-	// qDebug() << "[Sandbox] Sqlite driver check passed.";
 
 	QString dbfile = m_options->getOption("database");
-	if ( dbfile.isEmpty() ) {
-		fprintf( stderr, "Database file not specified.\n" );
-		abort();
+	switch ( checkFilePermissions(dbfile) ) {
+		case PermErrIsDir:
+			qCritical("DB-file '%s' is a directory", qPrintable(dbfile));
+			abort();
+			break;
+		case PermErrFile:
+			qCritical("Process doesn't have permissions to read/write db-file: %s",
+					  qPrintable(dbfile));
+			abort();
+			break;
+		case PermErrDir:
+			qCritical("Process doesn't have permissions to read/write/execute db-directory: %s",
+					  qPrintable( QFileInfo(dbfile).absolutePath() ));
+			abort();
+			break;
+		case PermOk:
+		default:
+			break;
 	}
-	QFileInfo fi(dbfile);
-	if ( fi.exists() ) {
-		if ( fi.isDir() ) {
-			fprintf( stderr, "Database file \"%s\" is a directory.\n", qPrintable(dbfile) );
-			abort();
-		}
-		if ( !fi.isReadable() || !fi.isWritable() ) {
-			fprintf( stderr, "Process doesn't have permissions to read/write database file: %s.\n", qPrintable(dbfile) );
-			abort();
-		}
-	} else {
-		QFileInfo parent = QFileInfo(fi.absolutePath());
-		if ( !parent.isExecutable() || !parent.isReadable() || !parent.isWritable() ) {
-			fprintf( stderr, "Process doesn't have permissions to read/write/execute on database directory: %s.\n", qPrintable(parent.absoluteFilePath()) );
-			abort();
-		}
-	}
-	// qDebug() << "[Sandbox] Database file check passed.";
 
 	m_logfile = new QFile(logfile);
 	m_logfile->open(QIODevice::Append);

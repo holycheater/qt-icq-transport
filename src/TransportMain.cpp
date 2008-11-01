@@ -82,6 +82,9 @@ TransportMain::TransportMain(int& argc, char **argv)
 	if ( signal(SIGTERM, sighandler) == SIG_IGN ) {
 		signal(SIGTERM, SIG_IGN);
 	}
+	if ( signal(SIGKILL, sighandler) == SIG_IGN ) {
+		signal(SIGTERM, SIG_IGN);
+	}
 	if ( signal(SIGINT, sighandler) == SIG_IGN ) {
 		signal(SIGINT, SIG_IGN);
 	}
@@ -157,7 +160,7 @@ void TransportMain::setup_sandbox()
 		qWarning("Warning. Pid-file '%s' already exists. Overwriting", qPrintable(pidfile));
 	}
 	fPid.open(QIODevice::WriteOnly);
-	fPid.write( QByteArray::number(QCoreApplication::applicationPid(), 10) );
+	fPid.write( QByteArray::number(applicationPid(), 10) );
 	fPid.close();
 
 	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {

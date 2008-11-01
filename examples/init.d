@@ -1,27 +1,4 @@
 #!/bin/sh
-#
-# Example init.d script with LSB support.
-#
-# Please read this init.d carefully and modify the sections to
-# adjust it to the program you want to run.
-#
-# Copyright (c) 2007 Javier Fernandez-Sanguino <jfs@debian.org>
-#
-# This is free software; you may redistribute it and/or modify
-# it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2,
-# or (at your option) any later version.
-#
-# This is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License with
-# the Debian operating system, in /usr/share/common-licenses/GPL;  if
-# not, write to the Free Software Foundation, Inc., 59 Temple Place,
-# Suite 330, Boston, MA 02111-1307 USA
-#
 ### BEGIN INIT INFO
 # Provides:          qt-icq-transport
 # Required-Start:    $network $local_fs
@@ -30,20 +7,18 @@
 # Should-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: <Enter a short description of the sortware>
-# Description:       <Enter a long description of the software>
-#                    <...>
-#                    <...>
+# Short-Description: Qt ICQ Transport
+# Description:       Qt ICQ Transport
 ### END INIT INFO
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 DAEMON=/usr/bin/qt-icq-transport   # Introduce the server's location here
 NAME=qt-icq-transport              # Introduce the short server's name here
 DESC=qt-icq-transport              # Introduce a short description here
-LOGDIR=/var/log  # Log directory to use
+LOGDIR=/var/log/qt-icq-transport   # Log directory to use
 
-PIDFILE=/var/run/$NAME.pid
+PIDFILE=/var/run/qt-icq-transport.pid
 
 test -x $DAEMON || exit 0
 
@@ -51,7 +26,7 @@ test -x $DAEMON || exit 0
 
 # Default options, these can be overriden by the information
 # at /etc/default/$NAME
-DAEMON_OPTS="-config-file /etc/qt-icq-transport.xml"
+DAEMON_OPTS="-daemonize -config-file /etc/qt-icq-transport.xml"
 # Additional options given to the server
 
 DIETIME=10              # Time to wait for the server to die, in seconds
@@ -59,7 +34,7 @@ DIETIME=10              # Time to wait for the server to die, in seconds
                         # let some servers to die gracefully and
                         # 'restart' will not work
 
-#STARTTIME=2             # Time to wait for the server to start, in seconds
+STARTTIME=2             # Time to wait for the server to start, in seconds
                         # If this value is set each time the server is
                         # started (on start or restart) the script will
                         # stall to try to determine if it is running
@@ -70,7 +45,7 @@ DIETIME=10              # Time to wait for the server to die, in seconds
                         
 LOGFILE=$LOGDIR/$NAME.log  # Server logfile
 #DAEMONUSER=qt-icq-transport   # Users to run the daemons as. If this value
-                        # is set start-stop-daemon will chuid the server
+                               # is set start-stop-daemon will chuid the server
 
 # Check that the user exists (if we set a user)
 # Does the user exist?
@@ -114,13 +89,11 @@ running() {
 start_server() {
 # Start the process using the wrapper
         if [ -z "$DAEMONUSER" ] ; then
-            start_daemon -p $PIDFILE $DAEMON -- $DAEMON_OPTS
+            start-stop-daemon -S -q -p $PIDFILE -x $DAEMON -- $DAEMON_OPTS
             errcode=$?
         else
 # if we are using a daemonuser then change the user id
-            start-stop-daemon --start --quiet --pidfile $PIDFILE \
-                        --chuid $DAEMONUSER \
-                        --exec $DAEMON -- $DAEMON_OPTS
+            start-stop-daemon -S -q -p $PIDFILE -c $DAEMONUSER -x $DAEMON -- $DAEMON_OPTS
             errcode=$?
         fi
 	return $errcode
@@ -129,14 +102,11 @@ start_server() {
 stop_server() {
 # Stop the process using the wrapper
         if [ -z "$DAEMONUSER" ] ; then
-            killproc -p $PIDFILE $DAEMON
-            errcode=$?
+		start-stop-daemon -K -q -p $PIDFILE -x $DAEMON
+		errcode=$?
         else
-# if we are using a daemonuser then look for process that match
-            start-stop-daemon --stop --quiet --pidfile $PIDFILE \
-                        --user $DAEMONUSER \
-                        --exec $DAEMON
-            errcode=$?
+            	start-stop-daemon -K -q -p $PIDFILE --user $DAEMONUSER -x $DAEMON
+		errcode=$?
         fi
 
 	return $errcode

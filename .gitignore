@@ -4,7 +4,10 @@
 /doc
 /users.db
 /config.xml
+/*.pro.user
 /.settings
 /Makefile*
 *~
 .*~
+*.swp
+.*.swp

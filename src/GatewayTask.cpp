@@ -209,17 +209,28 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 		conn->setServerPort(d->icqPort);
 		conn->setOnlineStatus(ICQ::Session::Online);
 
-		QObject::connect( conn, SIGNAL( statusChanged(int) ),               SLOT( processIcqStatus(int) ) );
-		QObject::connect( conn, SIGNAL( userOnline(QString,int) ),          SLOT( processContactOnline(QString,int) ) );
-		QObject::connect( conn, SIGNAL( userOffline(QString) ),             SLOT( processContactOffline(QString) ) );
-		QObject::connect( conn, SIGNAL( authGranted(QString) ),             SLOT( processAuthGranted(QString) ) );
-		QObject::connect( conn, SIGNAL( authDenied(QString) ),              SLOT( processAuthDenied(QString) ) );
-		QObject::connect( conn, SIGNAL( authRequest(QString) ),             SLOT( processAuthRequest(QString) ) );
-		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString) ), SLOT( processIncomingMessage(QString,QString) ) );
-		QObject::connect( conn, SIGNAL( connected() ),                      SLOT( processIcqSignOn() ) );
-		QObject::connect( conn, SIGNAL( disconnected() ),                   SLOT( processIcqSignOff() ) );
-		QObject::connect( conn, SIGNAL( error(QString) ),                   SLOT( processIcqError(QString) ) );
-		QObject::connect( conn, SIGNAL( shortUserDetailsAvailable(QString) ), SLOT( processShortUserDetails(QString) ) );
+		QObject::connect( conn, SIGNAL( statusChanged(int) ),
+						  SLOT( processIcqStatus(int) ) );
+		QObject::connect( conn, SIGNAL( userOnline(QString,int) ),
+						  SLOT( processContactOnline(QString,int) ) );
+		QObject::connect( conn, SIGNAL( userOffline(QString) ),
+						  SLOT( processContactOffline(QString) ) );
+		QObject::connect( conn, SIGNAL( authGranted(QString) ),
+						  SLOT( processAuthGranted(QString) ) );
+		QObject::connect( conn, SIGNAL( authDenied(QString) ),
+						  SLOT( processAuthDenied(QString) ) );
+		QObject::connect( conn, SIGNAL( authRequest(QString) ),
+						  SLOT( processAuthRequest(QString) ) );
+		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString) ),
+						  SLOT( processIncomingMessage(QString,QString) ) );
+		QObject::connect( conn, SIGNAL( connected() ),
+						  SLOT( processIcqSignOn() ) );
+		QObject::connect( conn, SIGNAL( disconnected() ),
+						  SLOT( processIcqSignOff() ) );
+		QObject::connect( conn, SIGNAL( error(QString) ),
+						  SLOT( processIcqError(QString) ) );
+		QObject::connect( conn, SIGNAL( shortUserDetailsAvailable(QString) ),
+						  SLOT( processShortUserDetails(QString) ) );
 
 		if ( first_login ) {
 			QObject::connect( conn, SIGNAL( rosterAvailable() ), SLOT( processIcqFirstLogin() ) );

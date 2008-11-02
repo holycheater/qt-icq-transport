@@ -74,6 +74,10 @@ void Options::parseCommandLine()
 		if ( arg == "--" ) {
 			continue;
 		}
+		/* daemonize non-forked (top-level) process */
+		if ( arg == "-daemonize" && !m_options.contains("fork") ) {
+			m_options.insert("daemonize", "yes");
+		}
 		if ( arg == "-fork" ) {
 			m_options.insert("fork", "yes");
 			continue;
@@ -141,6 +145,7 @@ void Options::printUsage()
 		<< "   -config-file <file>       XML Configuration file (note: command-line options override xml configuration)\n"
 		<< "   -log-file <file>          Log file (default is /tmp/qt-icq-transport.log)\n"
 		<< "   -pid-file <file>          PID file"
+		<< "   -daemonize                Daemonize qt-icq-transport"
 		<< "   -database <file>          Service users database file (default: users.db)\n"
 		<< "   -jabber-server <host>     Jabber server hostname/ip\n"
 		<< "   -jabber-port <port>       Jabber server port\n"

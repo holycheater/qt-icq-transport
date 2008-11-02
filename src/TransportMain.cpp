@@ -76,6 +76,21 @@ TransportMain::TransportMain(int& argc, char **argv)
 	if ( m_runmode == Transport ) {
 		setup_transport();
 	} else {
+		/* It is just a process dor daemonization, it creates a sandbox */
+		if ( m_options->hasOption("daemonize") ) {
+			QString appFile = applicationFilePath();
+			QStringList args = arguments();
+			args.removeFirst();
+			args.removeOne("-daemonize");
+
+			QProcess *sandbox = new QProcess(this);
+			if ( sandbox->startDetached(appFile, args) ) {
+				::exit(0);
+			} else {
+				qCritical("Failed to start child process");
+				::exit(1);
+			}
+		}
 		setup_sandbox();
 	}
 

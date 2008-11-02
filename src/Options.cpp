@@ -51,6 +51,11 @@ QString Options::getOption(const QString& name) const
 	return m_options.value(name);
 }
 
+bool Options::hasOption(const QString& name) const
+{
+	return m_options.contains(name);
+}
+
 void Options::parseCommandLine()
 {
 	Q_ASSERT( QCoreApplication::instance() );

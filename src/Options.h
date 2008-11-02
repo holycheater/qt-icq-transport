@@ -32,6 +32,7 @@ class Options
 		void parseCommandLine();
 
 		QString getOption(const QString& name) const;
+		bool hasOption(const QString& name) const;
 	private:
 		void readXmlFile(const QString& file);
 		void setOption(const QString& option, const QString& value, bool overwrite = false);

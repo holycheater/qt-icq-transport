@@ -28,6 +28,7 @@ class GatewayTask;
 class JabberConnection;
 class Options;
 class QFile;
+class QProcess;
 
 class TransportMain : public QCoreApplication
 {
@@ -54,8 +55,14 @@ class TransportMain : public QCoreApplication
 		void processTransportFinished(int exitCode, QProcess::ExitStatus exitStatus);
 		void processTransportStarted();
 	private:
+		/* "transport" mode */
 		GatewayTask *m_gateway;
 		JabberConnection *m_connection;
+
+		/* "sandbox" mode */
+		QProcess *m_transport;
+
+		/* common for all */
 		Options *m_options;
 		QFile *m_logfile;
 		RunMode m_runmode;

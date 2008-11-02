@@ -67,6 +67,7 @@ TransportMain::TransportMain(int& argc, char **argv)
 	m_gateway = 0;
 	m_connection = 0;
 	m_logfile = 0;
+	m_transport = 0;
 
 	m_runmode = Sandbox;
 	if ( m_options->getOption("fork") == "yes" ) {
@@ -200,12 +201,16 @@ void TransportMain::launchTransport()
 	args.removeFirst(); // app name
 	args << "-fork";
 
-	QProcess *transport = new QProcess(this);
-	QObject::connect( transport, SIGNAL( error(QProcess::ProcessError) ), SLOT( processTransportError(QProcess::ProcessError) ) );
-	QObject::connect( transport, SIGNAL( finished(int,QProcess::ExitStatus) ), SLOT( processTransportFinished(int,QProcess::ExitStatus) ) );
-	QObject::connect( transport, SIGNAL( started() ), SLOT( processTransportStarted() ) );
+	Q_ASSERT( m_transport == 0);
+	m_transport = new QProcess(this);
+	QObject::connect( m_transport, SIGNAL( error(QProcess::ProcessError) ),
+					  SLOT( processTransportError(QProcess::ProcessError) ) );
+	QObject::connect( m_transport, SIGNAL( finished(int,QProcess::ExitStatus) ),
+					  SLOT( processTransportFinished(int,QProcess::ExitStatus) ) );
+	QObject::connect( m_transport, SIGNAL( started() ),
+					  SLOT( processTransportStarted() ) );
 
-	transport->start(appFile, args);
+	m_transport->start(appFile, args);
 }
 
 void TransportMain::setup_transport()
@@ -221,10 +226,12 @@ void TransportMain::setup_transport()
 	db.setDatabaseName( m_options->getOption("database") );
 	m_gateway->setDatabaseLink(db);
 
-	m_gateway->setIcqServer( m_options->getOption("icq-server"), m_options->getOption("icq-port").toUInt() );
+	m_gateway->setIcqServer( m_options->getOption("icq-server"),
+							 m_options->getOption("icq-port").toUInt() );
 
 	m_connection->setUsername( m_options->getOption("jabber-domain") );
-	m_connection->setServer( m_options->getOption("jabber-server"), m_options->getOption("jabber-port").toUInt() );
+	m_connection->setServer( m_options->getOption("jabber-server"),
+							 m_options->getOption("jabber-port").toUInt() );
 	m_connection->setPassword( m_options->getOption("jabber-secret") );
 
 	connect_signals();
@@ -336,8 +343,8 @@ void TransportMain::processTransportFinished(int exitCode, QProcess::ExitStatus 
 	QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] "
 			<< "[Sandbox] " << "Transport finished (exit code: " << exitCode << ")" << "\n";
 
-	QProcess *transport = qobject_cast<QProcess*>(sender());
-	delete transport;
+	m_transport->deleteLater();
+	m_transport = 0;
 
 	if ( exitStatus != QProcess::NormalExit || exitCode != 0 ) {
 		QTextStream(m_logfile)

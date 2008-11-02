@@ -281,6 +281,7 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 
 	QByteArray message = tlv02.read(msgSize);
 	msg.setText(message);
+	msg.setType(Message::PlainText);
 
 	return msg;
 }

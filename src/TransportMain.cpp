@@ -82,9 +82,6 @@ TransportMain::TransportMain(int& argc, char **argv)
 	if ( signal(SIGTERM, sighandler) == SIG_IGN ) {
 		signal(SIGTERM, SIG_IGN);
 	}
-	if ( signal(SIGKILL, sighandler) == SIG_IGN ) {
-		signal(SIGTERM, SIG_IGN);
-	}
 	if ( signal(SIGINT, sighandler) == SIG_IGN ) {
 		signal(SIGINT, SIG_IGN);
 	}

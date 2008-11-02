@@ -106,6 +106,19 @@ void TransportMain::shutdown()
 	}
 }
 
+void TransportMain::createPidFile()
+{
+	QString pidfile = m_options->getOption("pid-file");
+	QFile fPid(pidfile);
+	if ( fPid.exists() ) {
+		qWarning("Warning. Pid-file '%s' already exists. Overwriting", qPrintable(pidfile));
+	}
+	fPid.open(QIODevice::WriteOnly);
+	fPid.write( QByteArray::number(applicationPid(), 10) );
+	fPid.write("\n");
+	fPid.close();
+}
+
 void TransportMain::setup_sandbox()
 {
 	QString logfile = m_options->getOption("log-file");
@@ -153,13 +166,6 @@ void TransportMain::setup_sandbox()
 		default:
 			break;
 	}
-	QFile fPid(pidfile);
-	if ( fPid.exists() ) {
-		qWarning("Warning. Pid-file '%s' already exists. Overwriting", qPrintable(pidfile));
-	}
-	fPid.open(QIODevice::WriteOnly);
-	fPid.write( QByteArray::number(applicationPid(), 10) );
-	fPid.close();
 
 	if ( !QSqlDatabase::drivers().contains("QSQLITE") ) {
 		fprintf( stderr, "Your Qt installation doesn't have the sqlite database driver" );
@@ -191,6 +197,8 @@ void TransportMain::setup_sandbox()
 	m_logfile->open(QIODevice::Append);
 
 	/* TODO: config variables check */
+
+	createPidFile();
 	launchTransport();
 }
 

@@ -43,6 +43,7 @@ class TransportMain : public QCoreApplication
 		void shutdown();
 		void launchTransport();
 	private:
+		void createPidFile();
 		void setup_sandbox();
 
 		void setup_transport();

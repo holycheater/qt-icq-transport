@@ -149,9 +149,9 @@ QDateTime Message::timestamp() const
 		return QDateTime::currentDateTime();
 	}
 	QDomElement eStamp = list.at(0).toElement();
-	QString iso8601 = eStamp.attribute("stamp", QDateTime::currentDateTime().toString(Qt::ISODate));
-
-	return QDateTime::fromString(iso8601, Qt::ISODate);
+	QString stamp = eStamp.attribute("stamp",
+									 QDateTime::currentDateTime().toString("yyyyMMddThh:mm:ss"));
+	return QDateTime::fromString(stamp, "yyyyMMddThh:mm:ss");
 }
 
 /**
@@ -160,7 +160,7 @@ QDateTime Message::timestamp() const
 void Message::setTimestamp(const QDateTime& t)
 {
 	QDomElement eStamp = doc()->createElementNS("jabber:x:delay", "x");
-	eStamp.setAttribute("stamp", t.toString(Qt::ISODate));
+	eStamp.setAttribute("stamp", t.toString("yyyyMMddThh:mm:ss"));
 	doc()->documentElement().appendChild(eStamp);
 }
 

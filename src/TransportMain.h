@@ -41,7 +41,7 @@ class TransportMain : public QCoreApplication
 		~TransportMain();
 	public slots:
 		void shutdown();
-		void launchTransport();
+		void startForkedTransport();
 	private:
 		void createPidFile();
 		void setup_sandbox();

@@ -214,10 +214,10 @@ void TransportMain::setup_sandbox()
 	/* TODO: config variables check */
 
 	createPidFile();
-	launchTransport();
+	startForkedTransport();
 }
 
-void TransportMain::launchTransport()
+void TransportMain::startForkedTransport()
 {
 	QString appFile = applicationFilePath();
 	QStringList args = arguments();

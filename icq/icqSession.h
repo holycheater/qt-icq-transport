@@ -106,6 +106,7 @@ class Session : public QObject
 		void authDenied(const QString& fromUin);
 		void authRequest(const QString& fromUin);
 
+		void incomingMessage(const QString& uin, const QString& msg);
 		void incomingMessage(const QString& uin, const QString& msg, const QDateTime& timestamp);
 
 		void shortUserDetailsAvailable(const QString& uin);

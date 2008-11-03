@@ -693,7 +693,11 @@ void Session::processIncomingMessage(const Message& msg)
 	}
 
 	if ( msg.type() == Message::PlainText ) {
-		emit incomingMessage( msg.sender(), msg.text(d->codec), msg.timestamp() );
+		if ( msg.isOffline() ) {
+			emit incomingMessage( msg.sender(), msg.text(d->codec), msg.timestamp() );
+		} else {
+			emit incomingMessage( msg.sender(), msg.text(d->codec) );
+		}
 	} else {
 		qWarning( "[ICQ:Session] [User: %s] Ignoring message of type %s", qPrintable(d->uin), qPrintable(QString::number(msg.type(), 16)) );
 	}

@@ -23,6 +23,8 @@
 
 #include "Stanza.h"
 
+class QDateTime;
+
 namespace XMPP {
 
 
@@ -44,6 +46,12 @@ class Message : public Stanza
 		void setBody(const QString& body);
 		void setSubject(const QString& subject);
 		void setThread(const QString& thread);
+
+		/* XEP-0091: jabber:x:delay
+		 * this XEP is deprecated, so the code is temporarily.
+		 */
+		QDateTime timestamp() const;
+		void setTimestamp(const QDateTime& t);
 
 		using Stanza::setType;
 		void setType(Type type);

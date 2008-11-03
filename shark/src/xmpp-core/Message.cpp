@@ -18,6 +18,7 @@
  *
  */
 
+#include <QDateTime>
 #include <QDomDocument>
 
 #include "Message.h"
@@ -136,6 +137,31 @@ void Message::setSubject(const QString& subject)
 void Message::setThread(const QString& thread)
 {
 	setProperty("thread", thread);
+}
+
+/**
+ * Returns jabber:x:delay timestamp if present, otherwise returns current timestamp.
+ */
+QDateTime Message::timestamp() const
+{
+	QDomNodeList list = doc()->documentElement().elementsByTagNameNS("jabber:x:delay", "x");
+	if ( list.isEmpty() ) {
+		return QDateTime::currentDateTime();
+	}
+	QDomElement eStamp = list.at(0).toElement();
+	QString iso8601 = eStamp.attribute("stamp", QDateTime::currentDateTime().toString(Qt::ISODate));
+
+	return QDateTime::fromString(iso8601, Qt::ISODate);
+}
+
+/**
+ * Sets jabber:x:delay timestamp to @a t.
+ */
+void Message::setTimestamp(const QDateTime& t)
+{
+	QDomElement eStamp = doc()->createElementNS("jabber:x:delay", "x");
+	eStamp.setAttribute("stamp", t.toString(Qt::ISODate));
+	doc()->documentElement().appendChild(eStamp);
 }
 
 /**

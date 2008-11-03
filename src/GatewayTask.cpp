@@ -99,7 +99,6 @@ void GatewayTask::setDatabaseLink(const QSqlDatabase& sql)
 	if ( !d->db.isOpen() && !d->db.open() ) {
 		qCritical( "[GT] Database open failed: %s", qPrintable(d->db.lastError().text()) );
 		exit(1);
-		return;
 	}
 
 	QSqlQuery query;

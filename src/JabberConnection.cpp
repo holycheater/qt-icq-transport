@@ -790,6 +790,7 @@ void JabberConnection::stream_error(ComponentStream::ErrorType errType)
 			qCritical("[JC] Stream error: %s",  qPrintable( d->stream->lastStreamError().conditionString() ) );
 			break;
 		default:
+			qCritical("[JC] Unknown stream error");
 			break;
 	}
 	exit(1);

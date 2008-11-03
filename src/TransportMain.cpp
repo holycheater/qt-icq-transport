@@ -74,9 +74,10 @@ TransportMain::TransportMain(int& argc, char **argv)
 		m_runmode = Transport;
 	}
 	if ( m_runmode == Transport ) {
+		qDebug("[transport-mode] args list: %s", qPrintable(arguments().join(" ")));
 		setup_transport();
 	} else {
-		/* Check if it is just a process dor daemonization, then create a sandbox */
+		/* Check if it is just a process for daemonization, then create a sandbox */
 		if ( m_options->hasOption("daemonize") ) {
 			QString appFile = applicationFilePath();
 			QStringList args = arguments();
@@ -84,7 +85,6 @@ TransportMain::TransportMain(int& argc, char **argv)
 			args.removeOne("-daemonize");
 
 			QProcess *sandbox = new QProcess(this);
-			sandbox->setReadChannelMode(QProcess::ForwardedChannels);
 			if ( sandbox->startDetached(appFile, args) ) {
 				::exit(0);
 			} else {

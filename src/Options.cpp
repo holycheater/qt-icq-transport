@@ -85,9 +85,13 @@ void Options::parseCommandLine()
 			m_options.insert("fork", "yes");
 			continue;
 		}
-		QString optName = arg.remove(0,1);
+		QString optName = QString(arg).remove(0,1);
 		if ( !arg.startsWith("-") || !opts.contains(optName) ) {
 			qCritical( "Unknown argument: %s", qPrintable(arg) );
+			exit(1);
+		}
+		if ( !i.hasNext() ) {
+			qCritical("No value for argument '%s'", qPrintable(arg));
 			exit(1);
 		}
 		m_options.insert(optName, i.next());

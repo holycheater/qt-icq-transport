@@ -74,7 +74,6 @@ TransportMain::TransportMain(int& argc, char **argv)
 		m_runmode = Transport;
 	}
 	if ( m_runmode == Transport ) {
-		qDebug("[transport-mode] args list: %s", qPrintable(arguments().join(" ")));
 		setup_transport();
 	} else {
 		/* Check if it is just a process for daemonization, then create a sandbox */
@@ -240,6 +239,10 @@ void TransportMain::startForkedTransport()
 
 void TransportMain::setup_transport()
 {
+	m_logfile = new QFile(m_options->getOption("log-file"), this);
+	m_logfile->open(QIODevice::Append);
+	qInstallMsgHandler(loghandler);
+
 	m_gateway = new GatewayTask(this);
 	m_connection = new JabberConnection(this);
 

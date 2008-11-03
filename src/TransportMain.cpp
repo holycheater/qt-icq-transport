@@ -310,7 +310,9 @@ void TransportMain::connect_signals()
 	QObject::connect( m_gateway, SIGNAL( incomingVCard(Jid,QString,QString,vCard) ),
 					  m_connection, SLOT( sendVCard(Jid,QString,QString,vCard) ) );
 	QObject::connect( m_gateway, SIGNAL( incomingMessage(Jid,QString,QString,QString) ),
-					  m_connection, SLOT( sendMessage(Jid,QString,QString,QString) ) );
+						  m_connection, SLOT( sendMessage(Jid,QString,QString,QString) ) );
+	QObject::connect( m_gateway, SIGNAL( incomingMessage(Jid,QString,QString,QString,QDateTime) ),
+						  m_connection, SLOT( sendMessage(Jid,QString,QString,QString,QDateTime) ) );
 	QObject::connect( m_gateway, SIGNAL( gatewayMessage(Jid,QString) ),
 					  m_connection, SLOT( sendMessage(Jid,QString) ) );
 }

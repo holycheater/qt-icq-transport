@@ -28,6 +28,7 @@ namespace XMPP {
 	class vCard;
 }
 
+class QDateTime;
 class QSqlDatabase;
 
 class GatewayTask : public QObject
@@ -76,6 +77,7 @@ class GatewayTask : public QObject
 		void incomingVCard(const Jid& user, const QString& uin, const QString& requestID, const vCard& vcard);
 
 		void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick);
+		void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick, const QDateTime& timestamp);
 		void gatewayMessage(const Jid& user, const QString& text);
 	private slots:
 		void processIcqError(const QString& desc);
@@ -87,6 +89,7 @@ class GatewayTask : public QObject
 		void processContactOnline(const QString& uin, int status);
 		void processContactOffline(const QString& uin);
 		void processIncomingMessage(const QString& senderUin, const QString& message);
+		void processIncomingMessage(const QString& senderUin, const QString& message, const QDateTime& timestamp);
 
 		void processAuthGranted(const QString& uin);
 		void processAuthDenied(const QString& uin);

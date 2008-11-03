@@ -292,11 +292,25 @@ void JabberConnection::sendPresenceProbe(const Jid& user)
 }
 
 /**
- * Message send slot from legacy user to jabber-user.
- * @param senderUin		ICQ message sender's uin.
- * @param recipient		Jabber user recipient's jabber-id.
- * @param message		Message itself.
+ * Send message from legacy user to jabber user.
+ * @param recipient jabber-user
+ * @param uin       ICQ sender's UIN.
+ * @param message   Message itself.
+ * @param nick      ICQ user nick.
+ * @param timestamp message timestamp.
  */
+void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick, const QDateTime& timestamp)
+{
+	Message msg;
+	msg.setFrom( d->jid.withNode(uin) );
+	msg.setTo(recipient);
+	msg.setBody(message);
+	msg.setNick(nick);
+	msg.setTimestamp(timestamp);
+
+	d->stream->sendStanza(msg);
+}
+
 void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick)
 {
 	Message msg;

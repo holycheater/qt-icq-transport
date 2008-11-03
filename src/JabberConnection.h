@@ -25,6 +25,8 @@
 
 #include "ComponentStream.h"
 
+class QDateTime;
+
 namespace XMPP {
 	class Jid;
 	class Registration;
@@ -66,6 +68,7 @@ class JabberConnection : public QObject
 		void sendOfflinePresence(const Jid& recipient);
 		void sendPresenceProbe(const Jid& user);
 
+		void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick, const QDateTime& timestamp);
 		void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick);
 		void sendMessage(const Jid& recipient, const QString& message);
 

@@ -28,6 +28,7 @@
 #include "types/icqShortUserDetails.h"
 #include "types/icqUserInfo.h"
 
+#include <QDateTime>
 #include <QHash>
 #include <QStringList>
 #include <QSqlDatabase>
@@ -222,6 +223,8 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 						  SLOT( processAuthRequest(QString) ) );
 		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString) ),
 						  SLOT( processIncomingMessage(QString,QString) ) );
+		QObject::connect( conn, SIGNAL( incomingMessage(QString,QString,QDateTime) ),
+						  SLOT( processIncomingMessage(QString,QString,QDateTime) ) );
 		QObject::connect( conn, SIGNAL( connected() ),
 						  SLOT( processIcqSignOn() ) );
 		QObject::connect( conn, SIGNAL( disconnected() ),
@@ -578,7 +581,15 @@ void GatewayTask::processIncomingMessage(const QString& senderUin, const QString
 	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
 	Jid user = d->icqJidTable.value(session);
 	QString msg = QString(message).replace('\r', "");
-	emit incomingMessage(user, senderUin, msg, session->contactName(senderUin) );
+	emit incomingMessage(user, senderUin, msg, session->contactName(senderUin));
+}
+
+void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message, const QDateTime& timestamp)
+{
+	ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+	Jid user = d->icqJidTable.value(session);
+	QString msg = QString(message).replace('\r', "");
+	emit incomingMessage(user, senderUin, msg, session->contactName(senderUin), timestamp);
 }
 
 /**

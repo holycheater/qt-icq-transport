@@ -34,6 +34,7 @@
 #include "types/icqUserDetails.h"
 #include "types/icqShortUserDetails.h"
 
+#include <QDateTime>
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QPair>
@@ -692,7 +693,7 @@ void Session::processIncomingMessage(const Message& msg)
 	}
 
 	if ( msg.type() == Message::PlainText ) {
-		emit incomingMessage( msg.sender(), msg.text(d->codec) );
+		emit incomingMessage( msg.sender(), msg.text(d->codec), msg.timestamp() );
 	} else {
 		qWarning( "[ICQ:Session] [User: %s] Ignoring message of type %s", qPrintable(d->uin), qPrintable(QString::number(msg.type(), 16)) );
 	}

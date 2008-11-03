@@ -277,6 +277,7 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
 	if ( offlineMsg ) {
 		Tlv tlv16 = chain.getTlv(0x16);
 		msg.setTimestamp( tlv16.getDWord() );
+		msg.setOffline();
 	}
 
 	QByteArray message = tlv02.read(msgSize);

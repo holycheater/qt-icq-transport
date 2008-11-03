@@ -76,7 +76,7 @@ TransportMain::TransportMain(int& argc, char **argv)
 	if ( m_runmode == Transport ) {
 		setup_transport();
 	} else {
-		/* It is just a process dor daemonization, it creates a sandbox */
+		/* Check if it is just a process dor daemonization, then create a sandbox */
 		if ( m_options->hasOption("daemonize") ) {
 			QString appFile = applicationFilePath();
 			QStringList args = arguments();
@@ -84,6 +84,7 @@ TransportMain::TransportMain(int& argc, char **argv)
 			args.removeOne("-daemonize");
 
 			QProcess *sandbox = new QProcess(this);
+			sandbox->setReadChannelMode(QProcess::ForwardedChannels);
 			if ( sandbox->startDetached(appFile, args) ) {
 				::exit(0);
 			} else {
@@ -210,6 +211,7 @@ void TransportMain::setup_sandbox()
 
 	m_logfile = new QFile(logfile);
 	m_logfile->open(QIODevice::Append);
+	qInstallMsgHandler(loghandler);
 
 	/* TODO: config variables check */
 
@@ -238,10 +240,6 @@ void TransportMain::startForkedTransport()
 
 void TransportMain::setup_transport()
 {
-	m_logfile = new QFile( m_options->getOption("log-file") );
-	m_logfile->open(QIODevice::Append);
-	qInstallMsgHandler(loghandler);
-
 	m_gateway = new GatewayTask(this);
 	m_connection = new JabberConnection(this);
 
@@ -357,27 +355,24 @@ void TransportMain::loghandler(QtMsgType type, const char *msg)
 
 void TransportMain::processTransportError(QProcess::ProcessError error)
 {
-	QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] "
-			<< "[Sandbox] " << "Transport error: " << error << "\n";
+	Q_UNUSED(error);
+	qCritical( "Sandbox: Transport process error: %s",
+			   qPrintable(m_transport->errorString()) );
 }
 
 void TransportMain::processTransportFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-	QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] "
-			<< "[Sandbox] " << "Transport finished (exit code: " << exitCode << ")" << "\n";
-
+	qWarning("Sandbox: Transport process finished (exit code: %d)", exitCode);
 	m_transport->deleteLater();
 	m_transport = 0;
 
 	if ( exitStatus != QProcess::NormalExit || exitCode != 0 ) {
-		QTextStream(m_logfile)
-				<< "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] "
-				<< "[Sandbox] " << "Transport will be restarted in 30 seconds" << "\n";
-		QTimer::singleShot( 30000, this, SLOT( launchTransport() ) );
+		qDebug("Sandbox: Crashed transport will be restarted in 30 seconds");
+		QTimer::singleShot( 30000, this, SLOT( startForkedTransport() ) );
 	}
 }
 
 void TransportMain::processTransportStarted()
 {
-	QTextStream(m_logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << "[Sandbox] " << "Transport started" << "\n";
+	qDebug("Sandbox: Transport process started");
 }

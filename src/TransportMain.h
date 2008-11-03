@@ -62,10 +62,10 @@ class TransportMain : public QCoreApplication
 
 		/* "sandbox" mode */
 		QProcess *m_transport;
+		QFile *m_logfile;
 
 		/* common for all */
 		Options *m_options;
-		QFile *m_logfile;
 		RunMode m_runmode;
 };
 

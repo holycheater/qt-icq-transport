@@ -60,6 +60,9 @@ class Message
 		bool isEmpty() const;
 		bool isValid() const;
 
+		bool isOffline() const;
+		void setOffline(bool offline = true);
+
 		/* get/set message channel */
 		Byte channel() const;
 		void setChannel(Byte channel);

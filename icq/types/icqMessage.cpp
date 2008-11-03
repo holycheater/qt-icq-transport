@@ -50,6 +50,8 @@ class Message::Private : public QSharedData
 		QString receiver;
 
 		Encoding encoding;
+
+		bool bOffline;
 };
 
 Message::Private::Private()
@@ -61,6 +63,8 @@ Message::Private::Private()
 	flags = 0;
 
 	encoding = UserDefined;
+
+	bOffline = false;
 }
 
 Message::Private::Private(const Private& other)
@@ -79,6 +83,8 @@ Message::Private::Private(const Private& other)
 	text = other.text;
 
 	encoding = other.encoding;
+
+	bOffline = other.bOffline;
 }
 
 Message::Message()
@@ -115,6 +121,16 @@ bool Message::isValid() const
 		return false;
 	}
 	return true;
+}
+
+bool Message::isOffline() const
+{
+	return d->bOffline;
+}
+
+void Message::setOffline(bool offline)
+{
+	d->bOffline = offline;
 }
 
 Byte Message::channel() const

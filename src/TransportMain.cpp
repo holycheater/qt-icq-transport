@@ -118,6 +118,11 @@ void TransportMain::shutdown()
 		m_gateway->processShutdown();
 	} else if ( m_runmode == Sandbox ) {
 		QFile(m_options->getOption("pid-file")).remove();
+		if ( m_transport ) {
+			m_transport->terminate();
+			m_transport->deleteLater();
+			m_transport = 0;
+		}
 	}
 }
 

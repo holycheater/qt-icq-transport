@@ -37,7 +37,7 @@ static QSet<QString> supportedOptions;
 Options::Options()
 {
 	m_options.insert("config-file", defaultConfigFile);
-	supportedOptions << "config-file" << "log-file" << "pid-file" << "database"
+	supportedOptions << "log-file" << "pid-file" << "database"
 	                 << "jabber-server" << "jabber-port" << "jabber-domain" << "jabber-secret"
 	                 << "icq-server" << "icq-port";
 }
@@ -62,6 +62,8 @@ void Options::parseCommandLine()
 
 	QStringList args = QCoreApplication::instance()->arguments();
 	QStringListIterator i(args);
+	QSet<QString> opts;
+	opts << "config-file" << "log-file" << "pid-file";
 
 	i.next(); // skip app executable name.
 
@@ -77,16 +79,18 @@ void Options::parseCommandLine()
 		/* daemonize non-forked (top-level) process */
 		if ( arg == "-daemonize" && !m_options.contains("fork") ) {
 			m_options.insert("daemonize", "yes");
+			continue;
 		}
 		if ( arg == "-fork" ) {
 			m_options.insert("fork", "yes");
 			continue;
 		}
-		if ( !arg.startsWith("-") ) {
+		QString optName = arg.remove(0,1);
+		if ( !arg.startsWith("-") || !opts.contains(optName) ) {
 			qCritical( "Unknown argument: %s", qPrintable(arg) );
 			exit(1);
 		}
-		setOption(arg.remove(0,1), i.next(), true);
+		m_options.insert(optName, i.next());
 	}
 	readXmlFile( m_options.value("config-file") );
 	if ( !m_options.contains("log-file") ) {
@@ -145,12 +149,5 @@ void Options::printUsage()
 		<< "   -config-file <file>       XML Configuration file (note: command-line options override xml configuration)\n"
 		<< "   -log-file <file>          Log file (default is /tmp/qt-icq-transport.log)\n"
 		<< "   -pid-file <file>          PID file"
-		<< "   -daemonize                Daemonize qt-icq-transport"
-		<< "   -database <file>          Service users database file (default: users.db)\n"
-		<< "   -jabber-server <host>     Jabber server hostname/ip\n"
-		<< "   -jabber-port <port>       Jabber server port\n"
-		<< "   -jabber-domain <domain>   Jabber domain name which is server by this component\n"
-		<< "   -jabber-secret <secret>   Secret passphrase for authenticating on the server\n"
-		<< "   -icq-server <host>        ICQ login server hostname (default: login.icq.com)\n"
-		<< "   -icq-port <port>          ICQ login server port(default: 5190)\n";
+		<< "   -daemonize                Daemonize qt-icq-transport";
 }

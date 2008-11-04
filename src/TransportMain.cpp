@@ -119,9 +119,8 @@ void TransportMain::shutdown()
 	} else if ( m_runmode == Sandbox ) {
 		QFile(m_options->getOption("pid-file")).remove();
 		if ( m_transport ) {
+			qWarning("Sandbox: terminating child process");
 			m_transport->terminate();
-			m_transport->deleteLater();
-			m_transport = 0;
 		}
 	}
 }
@@ -324,7 +323,7 @@ void TransportMain::connect_signals()
 
 void TransportMain::sighandler(int param)
 {
-	Q_UNUSED(param)
+	Q_UNUSED(param);
 
 	TransportMain *app = qobject_cast<TransportMain*>(instance());
 	Q_ASSERT( app != 0 );

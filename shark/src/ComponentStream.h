@@ -49,7 +49,7 @@ class ComponentStream : public QObject
 	enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
 
 	public:
-		enum ErrorType { EStreamError, EHandshakeFailed };
+		enum ErrorType { EStreamError, EHandshakeFailed, EConnectorError };
 
 		ComponentStream(Connector *connector, QObject *parent = 0);
 		~ComponentStream();

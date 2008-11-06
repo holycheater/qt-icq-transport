@@ -338,6 +338,7 @@ void ComponentStream::cr_error(Connector::ErrorType errcode)
 			qCritical("[XMPP::Stream] Socket error: %s", qPrintable( d->socket->errorString() ) );
 			break;
 	}
+	emit error(EConnectorError);
 	close();
 }
 

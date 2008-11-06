@@ -801,7 +801,11 @@ void JabberConnection::stream_error(ComponentStream::ErrorType errType)
 			qCritical("[JC] Handshaking with jabber-server failed!");
 			break;
 		case ComponentStream::EStreamError:
-			qCritical("[JC] Stream error: %s",  qPrintable( d->stream->lastStreamError().conditionString() ) );
+			qCritical("[JC] Stream error: %s",
+					  qPrintable(d->stream->lastStreamError().conditionString()) );
+			break;
+		case ComponentStream::EConnectorError:
+			qCritical("[JC] Connector error");
 			break;
 		default:
 			qCritical("[JC] Unknown stream error");

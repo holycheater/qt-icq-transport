@@ -42,7 +42,6 @@ class GatewayTask : public QObject
 		GatewayTask(QObject *parent = 0);
 		virtual ~GatewayTask();
 
-		void setDatabaseLink(const QSqlDatabase& sql);
 		void setIcqServer(const QString& host, quint16 port);
 	public slots:
 		void processRegister(const QString& user, const QString& uin, const QString& password);

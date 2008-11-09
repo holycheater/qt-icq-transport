@@ -23,6 +23,7 @@
 #include <QMutex>
 #include <QSqlQuery>
 #include <QString>
+#include <QStringList>
 #include <QVariant>
 
 UserManager::UserManager()
@@ -87,6 +88,49 @@ bool UserManager::isRegistered(const QString& user) const
 	QSqlQuery query;
 	query.exec( QString("SELECT jid FROM users WHERE jid = '%1'").arg(user) );
 	return query.first();
+}
+
+QString UserManager::getUin(const QString& user) const
+{
+	QSqlQuery query;
+	query.exec( QString("SELECT uin from users WHERE jid = '%1'").arg(user) );
+	if ( query.first() ) {
+		return query.value(0).toString();
+	}
+	return QString();
+}
+
+QString UserManager::getPassword(const QString& user) const
+{
+	QSqlQuery query;
+	query.exec( QString("SELECT password from users WHERE jid = '%1'").arg(user) );
+	if ( query.first() ) {
+		return query.value(0).toString();
+	}
+	return QString();
+}
+
+QStringList UserManager::getUserList() const
+{
+	QSqlQuery query;
+	query.exec("SELECT jid FROM users");
+	QStringList users;
+	while ( query.next() ) {
+		users << query.value(0).toString();
+	}
+	return users;
+}
+
+QStringList UserManager::getUserListByOptVal(const QString& option, const QVariant& value) const
+{
+	QSqlQuery query;
+	query.exec( QString("SELECT jid FROM options WHERE option = '%1' AND value = '%2'").arg(option,value.toString()) );
+
+	QStringList users;
+	while ( query.next() ) {
+		users << query.value(0).toString();
+	}
+	return users;
 }
 
 QVariant UserManager::getOption(const QString& user, const QString& option) const

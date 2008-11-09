@@ -24,6 +24,7 @@
 #include <QHash>
 
 class QString;
+class QStringList;
 class QVariant;
 
 #define qUsrMgr UserManager::instance()
@@ -36,6 +37,12 @@ class UserManager
 		void add(const QString& user, const QString& uin, const QString& passwd);
 		void del(const QString& user);
 		bool isRegistered(const QString& user) const;
+
+		QString getUin(const QString& user) const;
+		QString getPassword(const QString& user) const;
+
+		QStringList getUserList() const;
+		QStringList getUserListByOptVal(const QString& option, const QVariant& value) const;
 
 		QVariant getOption(const QString& user, const QString& option) const;
 		void setOption(const QString& user, const QString& option, const QVariant& value);

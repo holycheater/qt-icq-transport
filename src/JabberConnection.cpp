@@ -19,6 +19,7 @@
  */
 
 #include "JabberConnection.h"
+#include "UserManager.h"
 
 #include "xmpp-core/Connector.h"
 #include "xmpp-core/IQ.h"
@@ -36,7 +37,6 @@
 #include <QDateTime>
 #include <QHash>
 #include <QStringList>
-#include <QSqlQuery>
 #include <QTextCodec>
 #include <QUrl>
 #include <QVariant>
@@ -56,9 +56,6 @@ static const int SEC_WEEK   = 604800;
 class JabberConnection::Private {
 
 	public:
-		bool checkRegistration(const Jid& user);
-		QString getUserSetting(const Jid& user, const QString& setting);
-
 		void processAdHoc(const IQ& iq);
 		void processDiscoInfo(const IQ& iq);
 		void processDiscoItems(const IQ& iq);
@@ -81,23 +78,6 @@ class JabberConnection::Private {
 		/* list of adhoc commands */
 		QHash<QString,DiscoItem> commands;
 };
-
-bool JabberConnection::Private::checkRegistration(const Jid& user)
-{
-	QSqlQuery query;
-	query.exec( QString("SELECT jid FROM users WHERE jid = '%1'").arg(user.bare()) );
-	return query.first();
-}
-
-QString JabberConnection::Private::getUserSetting(const Jid& user, const QString& setting)
-{
-	QSqlQuery query;
-	query.exec( QString("SELECT value FROM options WHERE jid = '%1' AND option = '%2' ").arg(user.bare(), setting) );
-	if ( !query.first() ) {
-		return QString();
-	}
-	return query.value(0).toString();
-}
 
 /**
  * Constructs jabber-connection object.
@@ -380,7 +360,7 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 	}
 
 	if ( cmd.node() == "fetch-contacts" ) {
-		if ( !checkRegistration(iq.from()) ) {
+		if ( !UserManager::instance()->isRegistered(iq.from().bare()) ) {
 			IQ err = IQ::createReply(iq);
 			err.setError(Stanza::Error::NotAuthorized);
 
@@ -408,7 +388,7 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 		msg.setBody("Uptime: "+uptimeText);
 		stream->sendStanza(msg);
 	} else if ( cmd.node() == "set-options" ) {
-		if ( !checkRegistration(iq.from()) ) {
+		if ( !UserManager::instance()->isRegistered(iq.from().bare()) ) {
 			IQ err = IQ::createReply(iq);
 			err.setError(Stanza::Error::NotAuthorized);
 
@@ -418,21 +398,28 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 
 		if ( iq.childElement().firstChildElement("x").attribute("type") == "submit" ) {
 			DataForm form = DataForm::fromDomElement( iq.childElement().firstChildElement("x") );
+
 			DataForm::Field fai = form.fieldByName("auto-invite");
 			QString auto_invite = fai.values().at(0);
+			bool o_auto_invite;
 			if ( auto_invite == "true" || auto_invite == "1" ) {
-				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('%1','auto-invite','enabled')").arg(iq.from().bare()) ).exec();
+				o_auto_invite = true;
 			} else {
-				QSqlQuery( QString("DELETE FROM options WHERE jid = '%1' AND option='auto-invite'").arg(iq.from().bare()) ).exec();
+				o_auto_invite = false;
 			}
+			UserManager::instance()->setOption(iq.from().bare(), "auto-invite", QVariant(o_auto_invite));
+
 			QString auto_reconnect = form.fieldByName("auto-reconnect").values().at(0);
+			bool o_auto_reconnect;
 			if ( auto_reconnect == "true" || auto_invite == "1" ) {
-				QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('%1','auto-reconnect','enabled')").arg(iq.from().bare()) ).exec();
+				o_auto_reconnect = true;
 			} else {
-				QSqlQuery( QString("DELETE FROM options WHERE jid = '%1' AND option='auto-reconnect'").arg(iq.from().bare()) ).exec();
+				o_auto_reconnect = false;
 			}
+			UserManager::instance()->setOption(iq.from().bare(),
+											   "auto-reconnect", QVariant(o_auto_reconnect));
 			QString encoding = form.fieldByName("encoding").values().at(0);
-			QSqlQuery( QString("REPLACE INTO options (jid,option,value) VALUES('%1','encoding','%2')").arg(iq.from().bare(), encoding) ).exec();
+			UserManager::instance()->setOption(iq.from().bare(), "encoding", encoding);
 		} else {
 			cmd.setStatus(AdHoc::Executing);
 			cmd.setSessionID( "set-options:"+QDateTime::currentDateTime().toString(Qt::ISODate) );
@@ -442,13 +429,14 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 			form.setInstructions("Please configure your settings");
 
 			DataForm::Field fldAutoInvite("auto-invite", "Auto-Invite", DataForm::Field::Boolean);
-			if ( getUserSetting(iq.from(),"auto-invite") == "enabled" ) {
+			if ( UserManager::instance()->getOption(iq.from().bare(),"auto-invite").toBool() == true ) {
 				fldAutoInvite.addValue("true");
 			}
 			form.addField(fldAutoInvite);
 
-			DataForm::Field fldAutoReconnect("auto-reconnect", "Automatically reconnect", DataForm::Field::Boolean);
-			if ( getUserSetting(iq.from(),"auto-reconnect") == "enabled" ) {
+			DataForm::Field fldAutoReconnect("auto-reconnect", "Automatically reconnect",
+											 DataForm::Field::Boolean);
+			if ( UserManager::instance()->getOption(iq.from().bare(),"auto-reconnect").toBool() == true ) {
 				fldAutoReconnect.addValue("true");
 			}
 			form.addField(fldAutoReconnect);
@@ -460,7 +448,7 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
 				QString enc = ci.next();
 				fldEncoding.addOption(enc,enc);
 			}
-			QString userEncoding = getUserSetting(iq.from(), "encoding");
+			QString userEncoding = UserManager::instance()->getOption(iq.from().bare(), "encoding").toString();
 			if ( !userEncoding.isEmpty() ) {
 				fldEncoding.addValue(userEncoding);
 			} else {

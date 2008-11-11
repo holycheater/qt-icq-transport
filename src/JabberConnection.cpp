@@ -67,6 +67,8 @@ class JabberConnection::Private {
 		void processPromptRequest(const IQ& iq);
 		void processPrompt(const IQ& iq);
 
+		void initCommands();
+
 		JabberConnection *q;
 
 		Connector* connector;
@@ -81,6 +83,15 @@ class JabberConnection::Private {
 		/* list of adhoc commands */
 		QHash<QString,DiscoItem> commands;
 };
+
+void JabberConnection::Private::initCommands()
+{
+	commands.clear();
+
+	commands.insert( "fetch-contacts", DiscoItem(jid, "fetch-contacts", "Fetch ICQ contacts") );
+	commands.insert( "cmd-uptime",     DiscoItem(jid, "cmd-uptime",     "Report service uptime") );
+	commands.insert( "set-options",    DiscoItem(jid, "set-options",    "Set service parameters") );
+}
 
 bool JabberConnection::Private::checkRegistration(const Jid& user)
 {
@@ -118,10 +129,6 @@ JabberConnection::JabberConnection(QObject *parent)
 	d->vcard.setDescription("Qt ICQ Transport");
 	d->vcard.setUrl( QUrl("http://github.com/holycheater/qt-icq-transport") );
 
-	d->commands.insert( "fetch-contacts", DiscoItem("icq.dragonfly", "fetch-contacts", "Fetch ICQ contacts") );
-	d->commands.insert( "cmd-uptime",     DiscoItem("icq.dragonfly", "cmd-uptime",     "Report service uptime") );
-	d->commands.insert( "set-options",    DiscoItem("icq.dragonfly", "set-options",    "Set service parameters") );
-
 	QObject::connect( d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
 	QObject::connect( d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
 	QObject::connect( d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
@@ -153,6 +160,7 @@ void JabberConnection::login()
 void JabberConnection::setUsername(const QString& username)
 {
 	d->jid = username;
+	d->initCommands();
 }
 
 /**

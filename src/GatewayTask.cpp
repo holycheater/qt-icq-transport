@@ -19,6 +19,7 @@
  */
 
 #include "GatewayTask.h"
+#include "UserManager.h"
 
 #include "xmpp-core/Jid.h"
 #include "xmpp-core/Presence.h"
@@ -31,9 +32,7 @@
 #include <QDateTime>
 #include <QHash>
 #include <QStringList>
-#include <QSqlDatabase>
 #include <QSqlError>
-#include <QSqlQuery>
 #include <QTextCodec>
 #include <QVariant>
 
@@ -61,8 +60,6 @@ class GatewayTask::Private
 		QString icqHost;
 		quint16 icqPort;
 
-		QSqlDatabase db;
-
 		GatewayTask *q;
 
 		bool online;
@@ -77,8 +74,6 @@ GatewayTask::Private::Private(GatewayTask *parent)
 
 GatewayTask::Private::~Private()
 {
-	db.close();
-
 	qDeleteAll(jidIcqTable);
 	icqJidTable.clear();
 }
@@ -92,29 +87,6 @@ GatewayTask::GatewayTask(QObject *parent)
 GatewayTask::~GatewayTask()
 {
 	delete d;
-}
-
-void GatewayTask::setDatabaseLink(const QSqlDatabase& sql)
-{
-	d->db = sql;
-	if ( !d->db.isOpen() && !d->db.open() ) {
-		qCritical( "[GT] Database open failed: %s", qPrintable(d->db.lastError().text()) );
-		exit(1);
-	}
-
-	QSqlQuery query;
-	query.exec("CREATE TABLE IF NOT EXISTS users ("
-				"jid TEXT,"
-				"uin TEXT,"
-				"password TEXT,"
-				"PRIMARY KEY(jid)"
-				")");
-	query.exec("CREATE TABLE IF NOT EXISTS options ("
-				"jid TEXT,"
-				"option TEXT,"
-				"value TEXT,"
-				"PRIMARY KEY(jid,option)"
-				")");
 }
 
 void GatewayTask::setIcqServer(const QString& host, quint16 port)
@@ -133,10 +105,7 @@ void GatewayTask::processRegister(const QString& user, const QString& uin, const
 		delete conn;
 	}
 
-	QSqlQuery query;
-	/* prepare + bindvalue doesn't work... */
-	query.exec( QString("REPLACE INTO users VALUES('%1', '%2', '%3')").arg(user,uin,password) );
-
+	UserManager::instance()->add(user, uin, password);
 	emit gatewayMessage( user, tr("You have been successfully registered") );
 }
 
@@ -151,16 +120,7 @@ void GatewayTask::processUnregister(const QString& user)
 		d->jidIcqTable.remove(user);
 		delete conn;
 	}
-
-	QSqlQuery query;
-
-	query.exec( QString("SELECT * FROM users WHERE jid = '%1'").arg(user) );
-	if ( !query.first() ) {
-		return;
-	}
-
-	query.exec( QString("DELETE FROM users WHERE jid = '%1'").arg(user) );
-	query.exec( QString("DELETE FROM options WHERE jid = '%1'").arg(user) );
+	UserManager::instance()->del(user);
 }
 
 void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_login)
@@ -194,13 +154,9 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 		return;
 	}
 
-	QSqlQuery query;
-	/* small hack with replace, because QSqlQuery somehow doesn't understand bindvalues there */
-	query.exec( QString("SELECT uin, password FROM users WHERE jid = '%1' ").arg(user.bare()) );
-
-	if ( query.first() ) {
-		QString uin = query.value(0).toString();
-		QString password = query.value(1).toString();
+	if ( UserManager::instance()->isRegistered(user.bare()) ) {
+		QString uin = UserManager::instance()->getUin(user.bare());
+		QString password = UserManager::instance()->getPassword(user.bare());
 
 		ICQ::Session *conn = new ICQ::Session(this);
 		conn->setUin(uin);
@@ -241,10 +197,9 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
 		d->jidIcqTable.insert( user.bare(), conn );
 		d->icqJidTable.insert( conn, user.bare() );
 
-		query.exec( QString("SELECT value FROM options WHERE jid='%1' AND option='encoding'").arg(user.bare()) );
 		QTextCodec *codec;
-		if ( query.first() ) {
-			codec = QTextCodec::codecForName( query.value(0).toByteArray() );
+		if ( UserManager::instance()->hasOption(user.bare(), "encoding") ) {
+			codec = QTextCodec::codecForName( UserManager::instance()->getOption(user.bare(), "encoding").toByteArray() );
 			if ( codec == 0 ) {
 				codec = QTextCodec::codecForName("windows-1251");
 			}
@@ -402,18 +357,15 @@ void GatewayTask::processCmd_RosterRequest(const Jid& user)
 void GatewayTask::processGatewayOnline()
 {
 	d->online = true;
-	QSqlQuery query;
 
-	query.exec("SELECT jid FROM users");
-	while ( query.next() ) {
-		Jid jid = query.value(0).toString();
-		emit offlineNotifyFor(jid);
+	QStringListIterator ri(UserManager::instance()->getUserList());
+	while ( ri.hasNext() ) {
+		emit offlineNotifyFor( Jid(ri.next()) );
 	}
 
-	query.exec("SELECT jid FROM options WHERE option = 'auto-invite'");
-	while ( query.next() ) {
-		Jid jid = query.value(0).toString();
-		emit probeRequest(jid);
+	QStringListIterator auto_invite(UserManager::instance()->getUserListByOptVal("auto-invite", QVariant(true)));
+	while ( auto_invite.hasNext() ) {
+		emit probeRequest( Jid(auto_invite.next()) );
 	}
 }
 
@@ -425,23 +377,20 @@ void GatewayTask::processShutdown()
 	if ( !d->online ) {
 		return;
 	}
-
-	QSqlQuery query;
-	query.exec("SELECT jid FROM users");
-
 	d->online = false;
 
-	while ( query.next() ) {
-		Jid user = query.value(0).toString();
-		if ( d->jidIcqTable.contains( user.bare() ) ) {
-			ICQ::Session *session = d->jidIcqTable.value( user.bare() );
+	QStringListIterator ui(UserManager::instance()->getUserList());
+	while ( ui.hasNext() ) {
+		QString user = ui.next();
+		if ( d->jidIcqTable.contains(user) ) {
+			ICQ::Session *session = d->jidIcqTable.value(user);
 
-			QStringListIterator i( session->contactList() );
-			while ( i.hasNext() ) {
-				emit contactOffline( user, i.next() );
+			QStringListIterator ci( session->contactList() );
+			while ( ci.hasNext() ) {
+				emit contactOffline( user, ci.next() );
 			}
 
-			d->jidIcqTable.remove( user.bare() );
+			d->jidIcqTable.remove(user);
 			d->icqJidTable.remove(session);
 
 			session->disconnect();
@@ -487,9 +436,8 @@ void GatewayTask::processIcqSignOff()
 	d->jidIcqTable.remove(user);
 	conn->deleteLater();
 
-	QSqlQuery query;
-	query.exec( QString("SELECT value FROM options WHERE jid='%1' AND option='auto-reconnect'").arg(user) );
-	if ( query.first() && query.value(0).toString() == "enabled" ) {
+	bool reconnect = UserManager::instance()->getOption(user.bare(), "auto-reconnect").toBool();
+	if ( reconnect ) {
 		int rCount = d->reconnects.value( user.bare() );
 		if ( rCount >= 3 ) { // limit number of reconnects to 3.
 			emit gatewayMessage(user, "Tried to reconnect 3 times, but no result. Stopping reconnects.");

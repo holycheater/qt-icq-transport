@@ -252,7 +252,9 @@ void TransportMain::setup_transport()
 
 	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
 	db.setDatabaseName( m_options->getOption("database") );
-	m_gateway->setDatabaseLink(db);
+	if ( !db.isOpen() && !db.open() ) {
+		qFatal("Failed to open the database");
+	}
 
 	m_gateway->setIcqServer( m_options->getOption("icq-server"),
 							 m_options->getOption("icq-port").toUInt() );

@@ -306,6 +306,7 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, con
 	msg.setTo(recipient);
 	msg.setBody(message);
 	msg.setNick(nick);
+	msg.setType(Message::Chat);
 
 	d->stream->sendStanza(msg);
 }
@@ -319,6 +320,7 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& message)
 	msg.setFrom(d->jid);
 	msg.setTo(recipient);
 	msg.setBody(message);
+	msg.setType(Message::Chat);
 
 	d->stream->sendStanza(msg);
 }

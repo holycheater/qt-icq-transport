@@ -25,3 +25,5 @@ int main(int argc, char **argv)
 	TransportMain app(argc, argv);
 	return app.exec();
 }
+
+// vim:noet:ts=4:sw=4:nowrap

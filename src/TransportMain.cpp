@@ -387,3 +387,5 @@ void TransportMain::processTransportStarted()
 {
 	qDebug("Sandbox: Transport process started");
 }
+
+// vim:noet:ts=4:sw=4:nowrap

@@ -197,3 +197,5 @@ void Registration::setField(Field name, bool present)
 
 
 } /* end of namespace XMPP */
+
+// vim:ts=4:sw=4:nowrap:noet

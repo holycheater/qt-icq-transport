@@ -68,4 +68,5 @@ class SnacBuffer: public FlapBuffer
 
 }
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQSNACBUFFER_H_ */

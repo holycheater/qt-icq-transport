@@ -186,3 +186,5 @@ void UserManager::clearOptions(const QString& user)
 }
 
 UserManager* UserManager::m_instance = 0;
+
+// vim:noet:ts=4:sw=4:nowrap

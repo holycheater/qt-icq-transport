@@ -1009,3 +1009,5 @@ void DataForm::Item::setFields(const QList<DataForm::Field>& flist)
 
 
 }
+
+// vim:ts=4:sw=4:nowrap:noet

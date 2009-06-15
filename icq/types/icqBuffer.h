@@ -117,4 +117,5 @@ class Buffer
 
 }
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQBUFFER_H_ */

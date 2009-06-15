@@ -676,3 +676,5 @@ void vCard::setJid(const Jid& jid)
 
 
 } /* end of namespace XMPP */
+
+// vim:ts=4:sw=4:nowrap:noet

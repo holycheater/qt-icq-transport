@@ -155,3 +155,5 @@ void Options::printUsage()
 		<< "   -pid-file <file>          PID file"
 		<< "   -daemonize                Daemonize qt-icq-transport";
 }
+
+// vim:noet:ts=4:sw=4:nowrap

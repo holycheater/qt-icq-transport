@@ -50,4 +50,5 @@ class Registration : public IQ
 
 } /* end of namespace XMPP */
 
+// vim:ts=4:sw=4:nowrap:noet
 #endif /* XMPP_EXT_REGISTRATION_H_ */

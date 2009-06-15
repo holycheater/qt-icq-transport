@@ -108,4 +108,5 @@ class Message
 
 }
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQMESSAGE_H_ */

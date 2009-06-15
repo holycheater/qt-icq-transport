@@ -135,4 +135,5 @@ class UserDetails
 
 } /* end of namespace ICQ */
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQ_TYPES_USER_DETAILS_H_ */

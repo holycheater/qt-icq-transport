@@ -70,4 +70,5 @@ class TlvChain
 
 }
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQTLVCHAIN_H_ */

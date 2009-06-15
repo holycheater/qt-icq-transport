@@ -56,4 +56,5 @@ class Presence : public Stanza
 
 }
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* XMPP_STANZA_PRESENCE_H_ */

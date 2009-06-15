@@ -71,4 +71,5 @@ class AdHoc
 
 }
 
+// vim:ts=4:sw=4:nowrap:noet
 #endif /* XMPP_ADHOC_H_ */

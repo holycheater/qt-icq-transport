@@ -918,3 +918,5 @@ QString Parser::encoding() const
 {
 	return d->input->encoding();
 }
+
+// vim:ts=4:sw=4:noet:nowrap

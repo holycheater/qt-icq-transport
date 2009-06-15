@@ -613,3 +613,5 @@ void GatewayTask::processShortUserDetails(const QString& uin)
 
 	emit incomingVCard(user, uin, info.requestID, vcard);
 }
+
+// vim:noet:ts=4:sw=4:nowrap

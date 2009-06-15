@@ -257,3 +257,5 @@ void Stanza::setNick(const QString& nick)
 
 
 } /* end of namespace XMPP */
+
+// vim:ts=4:sw=4:noet:nowrap

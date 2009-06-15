@@ -114,4 +114,5 @@ class DiscoItems
 
 } /* end of namespace XMPP */
 
+// vim:ts=4:sw=4:nowrap:noet
 #endif /* XMPP_SERVICE_DISCOVERY_H_ */

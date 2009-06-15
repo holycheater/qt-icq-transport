@@ -579,3 +579,5 @@ Jid::operator QString() const
 {
 	return full();
 }
+
+// vim:ts=4:sw=4:noet:nowrap

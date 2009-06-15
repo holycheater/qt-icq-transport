@@ -143,4 +143,5 @@ class DataForm::Item
 
 }
 
+// vim:ts=4:sw=4:nowrap:noet
 #endif /* XMPP_DATA_FORM_H_ */

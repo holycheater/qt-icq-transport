@@ -64,4 +64,5 @@ class IQ : public Stanza
 
 } /* end of namespace XMPP */
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* XMPP_STANZA_IQ_H_ */

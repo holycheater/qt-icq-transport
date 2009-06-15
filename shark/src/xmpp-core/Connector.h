@@ -62,4 +62,5 @@ class Connector : public QObject
 
 } /* end of namespace XMPP */
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* XMPP_CONNECTOR_H_ */

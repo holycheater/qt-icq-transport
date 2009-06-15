@@ -132,4 +132,5 @@ class vCard
 
 } /* end of namespace XMPP */
 
+// vim:ts=4:sw=4:nowrap:noet
 #endif /* XMPP_EXT_VCARD_H_ */

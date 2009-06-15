@@ -128,4 +128,5 @@ class ComponentStream::Error
 
 } /* end of namespace XMPP */
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* XMPP_COMPONENTSTREAM_H_ */

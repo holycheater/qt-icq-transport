@@ -96,3 +96,5 @@ void Connector::Private::processSocketError(QAbstractSocket::SocketError errcode
 	Q_UNUSED(errcode)
 	emit q->error(ESocketError);
 }
+
+// vim:ts=4:sw=4:noet:nowrap

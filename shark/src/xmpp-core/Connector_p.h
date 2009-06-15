@@ -68,4 +68,5 @@ class Connector::Private : public QObject
 
 } /* end of namespace XMPP */
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* XMPP_CORE_CONNECTOR_P_H_ */

@@ -315,3 +315,5 @@ Presence::Show Presence::stringToShow(const QString& show)
  */
 
 } /* end of namespace XMPP */
+
+// vim:ts=4:sw=4:noet:nowrap

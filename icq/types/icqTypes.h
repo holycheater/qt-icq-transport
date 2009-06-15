@@ -103,4 +103,5 @@ namespace ICQ {
 
 }  // namespace ICQ
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /*ICQ_H_*/

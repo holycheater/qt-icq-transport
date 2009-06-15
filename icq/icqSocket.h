@@ -78,4 +78,5 @@ class Socket : public QObject
 
 } /* end of namespace ICQ */
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQ_SOCKET_H_ */

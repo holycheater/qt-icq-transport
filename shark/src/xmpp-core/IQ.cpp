@@ -211,3 +211,5 @@ int IQ::m_id = 0;
 
 
 } /* end of namespace XMPP */
+
+// vim:ts=4:sw=4:noet:nowrap

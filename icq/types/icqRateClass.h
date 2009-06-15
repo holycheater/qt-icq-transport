@@ -96,4 +96,5 @@ class RateClass : public QObject
 
 }
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /*ICQRATECLASS_H_*/

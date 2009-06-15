@@ -134,4 +134,5 @@ class Session : public QObject
 
 } /* end of namespace ICQ */
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQ_SESSION_H_ */

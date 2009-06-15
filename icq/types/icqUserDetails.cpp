@@ -469,3 +469,5 @@ bool UserDetails::isEmpty()
 
 
 } /* end of namespace ICQ */
+
+// vim:sw=4:ts=4:noet:nowrap

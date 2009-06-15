@@ -69,4 +69,5 @@ class TransportMain : public QCoreApplication
 		RunMode m_runmode;
 };
 
+// vim:noet:ts=4:sw=4:nowrap
 #endif /* TRANSPORT_MAIN_H_ */

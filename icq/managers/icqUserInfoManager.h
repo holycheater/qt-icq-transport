@@ -77,4 +77,5 @@ class UserInfoManager : public QObject
 
 }
 
+// vim:ts=4:sw=4:noet:nowrap
 #endif /* ICQUSERINFOMANAGER_H_ */

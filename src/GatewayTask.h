@@ -100,4 +100,5 @@ class GatewayTask : public QObject
 		Private *d;
 };
 
+// vim:noet:ts=4:sw=4:nowrap
 #endif /* GATEWAYTASK_H_ */

@@ -59,5 +59,6 @@ class UserManager
 		static UserManager* m_instance;
 };
 
+// vim:noet:ts=4:sw=4:nowrap
 #endif /* USER_MANAGER_H_ */
 

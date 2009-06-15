@@ -40,4 +40,5 @@ class Options
 		QHash<QString, QString> m_options;
 };
 
+// vim:noet:ts=4:sw=4:nowrap
 #endif /* OPTIONS_H_ */

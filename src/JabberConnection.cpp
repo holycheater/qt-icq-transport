@@ -811,3 +811,5 @@ void JabberConnection::stream_error(ComponentStream::ErrorType errType)
 	}
 	exit(1);
 }
+
+// vim:noet:ts=4:sw=4:nowrap

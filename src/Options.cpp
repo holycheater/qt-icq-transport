@@ -152,8 +152,8 @@ void Options::printUsage()
         << "Options:\n"
         << "   -config-file <file>       XML Configuration file (note: command-line options override xml configuration)\n"
         << "   -log-file <file>          Log file (default is /tmp/qt-icq-transport.log)\n"
-        << "   -pid-file <file>          PID file"
-        << "   -daemonize                Daemonize qt-icq-transport";
+        << "   -pid-file <file>          PID file\n"
+        << "   -daemonize                Daemonize qt-icq-transport\n";
 }
 
 // vim:et:ts=4:sw=4:nowrap

@@ -32,19 +32,19 @@ namespace XMPP
 
 class DiscoInfo::Private : public QSharedData
 {
-	public:
-		Private();
-		~Private();
+    public:
+        Private();
+        ~Private();
 
-		typedef QList<Identity> IdentityList;
-		typedef QListIterator<Identity> IdentityListIterator;
+        typedef QList<Identity> IdentityList;
+        typedef QListIterator<Identity> IdentityListIterator;
 
-		IdentityList identities;
-		QStringList features;
+        IdentityList identities;
+        QStringList features;
 };
 
 DiscoInfo::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
 }
 
@@ -67,7 +67,7 @@ DiscoInfo::Private::~Private()
  * Constructs disco-info object.
  */
 DiscoInfo::DiscoInfo()
-	: d(new Private)
+    : d(new Private)
 {
 }
 
@@ -87,7 +87,7 @@ DiscoInfo::~DiscoInfo()
  */
 void DiscoInfo::addIdentity(const QString& category, const QString& type, const QString& name)
 {
-	d->identities << Identity(category, type, name);
+    d->identities << Identity(category, type, name);
 }
 
 /**
@@ -95,7 +95,7 @@ void DiscoInfo::addIdentity(const QString& category, const QString& type, const 
  */
 void DiscoInfo::addFeature(const QString& feature)
 {
-	d->features << feature;
+    d->features << feature;
 }
 
 /**
@@ -103,28 +103,28 @@ void DiscoInfo::addFeature(const QString& feature)
  */
 void DiscoInfo::pushToDomElement(QDomElement& element) const
 {
-	QDomDocument doc = element.ownerDocument();
+    QDomDocument doc = element.ownerDocument();
 
-	Private::IdentityListIterator ii(d->identities);
-	while ( ii.hasNext() ) {
-		QDomElement eIdentity = doc.createElement("identity");
-		Identity identity = ii.next();
+    Private::IdentityListIterator ii(d->identities);
+    while ( ii.hasNext() ) {
+        QDomElement eIdentity = doc.createElement("identity");
+        Identity identity = ii.next();
 
-		eIdentity.setAttribute( "category", identity.category() );
-		eIdentity.setAttribute( "type", identity.type() );
-		if ( !identity.name().isEmpty() ) {
-			eIdentity.setAttribute( "name", identity.name() );
-		}
+        eIdentity.setAttribute( "category", identity.category() );
+        eIdentity.setAttribute( "type", identity.type() );
+        if ( !identity.name().isEmpty() ) {
+            eIdentity.setAttribute( "name", identity.name() );
+        }
 
-		element.appendChild(eIdentity);
-	}
+        element.appendChild(eIdentity);
+    }
 
-	QStringListIterator fi(d->features);
-	while ( fi.hasNext() ) {
-		QDomElement eFeature = doc.createElement("feature");
-		eFeature.setAttribute( "var", fi.next() );
-		element.appendChild(eFeature);
-	}
+    QStringListIterator fi(d->features);
+    while ( fi.hasNext() ) {
+        QDomElement eFeature = doc.createElement("feature");
+        eFeature.setAttribute( "var", fi.next() );
+        element.appendChild(eFeature);
+    }
 }
 
 /**
@@ -132,8 +132,8 @@ void DiscoInfo::pushToDomElement(QDomElement& element) const
  */
 DiscoInfo& DiscoInfo::operator<<(const QString& feature)
 {
-	d->features << feature;
-	return *this;
+    d->features << feature;
+    return *this;
 }
 
 /**
@@ -141,8 +141,8 @@ DiscoInfo& DiscoInfo::operator<<(const QString& feature)
  */
 DiscoInfo& DiscoInfo::operator<<(const Identity& identity)
 {
-	d->identities << identity;
-	return *this;
+    d->identities << identity;
+    return *this;
 }
 
 /* ***************************************************************************
@@ -160,9 +160,9 @@ DiscoInfo::Identity::Identity()
 
 DiscoInfo::Identity::Identity(const QString& category, const QString& type, const QString& name)
 {
-	m_category = category;
-	m_type = type;
-	m_name = name;
+    m_category = category;
+    m_type = type;
+    m_name = name;
 }
 
 DiscoInfo::Identity::~Identity()
@@ -176,7 +176,7 @@ DiscoInfo::Identity::~Identity()
  */
 QString DiscoInfo::Identity::category() const
 {
-	return m_category;
+    return m_category;
 }
 
 /**
@@ -186,7 +186,7 @@ QString DiscoInfo::Identity::category() const
  */
 QString DiscoInfo::Identity::name() const
 {
-	return m_name;
+    return m_name;
 }
 
 /**
@@ -196,7 +196,7 @@ QString DiscoInfo::Identity::name() const
  */
 QString DiscoInfo::Identity::type() const
 {
-	return m_type;
+    return m_type;
 }
 
 /**
@@ -206,7 +206,7 @@ QString DiscoInfo::Identity::type() const
  */
 void DiscoInfo::Identity::setCategory(const QString& category)
 {
-	m_category = category;
+    m_category = category;
 }
 
 /**
@@ -216,7 +216,7 @@ void DiscoInfo::Identity::setCategory(const QString& category)
  */
 void DiscoInfo::Identity::setName(const QString& name)
 {
-	m_name = name;
+    m_name = name;
 }
 
 /**
@@ -226,7 +226,7 @@ void DiscoInfo::Identity::setName(const QString& name)
  */
 void DiscoInfo::Identity::setType(const QString& type)
 {
-	m_type = type;
+    m_type = type;
 }
 
 /* ***************************************************************************
@@ -247,15 +247,15 @@ DiscoItem::DiscoItem()
 
 /**
  * Constructs disco-item element with initialising it's fields.
- * @param jid		Item jabber-id.
- * @param node		Item node.
- * @param name		Item name.
+ * @param jid       Item jabber-id.
+ * @param node      Item node.
+ * @param name      Item name.
  */
 DiscoItem::DiscoItem(const Jid& jid, const QString& node, const QString& name)
 {
-	m_jid = jid;
-	m_name = name;
-	m_node = node;
+    m_jid = jid;
+    m_name = name;
+    m_node = node;
 }
 
 /**
@@ -272,7 +272,7 @@ DiscoItem::~DiscoItem()
  */
 Jid DiscoItem::jid() const
 {
-	return m_jid;
+    return m_jid;
 }
 
 /**
@@ -282,7 +282,7 @@ Jid DiscoItem::jid() const
  */
 QString DiscoItem::name() const
 {
-	return m_name;
+    return m_name;
 }
 
 /**
@@ -292,7 +292,7 @@ QString DiscoItem::name() const
  */
 QString DiscoItem::node() const
 {
-	return m_node;
+    return m_node;
 }
 
 /**
@@ -300,7 +300,7 @@ QString DiscoItem::node() const
  */
 void DiscoItem::setJid(const Jid& jid)
 {
-	m_jid = jid;
+    m_jid = jid;
 }
 
 /**
@@ -308,7 +308,7 @@ void DiscoItem::setJid(const Jid& jid)
  */
 void DiscoItem::setName(const QString& name)
 {
-	m_name = name;
+    m_name = name;
 }
 
 /**
@@ -316,7 +316,7 @@ void DiscoItem::setName(const QString& name)
  */
 void DiscoItem::setNode(const QString& node)
 {
-	m_node = node;
+    m_node = node;
 }
 
 /* ***************************************************************************
@@ -347,13 +347,13 @@ DiscoItems::~DiscoItems()
  */
 void DiscoItems::addItem(const DiscoItem& item)
 {
-	m_items << item;
+    m_items << item;
 }
 
 DiscoItems& DiscoItems::operator<<(const DiscoItem& item)
 {
-	m_items << item;
-	return *this;
+    m_items << item;
+    return *this;
 }
 
 /**
@@ -361,7 +361,7 @@ DiscoItems& DiscoItems::operator<<(const DiscoItem& item)
  */
 void DiscoItems::clear()
 {
-	m_items.clear();
+    m_items.clear();
 }
 
 /**
@@ -369,7 +369,7 @@ void DiscoItems::clear()
  */
 QList<DiscoItem> DiscoItems::items() const
 {
-	return m_items;
+    return m_items;
 }
 
 /**
@@ -377,25 +377,25 @@ QList<DiscoItem> DiscoItems::items() const
  */
 void DiscoItems::pushToDomElement(QDomElement& element) const
 {
-	QDomDocument doc = element.ownerDocument();
+    QDomDocument doc = element.ownerDocument();
 
-	QListIterator<DiscoItem> i(m_items);
-	while ( i.hasNext() ) {
-		DiscoItem item = i.next();
+    QListIterator<DiscoItem> i(m_items);
+    while ( i.hasNext() ) {
+        DiscoItem item = i.next();
 
-		QDomElement eItem = doc.createElement("item");
-		eItem.setAttribute( "jid", item.jid() );
-		if ( !item.name().isEmpty() ) {
-			eItem.setAttribute( "name", item.name() );
-		}
-		if ( !item.node().isEmpty() ) {
-			eItem.setAttribute( "node", item.node() );
-		}
-		element.appendChild(eItem);
-	}
+        QDomElement eItem = doc.createElement("item");
+        eItem.setAttribute( "jid", item.jid() );
+        if ( !item.name().isEmpty() ) {
+            eItem.setAttribute( "name", item.name() );
+        }
+        if ( !item.node().isEmpty() ) {
+            eItem.setAttribute( "node", item.node() );
+        }
+        element.appendChild(eItem);
+    }
 }
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:nowrap:noet
+// vim:ts=4:sw=4:nowrap:et

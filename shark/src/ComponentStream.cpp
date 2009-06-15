@@ -36,42 +36,42 @@ namespace XMPP {
 
 class ComponentStream::Private
 {
-	public:
-		void pushToStanzaCache(const QByteArray& data);
+    public:
+        void pushToStanzaCache(const QByteArray& data);
 
-		/* server connector (dns-lookups, connect) */
-		Connector *connector;
+        /* server connector (dns-lookups, connect) */
+        Connector *connector;
 
-		/* Connection socket stream */
-		QTcpSocket *socket;
+        /* Connection socket stream */
+        QTcpSocket *socket;
 
-		/* component Jabber-ID */
-		Jid jid;
+        /* component Jabber-ID */
+        Jid jid;
 
-		/* incoming data parser object */
-		Parser parser;
+        /* incoming data parser object */
+        Parser parser;
 
-		/* server component secret (password) */
-		QByteArray secret;
+        /* server component secret (password) */
+        QByteArray secret;
 
-		/* session Id, this will be told by server in the opening stream */
-		QByteArray sessionId;
+        /* session Id, this will be told by server in the opening stream */
+        QByteArray sessionId;
 
-		/* connection status from ComponentStream::ConnectionStatus */
-		int connectionStatus;
+        /* connection status from ComponentStream::ConnectionStatus */
+        int connectionStatus;
 
-		QString lastErrorString;
-		Error lastStreamError;
+        QString lastErrorString;
+        Error lastStreamError;
 
-		QQueue<QString> stanzaCache;
+        QQueue<QString> stanzaCache;
 };
 
 void ComponentStream::Private::pushToStanzaCache(const QByteArray& data)
 {
-	if ( stanzaCache.size() > 10 ) {
-		stanzaCache.removeFirst();
-	}
-	stanzaCache.enqueue(data);
+    if ( stanzaCache.size() > 10 ) {
+        stanzaCache.removeFirst();
+    }
+    stanzaCache.enqueue(data);
 }
 
 /**
@@ -79,14 +79,14 @@ void ComponentStream::Private::pushToStanzaCache(const QByteArray& data)
  * connection to the server. @a parent will be passed to the QObject constructor.
  */
 ComponentStream::ComponentStream(Connector *connector, QObject *parent)
-	: QObject(parent)
+    : QObject(parent)
 {
-	d = new Private;
-	d->connectionStatus = Disconnected;
+    d = new Private;
+    d->connectionStatus = Disconnected;
 
-	d->connector = connector;
-	QObject::connect( d->connector, SIGNAL( connected() ), SLOT( cr_connected() ) );
-	QObject::connect( d->connector, SIGNAL( error(Connector::ErrorType) ), SLOT( cr_error(Connector::ErrorType) ) );
+    d->connector = connector;
+    QObject::connect( d->connector, SIGNAL( connected() ), SLOT( cr_connected() ) );
+    QObject::connect( d->connector, SIGNAL( error(Connector::ErrorType) ), SLOT( cr_error(Connector::ErrorType) ) );
 }
 
 /**
@@ -94,7 +94,7 @@ ComponentStream::ComponentStream(Connector *connector, QObject *parent)
  */
 ComponentStream::~ComponentStream()
 {
-	delete d;
+    delete d;
 }
 
 /**
@@ -102,7 +102,7 @@ ComponentStream::~ComponentStream()
  */
 QString ComponentStream::lastErrorString() const
 {
-	return d->lastErrorString;
+    return d->lastErrorString;
 }
 
 /**
@@ -110,7 +110,7 @@ QString ComponentStream::lastErrorString() const
  */
 ComponentStream::Error ComponentStream::lastStreamError() const
 {
-	return d->lastStreamError;
+    return d->lastStreamError;
 }
 
 /**
@@ -119,21 +119,21 @@ ComponentStream::Error ComponentStream::lastStreamError() const
  */
 QString ComponentStream::baseNS() const
 {
-	return NS_COMPONENT;
+    return NS_COMPONENT;
 }
 
 /**
  * Connects to the JID domain host to the specified port with secret.
  *
- * @param jid		jabber-id
- * @param secret	server secret for component
+ * @param jid       jabber-id
+ * @param secret    server secret for component
  */
 void ComponentStream::connectToServer(const Jid& jid, const QString& secret)
 {
-	d->jid = jid;
-	d->secret = secret.toUtf8();
+    d->jid = jid;
+    d->secret = secret.toUtf8();
 
-	d->connector->connectToServer( jid.bare() );
+    d->connector->connectToServer( jid.bare() );
 }
 
 /**
@@ -141,8 +141,8 @@ void ComponentStream::connectToServer(const Jid& jid, const QString& secret)
  */
 void ComponentStream::close()
 {
-	d->socket->close();
-	d->connectionStatus = Disconnected;
+    d->socket->close();
+    d->connectionStatus = Disconnected;
 }
 
 /**
@@ -150,79 +150,79 @@ void ComponentStream::close()
  */
 void ComponentStream::sendStanza(const Stanza& stanza)
 {
-	write ( stanza.toString().toUtf8() );
+    write ( stanza.toString().toUtf8() );
 }
 
 /**
  * Handles stream erorrs (<stream:error/> element).
  *
- * @param event		incoming stream event containing an error
+ * @param event     incoming stream event containing an error
  */
 void ComponentStream::handleStreamError(const Parser::Event& event)
 {
-	QListIterator<QString> i(d->stanzaCache);
-	while ( i.hasNext() ) {
-		qDebug( "[XMPP:Stream] Cache: %s", qPrintable(i.next()) );
-	}
+    QListIterator<QString> i(d->stanzaCache);
+    while ( i.hasNext() ) {
+        qDebug( "[XMPP:Stream] Cache: %s", qPrintable(i.next()) );
+    }
 
-	d->lastStreamError = Error( event.element() );
-	emit error(EStreamError);
-	close();
+    d->lastStreamError = Error( event.element() );
+    emit error(EStreamError);
+    close();
 }
 
 /**
  * Process events from incoming stream.
  *
- * @param event		incoming event
+ * @param event     incoming event
  */
 void ComponentStream::processEvent(const Parser::Event& event)
 {
-	switch ( event.type() ) {
-		case Parser::Event::DocumentOpen:
-			if (d->connectionStatus == InitIncomingStream) {
-				recv_stream_open(event);
-				return;
-			}
-			break;
+    switch ( event.type() ) {
+        case Parser::Event::DocumentOpen:
+            if (d->connectionStatus == InitIncomingStream) {
+                recv_stream_open(event);
+                return;
+            }
+            break;
 
-		case Parser::Event::DocumentClose:
-			qWarning("[XMPP::Stream] Remote entity has closed the stream");
-			close();
-			break;
+        case Parser::Event::DocumentClose:
+            qWarning("[XMPP::Stream] Remote entity has closed the stream");
+            close();
+            break;
 
-		case Parser::Event::Element:
-			if ( event.qualifiedName() == "stream:error" ) {
-				handleStreamError(event);
-				return;
-			}
-			if (d->connectionStatus == RecvHandshakeReply) {
-				recv_handshake_reply(event);
-				return;
-			}
-			processStanza(event);
-			break;
+        case Parser::Event::Element:
+            if ( event.qualifiedName() == "stream:error" ) {
+                handleStreamError(event);
+                return;
+            }
+            if (d->connectionStatus == RecvHandshakeReply) {
+                recv_handshake_reply(event);
+                return;
+            }
+            processStanza(event);
+            break;
 
-		case Parser::Event::Error:
-			qCritical("[XMPP::Stream] Parser error");
-			close();
-			break;
-	}
+        case Parser::Event::Error:
+            qCritical("[XMPP::Stream] Parser error");
+            close();
+            break;
+    }
 }
 
 /**
  * Process incoming stanza (first-level element).
  *
- * @param event		parser event
+ * @param event     parser event
  */
 void ComponentStream::processStanza(const Parser::Event& event)
 {
-	if ( event.qualifiedName() == "message" ) {
-		emit stanzaMessage( event.element() );
-	} else if ( event.qualifiedName() == "iq" ) {
-		emit stanzaIQ( event.element() );
-	} else if ( event.qualifiedName() == "presence" ) {
-		emit stanzaPresence( event.element() );
-	}
+    if ( event.qualifiedName() == "message" ) {
+        emit stanzaMessage( event.element() );
+    } else if ( event.qualifiedName() == "iq" ) {
+        emit stanzaIQ( event.element() );
+    } else if ( event.qualifiedName() == "presence" ) {
+        emit stanzaPresence( event.element() );
+    }
 }
 
 /**
@@ -230,10 +230,10 @@ void ComponentStream::processStanza(const Parser::Event& event)
  */
 void ComponentStream::recv_stream_open(const Parser::Event& event)
 {
-	d->sessionId = event.attributes().value("id").toUtf8();
+    d->sessionId = event.attributes().value("id").toUtf8();
 
-	/* stream accepted, next step - send the handshake */
-	send_handshake();
+    /* stream accepted, next step - send the handshake */
+    send_handshake();
 }
 
 /**
@@ -241,15 +241,15 @@ void ComponentStream::recv_stream_open(const Parser::Event& event)
  */
 void ComponentStream::recv_handshake_reply(const Parser::Event& event)
 {
-	if ( event.qualifiedName() != "handshake") {
-		d->lastErrorString = "Handshake failed";
-		emit error(EHandshakeFailed);
-		close();
-	}
+    if ( event.qualifiedName() != "handshake") {
+        d->lastErrorString = "Handshake failed";
+        emit error(EHandshakeFailed);
+        close();
+    }
 
-	/* We have no errors */
-	d->connectionStatus = Connected;
-	emit connected();
+    /* We have no errors */
+    d->connectionStatus = Connected;
+    emit connected();
 }
 
 /**
@@ -257,11 +257,11 @@ void ComponentStream::recv_handshake_reply(const Parser::Event& event)
  */
 void ComponentStream::send_stream_open()
 {
-	write("<?xml version='1.0'?>");
-	write("<stream:stream xmlns:stream='" + QByteArray(NS_ETHERX) + "' xmlns='"+QByteArray(NS_COMPONENT)+"' to='" + d->jid.domain().toUtf8() + "'>");
+    write("<?xml version='1.0'?>");
+    write("<stream:stream xmlns:stream='" + QByteArray(NS_ETHERX) + "' xmlns='"+QByteArray(NS_COMPONENT)+"' to='" + d->jid.domain().toUtf8() + "'>");
 
-	/* we sent stream open instruction, so server need to open the incoming stream */
-	d->connectionStatus = InitIncomingStream;
+    /* we sent stream open instruction, so server need to open the incoming stream */
+    d->connectionStatus = InitIncomingStream;
 }
 
 /**
@@ -269,77 +269,77 @@ void ComponentStream::send_stream_open()
  */
 void ComponentStream::send_handshake()
 {
-	QByteArray hash = QCryptographicHash::hash(d->sessionId + d->secret, QCryptographicHash::Sha1).toHex();
+    QByteArray hash = QCryptographicHash::hash(d->sessionId + d->secret, QCryptographicHash::Sha1).toHex();
 
-	write("<handshake>" + hash + "</handshake>");
+    write("<handshake>" + hash + "</handshake>");
 
-	/* we've sent handshake element, we need to get ack/error reply from the server */
-	d->connectionStatus = RecvHandshakeReply;
+    /* we've sent handshake element, we need to get ack/error reply from the server */
+    d->connectionStatus = RecvHandshakeReply;
 }
 
 /**
  * Write data to the outgoing stream.
  *
- * @param data		XML data
+ * @param data      XML data
  */
 void ComponentStream::write(const QByteArray& data)
 {
-	// qDebug("[XMPP:Stream] -send-: %s", qPrintable(QString::fromUtf8(data)));
-	d->stanzaCache.enqueue( QString("-send-: ") + QString::fromUtf8(data) );
-	d->socket->write(data);
+    // qDebug("[XMPP:Stream] -send-: %s", qPrintable(QString::fromUtf8(data)));
+    d->stanzaCache.enqueue( QString("-send-: ") + QString::fromUtf8(data) );
+    d->socket->write(data);
 }
 
 void ComponentStream::bs_closed()
 {
-	d->connectionStatus = Disconnected;
-	qDebug("[XMPP:Stream] Socket closed");
+    d->connectionStatus = Disconnected;
+    qDebug("[XMPP:Stream] Socket closed");
 }
 
 void ComponentStream::bs_readyRead()
 {
-	QByteArray data = d->socket->readAll();
-	// qDebug("[XMPP:Stream] -recv-: %s", qPrintable(QString::fromUtf8(data)));
-	d->stanzaCache.enqueue( QString("-recv-: ") + QString::fromUtf8(data) );
+    QByteArray data = d->socket->readAll();
+    // qDebug("[XMPP:Stream] -recv-: %s", qPrintable(QString::fromUtf8(data)));
+    d->stanzaCache.enqueue( QString("-recv-: ") + QString::fromUtf8(data) );
 
-	d->parser.appendData(data);
+    d->parser.appendData(data);
 
-	Parser::Event event = d->parser.readNext();
-	while ( !event.isNull() ) {
-		processEvent(event);
-		event = d->parser.readNext();
-	}
+    Parser::Event event = d->parser.readNext();
+    while ( !event.isNull() ) {
+        processEvent(event);
+        event = d->parser.readNext();
+    }
 }
 
 void ComponentStream::cr_connected()
 {
-	d->socket = d->connector->socket();
+    d->socket = d->connector->socket();
 
-	QObject::connect( d->socket, SIGNAL( disconnected() ), SIGNAL( disconnected() ) );
-	QObject::connect( d->socket, SIGNAL( disconnected() ), SLOT( bs_closed() ) );
-	QObject::connect( d->socket, SIGNAL( readyRead() ), SLOT( bs_readyRead() ) );
+    QObject::connect( d->socket, SIGNAL( disconnected() ), SIGNAL( disconnected() ) );
+    QObject::connect( d->socket, SIGNAL( disconnected() ), SLOT( bs_closed() ) );
+    QObject::connect( d->socket, SIGNAL( readyRead() ), SLOT( bs_readyRead() ) );
 
-	/* we've connected to the server, so we need to initiate communications */
-	send_stream_open();
+    /* we've connected to the server, so we need to initiate communications */
+    send_stream_open();
 }
 
 void ComponentStream::cr_error(Connector::ErrorType errcode)
 {
-	switch ( errcode ) {
-		case Connector::EConnectionTimeout:
-			qCritical("[XMPP::Stream] Connection timeout");
-			break;
-		case Connector::EHostLookupFailed:
-			qCritical("[XMPP::Stream] Host lookup failed");
-			break;
-		case Connector::EHostLookupTimeout:
-			qCritical("[XMPP::Stream] Host lookup timeout");
-			break;
-		case Connector::ESocketError:
-			qCritical("[XMPP::Stream] Socket error: %s", qPrintable( d->socket->errorString() ) );
-			break;
-	}
-	emit error(EConnectorError);
-	close();
+    switch ( errcode ) {
+        case Connector::EConnectionTimeout:
+            qCritical("[XMPP::Stream] Connection timeout");
+            break;
+        case Connector::EHostLookupFailed:
+            qCritical("[XMPP::Stream] Host lookup failed");
+            break;
+        case Connector::EHostLookupTimeout:
+            qCritical("[XMPP::Stream] Host lookup timeout");
+            break;
+        case Connector::ESocketError:
+            qCritical("[XMPP::Stream] Socket error: %s", qPrintable( d->socket->errorString() ) );
+            break;
+    }
+    emit error(EConnectorError);
+    close();
 }
 
 /**
@@ -347,7 +347,7 @@ void ComponentStream::cr_error(Connector::ErrorType errcode)
  */
 void ComponentStream::send_keepalive()
 {
-	write(" ");
+    write(" ");
 }
 
 /**
@@ -371,7 +371,7 @@ void ComponentStream::send_keepalive()
  *
  * This signal is emitted when there is an incoming info/query stanza on the stream.
  *
- * @param iq			Info/query stanza.
+ * @param iq            Info/query stanza.
  */
 
 /**
@@ -379,7 +379,7 @@ void ComponentStream::send_keepalive()
  *
  * This signal is emitted when there is an incoming message stanza on the stream.
  *
- * @param message		Message stanza.
+ * @param message       Message stanza.
  */
 
 /**
@@ -387,7 +387,7 @@ void ComponentStream::send_keepalive()
  *
  * This signal is emitted when there is an incoming presence stanza on the stream.
  *
- * @param presence		Presence stanza.
+ * @param presence      Presence stanza.
  */
 
 /**
@@ -398,4 +398,4 @@ void ComponentStream::send_keepalive()
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

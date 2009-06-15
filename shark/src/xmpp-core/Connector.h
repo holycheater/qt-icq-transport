@@ -32,35 +32,35 @@ namespace XMPP {
 
 class Connector : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		static const int LOOKUP_TIMEOUT = 30000;
-		static const int CONNECT_TIMEOUT = 30000;
+    public:
+        static const int LOOKUP_TIMEOUT = 30000;
+        static const int CONNECT_TIMEOUT = 30000;
 
-		enum ErrorType { EHostLookupTimeout, EHostLookupFailed, EConnectionTimeout, ESocketError };
+        enum ErrorType { EHostLookupTimeout, EHostLookupFailed, EConnectionTimeout, ESocketError };
 
-		Connector(QObject *parent = 0);
-		virtual ~Connector();
+        Connector(QObject *parent = 0);
+        virtual ~Connector();
 
-		QTcpSocket* socket() const;
+        QTcpSocket* socket() const;
 
-		void connectToServer(const QString& server);
+        void connectToServer(const QString& server);
 
-		void setOptHostPort(const QString& host, quint16 port);
+        void setOptHostPort(const QString& host, quint16 port);
 
-		void setLookupTimeout(int timeout);
-		void setConnectionTimeout(int timeout);
-	signals:
-		void connected();
-		void error(Connector::ErrorType errcode);
-	private:
-		class Private;
-		Private *d;
+        void setLookupTimeout(int timeout);
+        void setConnectionTimeout(int timeout);
+    signals:
+        void connected();
+        void error(Connector::ErrorType errcode);
+    private:
+        class Private;
+        Private *d;
 };
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_CONNECTOR_H_ */

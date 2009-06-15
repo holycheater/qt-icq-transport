@@ -32,42 +32,42 @@ class QProcess;
 
 class TransportMain : public QCoreApplication
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	enum RunMode { Sandbox, Transport };
+    enum RunMode { Sandbox, Transport };
 
-	public:
-		TransportMain(int& argc, char **argv);
-		~TransportMain();
-	public slots:
-		void shutdown();
-		void startForkedTransport();
-	private:
-		void createPidFile();
-		void setup_sandbox();
+    public:
+        TransportMain(int& argc, char **argv);
+        ~TransportMain();
+    public slots:
+        void shutdown();
+        void startForkedTransport();
+    private:
+        void createPidFile();
+        void setup_sandbox();
 
-		void setup_transport();
-		void connect_signals();
+        void setup_transport();
+        void connect_signals();
 
-		static void sighandler(int param);
-		static void loghandler(QtMsgType type, const char *msg);
-	private slots:
-		void processTransportError(QProcess::ProcessError error);
-		void processTransportFinished(int exitCode, QProcess::ExitStatus exitStatus);
-		void processTransportStarted();
-	private:
-		/* "transport" mode */
-		GatewayTask *m_gateway;
-		JabberConnection *m_connection;
+        static void sighandler(int param);
+        static void loghandler(QtMsgType type, const char *msg);
+    private slots:
+        void processTransportError(QProcess::ProcessError error);
+        void processTransportFinished(int exitCode, QProcess::ExitStatus exitStatus);
+        void processTransportStarted();
+    private:
+        /* "transport" mode */
+        GatewayTask *m_gateway;
+        JabberConnection *m_connection;
 
-		/* "sandbox" mode */
-		QProcess *m_transport;
-		QFile *m_logfile;
+        /* "sandbox" mode */
+        QProcess *m_transport;
+        QFile *m_logfile;
 
-		/* common for all */
-		Options *m_options;
-		RunMode m_runmode;
+        /* common for all */
+        Options *m_options;
+        RunMode m_runmode;
 };
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap
 #endif /* TRANSPORT_MAIN_H_ */

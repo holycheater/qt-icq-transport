@@ -33,74 +33,74 @@ namespace ICQ
 
 class Message::Private : public QSharedData
 {
-	public:
-		Private();
-		Private(const Private& other);
+    public:
+        Private();
+        Private(const Private& other);
 
-		Byte channel;
-		Byte type;
-		Byte flags;
+        Byte channel;
+        Byte type;
+        Byte flags;
 
-		QByteArray icbmCookie;
-		QByteArray text;
+        QByteArray icbmCookie;
+        QByteArray text;
 
-		QDateTime timestamp;
+        QDateTime timestamp;
 
-		QString sender;
-		QString receiver;
+        QString sender;
+        QString receiver;
 
-		Encoding encoding;
+        Encoding encoding;
 
-		bool bOffline;
+        bool bOffline;
 };
 
 Message::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
-	channel = 0;
+    channel = 0;
 
-	type = InvalidType;
-	flags = 0;
+    type = InvalidType;
+    flags = 0;
 
-	encoding = UserDefined;
+    encoding = UserDefined;
 
-	bOffline = false;
+    bOffline = false;
 }
 
 Message::Private::Private(const Private& other)
-	: QSharedData(other)
+    : QSharedData(other)
 {
-	channel = other.channel;
+    channel = other.channel;
 
-	sender = other.sender;
-	receiver = other.receiver;
+    sender = other.sender;
+    receiver = other.receiver;
 
-	timestamp = other.timestamp;
+    timestamp = other.timestamp;
 
-	type = other.type;
-	flags = other.flags;
+    type = other.type;
+    flags = other.flags;
 
-	text = other.text;
+    text = other.text;
 
-	encoding = other.encoding;
+    encoding = other.encoding;
 
-	bOffline = other.bOffline;
+    bOffline = other.bOffline;
 }
 
 Message::Message()
 {
-	d = new Private;
+    d = new Private;
 }
 
 Message::Message(const Message& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
 Message& Message::operator=(const Message& other)
 {
-	d = other.d;
-	return *this;
+    d = other.d;
+    return *this;
 }
 
 Message::~Message()
@@ -109,180 +109,180 @@ Message::~Message()
 
 bool Message::isEmpty() const
 {
-	if ( d->text.isEmpty() ) {
-		return true;
-	}
-	return false;
+    if ( d->text.isEmpty() ) {
+        return true;
+    }
+    return false;
 }
 
 bool Message::isValid() const
 {
-	if ( d->type == InvalidType ) {
-		return false;
-	}
-	return true;
+    if ( d->type == InvalidType ) {
+        return false;
+    }
+    return true;
 }
 
 bool Message::isOffline() const
 {
-	return d->bOffline;
+    return d->bOffline;
 }
 
 void Message::setOffline(bool offline)
 {
-	d->bOffline = offline;
+    d->bOffline = offline;
 }
 
 Byte Message::channel() const
 {
-	return d->channel;
+    return d->channel;
 }
 
 void Message::setChannel(Byte channel)
 {
-	d->channel = channel;
+    d->channel = channel;
 }
 
 Message::Encoding Message::encoding() const
 {
-	return d->encoding;
+    return d->encoding;
 }
 
 void Message::setEncoding(Encoding enc)
 {
-	d->encoding = enc;
+    d->encoding = enc;
 }
 
 Byte Message::flags() const
 {
-	return d->flags;
+    return d->flags;
 }
 
 void Message::setFlags(Byte flags)
 {
-	d->flags = flags;
+    d->flags = flags;
 }
 
 QByteArray Message::icbmCookie() const
 {
-	return d->icbmCookie;
+    return d->icbmCookie;
 }
 
 void Message::setIcbmCookie(const QByteArray& cookie)
 {
-	d->icbmCookie = cookie;
+    d->icbmCookie = cookie;
 }
 
 QString Message::receiver() const
 {
-	return d->receiver;
+    return d->receiver;
 }
 
 void Message::setReceiver(DWord uin)
 {
-	d->receiver = QString::number(uin);
+    d->receiver = QString::number(uin);
 }
 
 void Message::setReceiver(const QString& uin)
 {
-	d->receiver = uin;
+    d->receiver = uin;
 }
 
 QString Message::sender() const
 {
-	return d->sender;
+    return d->sender;
 }
 
 void Message::setSender(DWord uin)
 {
-	d->sender = QString::number(uin);
+    d->sender = QString::number(uin);
 }
 
 void Message::setSender(const QString& uin)
 {
-	d->sender = uin;
+    d->sender = uin;
 }
 
 QByteArray Message::text() const
 {
-	return d->text;
+    return d->text;
 }
 
 QString Message::text(QTextCodec *codec) const
 {
-	switch ( d->encoding )
-	{
-		case UserDefined:
-			//qDebug() << "[ICQ:Message]" << "user-defined encoding";
-			return codec->toUnicode(d->text);
-			break;
-		case Ascii:
-			//qDebug() << "[ICQ:Message]" << "ascii encoding";
-			return QString::fromAscii( d->text.data(), d->text.size() );
-			break;
-		case Latin1:
-			//qDebug() << "[ICQ:Message]" << "latin1 encoding";
-			return QString::fromLatin1( d->text.data(), d->text.size() );
-			break;
-		case Utf8:
-			//qDebug() << "[ICQ:Message]" << "utf-8 encoding";
-			return QString::fromUtf8( d->text.data(), d->text.size() );
-			break;
-		case Ucs2:
-		{
-			int len = d->text.size() / 2;
-			QString result;
+    switch ( d->encoding )
+    {
+        case UserDefined:
+            //qDebug() << "[ICQ:Message]" << "user-defined encoding";
+            return codec->toUnicode(d->text);
+            break;
+        case Ascii:
+            //qDebug() << "[ICQ:Message]" << "ascii encoding";
+            return QString::fromAscii( d->text.data(), d->text.size() );
+            break;
+        case Latin1:
+            //qDebug() << "[ICQ:Message]" << "latin1 encoding";
+            return QString::fromLatin1( d->text.data(), d->text.size() );
+            break;
+        case Utf8:
+            //qDebug() << "[ICQ:Message]" << "utf-8 encoding";
+            return QString::fromUtf8( d->text.data(), d->text.size() );
+            break;
+        case Ucs2:
+        {
+            int len = d->text.size() / 2;
+            QString result;
 
-			int p = 0;
-			for ( int i = 0; i < len; i++ )
-			{
-				char row = d->text[p++];
-				char cell = d->text[p++];
-				result += QChar(cell, row);
-			}
-			if ( result.at(len - 1).isNull() ) {
-				result.resize(len - 1);
-			}
-			return result;
-		}
-			break;
-		default:
-			break;
-	}
-	return QString();
+            int p = 0;
+            for ( int i = 0; i < len; i++ )
+            {
+                char row = d->text[p++];
+                char cell = d->text[p++];
+                result += QChar(cell, row);
+            }
+            if ( result.at(len - 1).isNull() ) {
+                result.resize(len - 1);
+            }
+            return result;
+        }
+            break;
+        default:
+            break;
+    }
+    return QString();
 }
 
 void Message::setText(const QByteArray& text)
 {
-	d->text = text;
+    d->text = text;
 }
 
 QDateTime Message::timestamp() const
 {
-	return d->timestamp;
+    return d->timestamp;
 }
 
 void Message::setTimestamp(QDateTime timestamp)
 {
-	d->timestamp = timestamp;
+    d->timestamp = timestamp;
 }
 
 void Message::setTimestamp(DWord timestamp_t)
 {
-	d->timestamp = QDateTime::fromTime_t(timestamp_t);
+    d->timestamp = QDateTime::fromTime_t(timestamp_t);
 }
 
 Byte Message::type() const
 {
-	return d->type;
+    return d->type;
 }
 
 void Message::setType(Byte type)
 {
-	d->type = type;
+    d->type = type;
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

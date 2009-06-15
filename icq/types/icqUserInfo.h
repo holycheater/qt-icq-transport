@@ -37,68 +37,68 @@ namespace ICQ
 
 class UserInfo
 {
-	public:
-		enum OnlineStatus {
-			Online			= 0x0000,
-			Away			= 0x0001,
-			DoNotDisturb	= 0x0002,
-			NotAvailable	= 0x0004,
-			Occupied		= 0x0010,
-			FreeForChat		= 0x0020,
-			Invisible		= 0x0100,
-			Evil			= 0x3000,
-			Depression		= 0x4000,
-			Offline			= 0xFFFF
-		};
+    public:
+        enum OnlineStatus {
+            Online          = 0x0000,
+            Away            = 0x0001,
+            DoNotDisturb    = 0x0002,
+            NotAvailable    = 0x0004,
+            Occupied        = 0x0010,
+            FreeForChat     = 0x0020,
+            Invisible       = 0x0100,
+            Evil            = 0x3000,
+            Depression      = 0x4000,
+            Offline         = 0xFFFF
+        };
 
-		UserInfo();
-		UserInfo(const UserInfo& other);
-		UserInfo& operator=(const UserInfo& other);
-		~UserInfo();
+        UserInfo();
+        UserInfo(const UserInfo& other);
+        UserInfo& operator=(const UserInfo& other);
+        ~UserInfo();
 
-		/* read UserInfo from the part of a packet buffer */
-		static UserInfo fromBuffer(Buffer& buffer);
+        /* read UserInfo from the part of a packet buffer */
+        static UserInfo fromBuffer(Buffer& buffer);
 
-		/* merge from another UserInfo */
-		void mergeFrom(const UserInfo& info);
+        /* merge from another UserInfo */
+        void mergeFrom(const UserInfo& info);
 
-		/* update user info from TLV block */
-		void updateFromTlv(Tlv& tlv);
+        /* update user info from TLV block */
+        void updateFromTlv(Tlv& tlv);
 
-		QString userId() const;
-		DWord classFlags() const;
-		QDateTime signOnTime() const;
-		QDateTime registerTime() const;
+        QString userId() const;
+        DWord classFlags() const;
+        QDateTime signOnTime() const;
+        QDateTime registerTime() const;
 
-		Word onlineStatus() const;
-		Word statusFlags() const;
+        Word onlineStatus() const;
+        Word statusFlags() const;
 
-		QString externalIP() const;
-		QString internalIP() const;
+        QString externalIP() const;
+        QString internalIP() const;
 
-		DWord dcPort() const;
-		Byte dcType() const;
-		Word dcVersion() const;
-		DWord dcAuthCookie() const;
+        DWord dcPort() const;
+        Byte dcType() const;
+        Word dcVersion() const;
+        DWord dcAuthCookie() const;
 
-		DWord clientFeatures() const;
-		QDateTime lastInfoUpdateTime() const;
+        DWord clientFeatures() const;
+        QDateTime lastInfoUpdateTime() const;
 
-		Word idleTime() const;
+        Word idleTime() const;
 
-		const QList<Guid> capabilities() const;
+        const QList<Guid> capabilities() const;
 
-		bool hasCapability(Guid capability) const;
-		/* check for capability by Id (as defined in ICQ.h Capability enum) */
-		bool hasCapability(int capId) const;
+        bool hasCapability(Guid capability) const;
+        /* check for capability by Id (as defined in ICQ.h Capability enum) */
+        bool hasCapability(int capId) const;
 
-		bool hasTlv(Word tlvType) const;
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        bool hasTlv(Word tlvType) const;
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQUSERINFO_H_ */

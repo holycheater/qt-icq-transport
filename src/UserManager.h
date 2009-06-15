@@ -31,34 +31,34 @@ class QVariant;
 
 class UserManager
 {
-	public:		
-		static UserManager* instance();
+    public:     
+        static UserManager* instance();
 
-		void add(const QString& user, const QString& uin, const QString& passwd);
-		void del(const QString& user);
-		bool isRegistered(const QString& user) const;
+        void add(const QString& user, const QString& uin, const QString& passwd);
+        void del(const QString& user);
+        bool isRegistered(const QString& user) const;
 
-		QString getUin(const QString& user) const;
-		QString getPassword(const QString& user) const;
+        QString getUin(const QString& user) const;
+        QString getPassword(const QString& user) const;
 
-		QStringList getUserList() const;
-		QStringList getUserListByOptVal(const QString& option, const QVariant& value) const;
+        QStringList getUserList() const;
+        QStringList getUserListByOptVal(const QString& option, const QVariant& value) const;
 
-		QVariant getOption(const QString& user, const QString& option) const;
-		void setOption(const QString& user, const QString& option, const QVariant& value);
-		bool hasOption(const QString& user, const QString& option) const;
+        QVariant getOption(const QString& user, const QString& option) const;
+        void setOption(const QString& user, const QString& option, const QVariant& value);
+        bool hasOption(const QString& user, const QString& option) const;
 
-		QHash<QString,QVariant> options(const QString& user) const;
-		void setOptions(const QString& user, const QHash<QString,QVariant>& list);
-		void clearOptions(const QString& user);
-	private:
-		UserManager();
-		~UserManager();
-		Q_DISABLE_COPY(UserManager);
+        QHash<QString,QVariant> options(const QString& user) const;
+        void setOptions(const QString& user, const QHash<QString,QVariant>& list);
+        void clearOptions(const QString& user);
+    private:
+        UserManager();
+        ~UserManager();
+        Q_DISABLE_COPY(UserManager);
 
-		static UserManager* m_instance;
+        static UserManager* m_instance;
 };
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap
 #endif /* USER_MANAGER_H_ */
 

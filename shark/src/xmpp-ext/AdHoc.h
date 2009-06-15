@@ -36,40 +36,40 @@ class IQ;
 
 class AdHoc
 {
-	public:
-		enum Action { ActionNone, Cancel, Complete, Execute, Next, Prev };
-		enum Status { StatusNone, Canceled, Completed, Executing };
+    public:
+        enum Action { ActionNone, Cancel, Complete, Execute, Next, Prev };
+        enum Status { StatusNone, Canceled, Completed, Executing };
 
-		AdHoc();
-		AdHoc(const AdHoc& other);
-		virtual ~AdHoc();
-		AdHoc& operator=(const AdHoc& other);
+        AdHoc();
+        AdHoc(const AdHoc& other);
+        virtual ~AdHoc();
+        AdHoc& operator=(const AdHoc& other);
 
-		static AdHoc fromIQ(const IQ& iq);
-		void toIQ(IQ& iq);
+        static AdHoc fromIQ(const IQ& iq);
+        void toIQ(IQ& iq);
 
-		Action action() const;
-		void setAction(Action action);
+        Action action() const;
+        void setAction(Action action);
 
-		DataForm form() const;
-		bool hasForm() const;
-		void setForm(const DataForm& form);
+        DataForm form() const;
+        bool hasForm() const;
+        void setForm(const DataForm& form);
 
-		QString node() const;
-		void setNode(const QString& node);
+        QString node() const;
+        void setNode(const QString& node);
 
-		QString sessionID() const;
-		void setSessionID(const QString& id);
+        QString sessionID() const;
+        void setSessionID(const QString& id);
 
-		Status status() const;
-		void setStatus(Status status);
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        Status status() const;
+        void setStatus(Status status);
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 
 }
 
-// vim:ts=4:sw=4:nowrap:noet
+// vim:ts=4:sw=4:nowrap:et
 #endif /* XMPP_ADHOC_H_ */

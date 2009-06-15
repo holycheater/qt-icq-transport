@@ -22,8 +22,8 @@
 
 int main(int argc, char **argv)
 {
-	TransportMain app(argc, argv);
-	return app.exec();
+    TransportMain app(argc, argv);
+    return app.exec();
 }
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap

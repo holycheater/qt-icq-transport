@@ -32,35 +32,35 @@ namespace XMPP {
  * Default constructor for info/query stanza
  */
 IQ::IQ()
-	: Stanza()
+    : Stanza()
 {
-	QDomElement root = doc()->createElement("iq");
-	doc()->appendChild(root);
+    QDomElement root = doc()->createElement("iq");
+    doc()->appendChild(root);
 
-	setId( QString::number(++m_id, 16) );
+    setId( QString::number(++m_id, 16) );
 
-	m_element = doc()->createElement("query");
-	doc()->documentElement().appendChild(m_element);
+    m_element = doc()->createElement("query");
+    doc()->documentElement().appendChild(m_element);
 }
 
 /**
  * Constructs a deep copy of @a other iq stanza.
  */
 IQ::IQ(const IQ& other)
-	: Stanza(other)
+    : Stanza(other)
 {
-	m_element = doc()->documentElement().firstChildElement();
+    m_element = doc()->documentElement().firstChildElement();
 }
 
 /**
  * Constructs info/query stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
  *
- * @param document	DOM document
+ * @param document  DOM document
  */
 IQ::IQ(const QDomDocument& document)
-	: Stanza(document)
+    : Stanza(document)
 {
-	m_element = doc()->documentElement().firstChildElement();
+    m_element = doc()->documentElement().firstChildElement();
 }
 
 /**
@@ -68,9 +68,9 @@ IQ::IQ(const QDomDocument& document)
  * Constructor makes a deep copy of QDomElement.
  */
 IQ::IQ(const QDomElement& element)
-	: Stanza(element)
+    : Stanza(element)
 {
-	m_element = doc()->documentElement().firstChildElement();
+    m_element = doc()->documentElement().firstChildElement();
 }
 
 /**
@@ -85,11 +85,11 @@ IQ::~IQ()
  */
 IQ IQ::createReply(const IQ& iq, Type type)
 {
-	IQ reply(iq);
-	reply.swapFromTo();
-	reply.setType(type);
+    IQ reply(iq);
+    reply.swapFromTo();
+    reply.setType(type);
 
-	return reply;
+    return reply;
 }
 
 /**
@@ -99,7 +99,7 @@ IQ IQ::createReply(const IQ& iq, Type type)
  */
 QDomElement& IQ::childElement()
 {
-	return m_element;
+    return m_element;
 }
 
 /**
@@ -110,7 +110,7 @@ QDomElement& IQ::childElement()
  */
 const QDomElement& IQ::childElement() const
 {
-	return m_element;
+    return m_element;
 }
 
 /**
@@ -118,21 +118,21 @@ const QDomElement& IQ::childElement() const
  */
 void IQ::clearChild()
 {
-	while ( m_element.hasChildNodes() ) {
-		m_element.removeChild( m_element.firstChild() );
-	}
+    while ( m_element.hasChildNodes() ) {
+        m_element.removeChild( m_element.firstChild() );
+    }
 }
 
 /**
  * Sets info/query child element to @a name with xmlns @a ns
- * @param name	element name
- * @param ns	element namespace
+ * @param name  element name
+ * @param ns    element namespace
  */
 void IQ::setChildElement(const QString& name, const QString& ns)
 {
-	doc()->documentElement().removeChild(m_element);
-	m_element = doc()->createElementNS(ns, name);
-	doc()->documentElement().appendChild(m_element);
+    doc()->documentElement().removeChild(m_element);
+    m_element = doc()->createElementNS(ns, name);
+    doc()->documentElement().appendChild(m_element);
 }
 
 /**
@@ -140,46 +140,46 @@ void IQ::setChildElement(const QString& name, const QString& ns)
  */
 void IQ::setType(Type type)
 {
-	setType( typeToString(type) );
+    setType( typeToString(type) );
 }
 
 QString IQ::typeToString(Type type)
 {
-	switch (type) {
-		case Get:
-			return "get";
-			break;
-		case Set:
-			return "set";
-		case Result:
-			return "result";
-		case Error:
-			return "error";
-		default:
-			return QString();
-	}
+    switch (type) {
+        case Get:
+            return "get";
+            break;
+        case Set:
+            return "set";
+        case Result:
+            return "result";
+        case Error:
+            return "error";
+        default:
+            return QString();
+    }
 }
 
 /**
  * Converts string type representation of @a type to enum-type.
- * @param type	string representation of IQ stanza type
- * @return		Type enum value of the given type.
+ * @param type  string representation of IQ stanza type
+ * @return      Type enum value of the given type.
  */
 int IQ::stringToType(const QString& type)
 {
-	if (type == "get") {
-		return Get;
-	}
-	if (type == "set") {
-		return Set;
-	}
-	if (type == "result") {
-		return Result;
-	}
-	if (type == "error") {
-		return Error;
-	}
-	return -1;
+    if (type == "get") {
+        return Get;
+    }
+    if (type == "set") {
+        return Set;
+    }
+    if (type == "result") {
+        return Result;
+    }
+    if (type == "error") {
+        return Error;
+    }
+    return -1;
 }
 
 int IQ::m_id = 0;
@@ -212,4 +212,4 @@ int IQ::m_id = 0;
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

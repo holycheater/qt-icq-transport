@@ -28,33 +28,33 @@ namespace XMPP {
 
 class Presence : public Stanza
 {
-	public:
-		enum Type { Available, Unavailable, Subscribe, Subscribed, Unsubscribe, Unsubscribed, Probe, Error };
-		enum Show { None, Chat, Away, NotAvailable, DoNotDisturb };
+    public:
+        enum Type { Available, Unavailable, Subscribe, Subscribed, Unsubscribe, Unsubscribed, Probe, Error };
+        enum Show { None, Chat, Away, NotAvailable, DoNotDisturb };
 
-		Presence();
-		Presence(const Presence& other);
-		Presence(const QDomDocument& document);
-		Presence(const QDomElement& element);
-		~Presence();
+        Presence();
+        Presence(const Presence& other);
+        Presence(const QDomDocument& document);
+        Presence(const QDomElement& element);
+        ~Presence();
 
-		int priority() const;
-		Show show() const;
-		QString status() const;
-		Type type() const;
+        int priority() const;
+        Show show() const;
+        QString status() const;
+        Type type() const;
 
-		void setPriority(int priority);
-		void setShow(Show showState);
-		void setStatus(const QString& status);
-		using Stanza::setType;
-		void setType(Type type);
-	private:
-		static QString typeToString(Type type);
-		static Type stringToType(const QString& type);
-		static Show stringToShow(const QString& show);
+        void setPriority(int priority);
+        void setShow(Show showState);
+        void setStatus(const QString& status);
+        using Stanza::setType;
+        void setType(Type type);
+    private:
+        static QString typeToString(Type type);
+        static Type stringToType(const QString& type);
+        static Show stringToShow(const QString& show);
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_STANZA_PRESENCE_H_ */

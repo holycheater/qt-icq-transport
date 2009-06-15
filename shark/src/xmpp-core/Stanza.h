@@ -34,86 +34,86 @@ class Jid;
 
 class Stanza
 {
-	public:
-		Stanza();
-		Stanza(const Stanza& other);
-		Stanza(const QDomDocument& document);
-		Stanza(const QDomElement& element);
-		virtual ~Stanza();
+    public:
+        Stanza();
+        Stanza(const Stanza& other);
+        Stanza(const QDomDocument& document);
+        Stanza(const QDomElement& element);
+        virtual ~Stanza();
 
-		class Error;
+        class Error;
 
-		Error error() const;
-		bool hasError() const;
-		void setError(const Error& error);
+        Error error() const;
+        bool hasError() const;
+        void setError(const Error& error);
 
-		bool isValid() const;
+        bool isValid() const;
 
-		Jid to() const;
-		Jid from() const;
-		QString type() const;
-		QString id() const;
+        Jid to() const;
+        Jid from() const;
+        QString type() const;
+        QString id() const;
 
-		void setTo(const Jid& toJid);
-		void setFrom(const Jid& fromJid);
-		void setType(const QString& type);
-		void setId(const QString& id);
+        void setTo(const Jid& toJid);
+        void setFrom(const Jid& fromJid);
+        void setType(const QString& type);
+        void setId(const QString& id);
 
-		void swapFromTo();
-		QString toString() const;
+        void swapFromTo();
+        QString toString() const;
 
-		Stanza& operator=(const Stanza& other);
+        Stanza& operator=(const Stanza& other);
 
-		/* XEP-0172: User Nickname */
-		QString nick() const;
-		void setNick(const QString& nick);
-	protected:
-		QDomDocument* doc();
-		QDomDocument* doc() const;
-		void setProperty(const QString& name, const QString& value);
-	private:
-		QDomDocument m_doc;
+        /* XEP-0172: User Nickname */
+        QString nick() const;
+        void setNick(const QString& nick);
+    protected:
+        QDomDocument* doc();
+        QDomDocument* doc() const;
+        void setProperty(const QString& name, const QString& value);
+    private:
+        QDomDocument m_doc;
 };
 
 class Stanza::Error {
-	public:
-		enum Type { Cancel = 1, Continue, Modify, Auth, Wait };
-		enum Condition {
-			BadRequest = 1, Conflict, FeatureNotImplemented, Forbidden, Gone,
-			InternalServerError, ItemNotFound, JidMalformed, NotAcceptable,
-			NotAllowed, NotAuthorized, PaymentRequired, RecipientUnavailable,
-			Redirect, RegistrationRequired, RemoteServerNotFound, RemoteServerTimeout,
-			ResourceConstraint, ServiceUnavailable, SubscriptionRequired, UndefinedCondition,
-			UnexpectedRequest
-		};
+    public:
+        enum Type { Cancel = 1, Continue, Modify, Auth, Wait };
+        enum Condition {
+            BadRequest = 1, Conflict, FeatureNotImplemented, Forbidden, Gone,
+            InternalServerError, ItemNotFound, JidMalformed, NotAcceptable,
+            NotAllowed, NotAuthorized, PaymentRequired, RecipientUnavailable,
+            Redirect, RegistrationRequired, RemoteServerNotFound, RemoteServerTimeout,
+            ResourceConstraint, ServiceUnavailable, SubscriptionRequired, UndefinedCondition,
+            UnexpectedRequest
+        };
 
-		Error();
-		Error(const Error& other);
-		Error(Condition condition, const QString& text = "");
-		Error(Type type, Condition condition, const QString& text = "");
-		Error(Type type, Condition condition, const QString& appConditionNS, const QString& appCondition, const QString& text = "");
-		static Error fromStanza(const Stanza& stanza);
-		~Error();
+        Error();
+        Error(const Error& other);
+        Error(Condition condition, const QString& text = "");
+        Error(Type type, Condition condition, const QString& text = "");
+        Error(Type type, Condition condition, const QString& appConditionNS, const QString& appCondition, const QString& text = "");
+        static Error fromStanza(const Stanza& stanza);
+        ~Error();
 
-		QString appCondition() const;
-		QString appConditionNS() const;
-		Condition condition() const;
-		QString text() const;
-		Type type() const;
+        QString appCondition() const;
+        QString appConditionNS() const;
+        Condition condition() const;
+        QString text() const;
+        Type type() const;
 
-		void setAppCondition(const QString& appConditionNS, const QString& appCondition);
-		void setCondition(Condition condition);
-		void setText(const QString& text);
-		void setType(Type type);
+        void setAppCondition(const QString& appConditionNS, const QString& appCondition);
+        void setCondition(Condition condition);
+        void setText(const QString& text);
+        void setType(Type type);
 
-		void pushToDomElement(QDomElement element) const;
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        void pushToDomElement(QDomElement element) const;
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_CORE_STANZA_H_ */

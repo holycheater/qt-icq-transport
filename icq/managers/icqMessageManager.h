@@ -38,35 +38,35 @@ class Socket;
 
 class MessageManager : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		MessageManager(Socket *socket, QObject *parent = 0);
-		~MessageManager();
+    public:
+        MessageManager(Socket *socket, QObject *parent = 0);
+        ~MessageManager();
 
-		void setTextCodec(QTextCodec *codec);
+        void setTextCodec(QTextCodec *codec);
 
-		void setUin(const QString& uin);
+        void setUin(const QString& uin);
 
-		void requestOfflineMessages();
-		void sendMessage(const Message& msg);
-	signals:
-		void incomingMessage(const Message&);
-	private:
-		Message handle_channel_1_msg(TlvChain& chain);
-		Message handle_channel_2_msg(TlvChain& chain);
-		Message handle_channel_4_msg(TlvChain& chain);
-		void handle_incoming_message(SnacBuffer& snac);
-		void handle_offline_message(Buffer& data);
-	private slots:
-		void incomingMetaInfo(Word type, Buffer& data);
-		void incomingSnac(SnacBuffer& snac);
-	private:
-		class Private;
-		Private *d;
+        void requestOfflineMessages();
+        void sendMessage(const Message& msg);
+    signals:
+        void incomingMessage(const Message&);
+    private:
+        Message handle_channel_1_msg(TlvChain& chain);
+        Message handle_channel_2_msg(TlvChain& chain);
+        Message handle_channel_4_msg(TlvChain& chain);
+        void handle_incoming_message(SnacBuffer& snac);
+        void handle_offline_message(Buffer& data);
+    private slots:
+        void incomingMetaInfo(Word type, Buffer& data);
+        void incomingSnac(SnacBuffer& snac);
+    private:
+        class Private;
+        Private *d;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQMESSAGEMANAGER_H_ */

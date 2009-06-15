@@ -30,50 +30,50 @@ namespace XMPP
 
 class Jid
 {
-	public:
-		Jid();
-		~Jid();
+    public:
+        Jid();
+        ~Jid();
 
-		Jid(const Jid& other);
-		Jid(const QString& str);
-		Jid(const char *str);
+        Jid(const Jid& other);
+        Jid(const QString& str);
+        Jid(const char *str);
 
-		Jid& operator=(const Jid& other);
-		Jid& operator=(const QString& str);
-		Jid& operator=(const char *str);
+        Jid& operator=(const Jid& other);
+        Jid& operator=(const QString& str);
+        Jid& operator=(const char *str);
 
-		void set(const QString& str);
-		void set(const QString& domain, const QString& node, const QString& resource = "");
+        void set(const QString& str);
+        void set(const QString& domain, const QString& node, const QString& resource = "");
 
-		void setDomain(const QString& domain);
-		void setNode(const QString& node);
-		void setResource(const QString& resource);
+        void setDomain(const QString& domain);
+        void setNode(const QString& node);
+        void setResource(const QString& resource);
 
-		QString domain() const;
-		QString node() const;
-		QString resource() const;
-		QString bare() const;
-		QString full() const;
+        QString domain() const;
+        QString node() const;
+        QString resource() const;
+        QString bare() const;
+        QString full() const;
 
-		Jid withNode(const QString &s) const;
-		Jid withResource(const QString &s) const;
+        Jid withNode(const QString &s) const;
+        Jid withResource(const QString &s) const;
 
-		bool isNull() const;
-		bool isValid() const;
-		bool isEmpty() const;
+        bool isNull() const;
+        bool isValid() const;
+        bool isEmpty() const;
 
-		bool compare(const Jid& other, bool compareResource = true) const;
-		bool operator==(const Jid& other) const;
-		bool operator!=(const Jid& other) const;
+        bool compare(const Jid& other, bool compareResource = true) const;
+        bool operator==(const Jid& other) const;
+        bool operator!=(const Jid& other) const;
 
-		operator QString() const;
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        operator QString() const;
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 
 } // end namespace XMPP
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif

@@ -35,38 +35,38 @@ namespace XMPP {
 
 class Connector::Private : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		enum Mode { Idle, Connecting, Connected };
+    public:
+        enum Mode { Idle, Connecting, Connected };
 
-		Private(Connector *parent = 0);
-		~Private();
-		void beginConnect();
-		void reset();
-	public slots:
-		void processLookupResult(const QHostInfo& host);
-		void processLookupTimeout();
-		void processConnectionTimeout();
-		void processSocketError(QAbstractSocket::SocketError errcode);
-	public:
-		Connector *q;
+        Private(Connector *parent = 0);
+        ~Private();
+        void beginConnect();
+        void reset();
+    public slots:
+        void processLookupResult(const QHostInfo& host);
+        void processLookupTimeout();
+        void processConnectionTimeout();
+        void processSocketError(QAbstractSocket::SocketError errcode);
+    public:
+        Connector *q;
 
-		int mode;
+        int mode;
 
-		QString host;
-		quint16 port;
+        QString host;
+        quint16 port;
 
-		QHostAddress addr;
-		QPointer<QTcpSocket> socket;
-		QTimer *lookupTimer, *connectTimer;
+        QHostAddress addr;
+        QPointer<QTcpSocket> socket;
+        QTimer *lookupTimer, *connectTimer;
 
-		int lookupTimeout, connectionTimeout;
-		int lookupID;
+        int lookupTimeout, connectionTimeout;
+        int lookupID;
 };
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_CORE_CONNECTOR_P_H_ */

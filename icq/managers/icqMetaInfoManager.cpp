@@ -30,82 +30,82 @@ namespace ICQ
 
 class MetaInfoManager::Private
 {
-	public:
-		QString uin;
-		Socket *socket;
-		Word metaSequence;
+    public:
+        QString uin;
+        Socket *socket;
+        Word metaSequence;
 };
 
 MetaInfoManager::MetaInfoManager(Socket *socket, QObject *parent)
-	: QObject(parent)
+    : QObject(parent)
 {
-	d = new Private;
-	d->socket = socket;
-	d->metaSequence = 0;
+    d = new Private;
+    d->socket = socket;
+    d->metaSequence = 0;
 
-	QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
+    QObject::connect( d->socket, SIGNAL( incomingSnac(SnacBuffer&) ), SLOT( incomingSnac(SnacBuffer&) ) );
 }
 
 MetaInfoManager::~MetaInfoManager()
 {
-	delete d;
+    delete d;
 }
 
 void MetaInfoManager::setUin(const QString uin)
 {
-	d->uin = uin;
+    d->uin = uin;
 }
 
 void MetaInfoManager::sendMetaRequest(Word type)
 {
-	Tlv tlv(0x01); // ENCAPSULATED_METADATA
-	tlv.addLEWord(8); // data chunk size (tlv size - 2 )
-	tlv.addLEDWord( d->uin.toUInt() ); // own UIN
-	tlv.addLEWord(type);
-	tlv.addLEWord( ++(d->metaSequence) ); // request sequence number
+    Tlv tlv(0x01); // ENCAPSULATED_METADATA
+    tlv.addLEWord(8); // data chunk size (tlv size - 2 )
+    tlv.addLEDWord( d->uin.toUInt() ); // own UIN
+    tlv.addLEWord(type);
+    tlv.addLEWord( ++(d->metaSequence) ); // request sequence number
 
-	SnacBuffer snac(0x15, 0x02);
-	snac.addTlv(tlv);
-	d->socket->write(snac);
+    SnacBuffer snac(0x15, 0x02);
+    snac.addTlv(tlv);
+    d->socket->write(snac);
 }
 
 void MetaInfoManager::sendMetaRequest(Word type, Buffer& metadata)
 {
-	Tlv tlv(0x01); // ENCAPSULATED_METADATA
-	tlv.addLEWord( metadata.size() + 8 ); // data chunk size (tlv size - 2 )
-	tlv.addLEDWord( d->uin.toUInt() ); // own UIN
-	tlv.addLEWord(type);
-	tlv.addLEWord( ++(d->metaSequence) ); // request sequence number
-	tlv.addData(metadata);
+    Tlv tlv(0x01); // ENCAPSULATED_METADATA
+    tlv.addLEWord( metadata.size() + 8 ); // data chunk size (tlv size - 2 )
+    tlv.addLEDWord( d->uin.toUInt() ); // own UIN
+    tlv.addLEWord(type);
+    tlv.addLEWord( ++(d->metaSequence) ); // request sequence number
+    tlv.addData(metadata);
 
-	SnacBuffer snac(0x15, 0x02);
-	snac.addTlv(tlv);
-	d->socket->write(snac);
+    SnacBuffer snac(0x15, 0x02);
+    snac.addTlv(tlv);
+    d->socket->write(snac);
 }
 
 void MetaInfoManager::handle_meta_info(SnacBuffer& snac)
 {
-	Tlv metaReply = Tlv::fromBuffer(snac);
-	metaReply.seekForward( sizeof(Word) ); // data chunk size = tlv_length - 2
-	metaReply.seekForward( sizeof(DWord) ); // requester uin
+    Tlv metaReply = Tlv::fromBuffer(snac);
+    metaReply.seekForward( sizeof(Word) ); // data chunk size = tlv_length - 2
+    metaReply.seekForward( sizeof(DWord) ); // requester uin
 
-	Word type = metaReply.getLEWord(); // meta request type
+    Word type = metaReply.getLEWord(); // meta request type
 
-	metaReply.seekForward( sizeof(Word) ); // meta request id
+    metaReply.seekForward( sizeof(Word) ); // meta request id
 
-	Buffer data = metaReply.readAll();
+    Buffer data = metaReply.readAll();
 
-	emit metaInfoAvailable(type, data);
+    emit metaInfoAvailable(type, data);
 }
 
 void MetaInfoManager::incomingSnac(SnacBuffer& snac)
 {
-	if ( snac.family() == 0x15 && snac.subtype() == 0x03 ) {
-		handle_meta_info(snac);
-	}
+    if ( snac.family() == 0x15 && snac.subtype() == 0x03 ) {
+        handle_meta_info(snac);
+    }
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

@@ -30,32 +30,32 @@ namespace ICQ
 
 class ShortUserDetails
 {
-	public:
-		ShortUserDetails();
-		ShortUserDetails(const ShortUserDetails& other);
-		virtual ~ShortUserDetails();
-		ShortUserDetails& operator=(const ShortUserDetails& other);
+    public:
+        ShortUserDetails();
+        ShortUserDetails(const ShortUserDetails& other);
+        virtual ~ShortUserDetails();
+        ShortUserDetails& operator=(const ShortUserDetails& other);
 
-		QString uin() const;
-		QString nick() const;
-		QString firstName() const;
-		QString lastName() const;
-		QString email() const;
+        QString uin() const;
+        QString nick() const;
+        QString firstName() const;
+        QString lastName() const;
+        QString email() const;
 
-		void setUin(const QString& uin);
-		void setNick(const QString& nick);
-		void setFirstName(const QString& firstName);
-		void setLastName(const QString& lastName);
-		void setEmail(const QString& email);
+        void setUin(const QString& uin);
+        void setNick(const QString& nick);
+        void setFirstName(const QString& firstName);
+        void setLastName(const QString& lastName);
+        void setEmail(const QString& email);
 
-		bool isEmpty();
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        bool isEmpty();
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 
 } /* end of namespace ICQ */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQ_TYPES_SHORT_USER_DETAILS_H_ */

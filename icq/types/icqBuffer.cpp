@@ -28,217 +28,217 @@ namespace ICQ
 
 Buffer::Buffer()
 {
-	m_Buffer.open(QBuffer::ReadWrite);
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 Buffer::Buffer(const QByteArray& data)
 {
-	m_Buffer.setData(data);
-	m_Buffer.open(QBuffer::ReadWrite);
+    m_Buffer.setData(data);
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 Buffer::Buffer(const Buffer& buffer)
 {
-	m_Buffer.setData( buffer.m_Buffer.data() );
-	m_Buffer.open(QBuffer::ReadWrite);
+    m_Buffer.setData( buffer.m_Buffer.data() );
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 Buffer::~Buffer()
 {
-	m_Buffer.close();
+    m_Buffer.close();
 }
 
 Buffer& Buffer::addByte(Byte data)
 {
-	m_Buffer.write( (char*)&data, sizeof(Byte) );
-	return *this;
+    m_Buffer.write( (char*)&data, sizeof(Byte) );
+    return *this;
 }
 
 Buffer& Buffer::addWord(Word data)
 {
-	data = qToBigEndian(data);
-	m_Buffer.write( (char*)&data, sizeof(Word) );
-	return *this;
+    data = qToBigEndian(data);
+    m_Buffer.write( (char*)&data, sizeof(Word) );
+    return *this;
 }
 
 Buffer& Buffer::addDWord(DWord data)
 {
-	data = qToBigEndian(data);
-	m_Buffer.write( (char*)&data, sizeof(DWord) );
-	return *this;
+    data = qToBigEndian(data);
+    m_Buffer.write( (char*)&data, sizeof(DWord) );
+    return *this;
 }
 
 Buffer& Buffer::addLEWord(Word data)
 {
-	m_Buffer.write( (char*)&data, sizeof(Word) );
-	return *this;
+    m_Buffer.write( (char*)&data, sizeof(Word) );
+    return *this;
 }
 
 Buffer& Buffer::addLEDWord(DWord data)
 {
-	m_Buffer.write( (char*)&data, sizeof(DWord) );
-	return *this;
+    m_Buffer.write( (char*)&data, sizeof(DWord) );
+    return *this;
 }
 
 Buffer& Buffer::addData(const Buffer& buffer)
 {
-	m_Buffer.write( buffer.data() );
-	return *this;
+    m_Buffer.write( buffer.data() );
+    return *this;
 }
 
 Buffer& Buffer::addData(const QByteArray& data)
 {
-	m_Buffer.write(data);
-	return *this;
+    m_Buffer.write(data);
+    return *this;
 }
 
 Buffer& Buffer::addData(const QString& data)
 {
-	m_Buffer.write( data.toLocal8Bit() );
+    m_Buffer.write( data.toLocal8Bit() );
 
-	return *this;
+    return *this;
 }
 
 bool Buffer::atEnd() const
 {
-	return m_Buffer.atEnd();
+    return m_Buffer.atEnd();
 }
 
 Word Buffer::bytesAvailable() const
 {
-	return m_Buffer.bytesAvailable();
+    return m_Buffer.bytesAvailable();
 }
 
 void Buffer::close()
 {
-	m_Buffer.close();
+    m_Buffer.close();
 }
 
 QByteArray Buffer::data() const
 {
-	return m_Buffer.data();
+    return m_Buffer.data();
 }
 
 Byte Buffer::getByte()
 {
-	Byte data;
-	m_Buffer.read( (char *)&data, sizeof(Byte) );
+    Byte data;
+    m_Buffer.read( (char *)&data, sizeof(Byte) );
 
-	return data;
+    return data;
 }
 
 QByteArray Buffer::getBlock(Word blockSize)
 {
-	return m_Buffer.read(blockSize);
+    return m_Buffer.read(blockSize);
 }
 
 Word Buffer::getWord()
 {
-	Word data;
-	m_Buffer.read( (char *)&data, sizeof(Word) );
-	data = qFromBigEndian(data);
+    Word data;
+    m_Buffer.read( (char *)&data, sizeof(Word) );
+    data = qFromBigEndian(data);
 
-	return data;
+    return data;
 }
 
 DWord Buffer::getDWord()
 {
-	DWord data;
-	m_Buffer.read( (char *)&data, sizeof(DWord) );
-	data = qFromBigEndian(data);
+    DWord data;
+    m_Buffer.read( (char *)&data, sizeof(DWord) );
+    data = qFromBigEndian(data);
 
-	return data;
+    return data;
 }
 
 Word Buffer::getLEWord()
 {
-	Word data;
-	m_Buffer.read( (char *)&data, sizeof(Word) );
+    Word data;
+    m_Buffer.read( (char *)&data, sizeof(Word) );
 
-	return data;
+    return data;
 }
 
 DWord Buffer::getLEDWord()
 {
-	DWord data;
-	m_Buffer.read( (char *)&data, sizeof(DWord) );
+    DWord data;
+    m_Buffer.read( (char *)&data, sizeof(DWord) );
 
-	return data;
+    return data;
 }
 
 void Buffer::open()
 {
-	if ( m_Buffer.isOpen() ) {
-		m_Buffer.close();
-	}
-	m_Buffer.open(QBuffer::ReadWrite);
+    if ( m_Buffer.isOpen() ) {
+        m_Buffer.close();
+    }
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 Word Buffer::pos() const
 {
-	return m_Buffer.pos();
+    return m_Buffer.pos();
 }
 
 QByteArray Buffer::read(Word maxSize)
 {
-	return m_Buffer.read(maxSize);
+    return m_Buffer.read(maxSize);
 }
 
 QByteArray Buffer::readAll()
 {
-	return m_Buffer.readAll();
+    return m_Buffer.readAll();
 }
 
 bool Buffer::seek(Word pos)
 {
-	return m_Buffer.seek(pos);
+    return m_Buffer.seek(pos);
 }
 
 void Buffer::seekEnd()
 {
-	m_Buffer.seek( m_Buffer.size() - 1 );
+    m_Buffer.seek( m_Buffer.size() - 1 );
 }
 
 bool Buffer::seekForward(Word count)
 {
-	return m_Buffer.seek( m_Buffer.pos() + count );
+    return m_Buffer.seek( m_Buffer.pos() + count );
 }
 
 bool Buffer::seekBackward(Word count)
 {
-	return m_Buffer.seek( m_Buffer.pos() - count );
+    return m_Buffer.seek( m_Buffer.pos() - count );
 }
 
 void Buffer::setData(const QByteArray& data)
 {
-	m_Buffer.close();
-	m_Buffer.setData(data);
-	m_Buffer.open(QBuffer::ReadWrite);
+    m_Buffer.close();
+    m_Buffer.setData(data);
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 Word Buffer::size() const
 {
-	return m_Buffer.size();
+    return m_Buffer.size();
 }
 
 Buffer::operator QByteArray() const
 {
-	return data();
+    return data();
 }
 
 Buffer& Buffer::operator=(const Buffer& other)
 {
-	setData( other.m_Buffer.data() );
-	return *this;
+    setData( other.m_Buffer.data() );
+    return *this;
 }
 
 Buffer& Buffer::operator=(const QByteArray& data)
 {
-	setData(data);
-	return *this;
+    setData(data);
+    return *this;
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

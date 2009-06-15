@@ -31,29 +31,29 @@ namespace ICQ
 
 class Tlv : public Buffer
 {
-	public:
-		Tlv();
-		Tlv(Word type);
-		Tlv(Word type, const QByteArray& data);
-		Tlv(const QByteArray& data);
+    public:
+        Tlv();
+        Tlv(Word type);
+        Tlv(Word type, const QByteArray& data);
+        Tlv(const QByteArray& data);
 
-		QByteArray data() const;
+        QByteArray data() const;
 
-		/* read tlv from the part of the buffer */
-		static Tlv fromBuffer(Buffer& buffer);
+        /* read tlv from the part of the buffer */
+        static Tlv fromBuffer(Buffer& buffer);
 
-		void setType(Word type);
-		Word type() const;
+        void setType(Word type);
+        Word type() const;
 
-		Tlv& operator=(const Tlv& buffer);
-		Tlv& operator=(const Buffer& buffer);
-		Tlv& operator=(const QByteArray& data);
-	private:
-		friend class TlvChain;
-		Word m_type;
+        Tlv& operator=(const Tlv& buffer);
+        Tlv& operator=(const Buffer& buffer);
+        Tlv& operator=(const QByteArray& data);
+    private:
+        friend class TlvChain;
+        Word m_type;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQTLV_H_ */

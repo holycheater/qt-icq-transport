@@ -25,20 +25,20 @@
 
 class Options
 {
-	public:
-		Options();
-		virtual ~Options();
+    public:
+        Options();
+        virtual ~Options();
 
-		void parseCommandLine();
+        void parseCommandLine();
 
-		QString getOption(const QString& name) const;
-		bool hasOption(const QString& name) const;
-	private:
-		void readXmlFile(const QString& file);
-		void setOption(const QString& option, const QString& value, bool overwrite = false);
-		static void printUsage();
-		QHash<QString, QString> m_options;
+        QString getOption(const QString& name) const;
+        bool hasOption(const QString& name) const;
+    private:
+        void readXmlFile(const QString& file);
+        void setOption(const QString& option, const QString& value, bool overwrite = false);
+        static void printUsage();
+        QHash<QString, QString> m_options;
 };
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap
 #endif /* OPTIONS_H_ */

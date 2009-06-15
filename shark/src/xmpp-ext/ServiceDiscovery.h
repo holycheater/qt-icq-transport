@@ -35,84 +35,84 @@ class Jid;
 
 class DiscoInfo
 {
-	public:
+    public:
 
-		class Identity;
+        class Identity;
 
-		DiscoInfo();
-		virtual ~DiscoInfo();
+        DiscoInfo();
+        virtual ~DiscoInfo();
 
-		void addIdentity(const QString& category, const QString& type, const QString& name = "");
-		void addFeature(const QString& feature);
+        void addIdentity(const QString& category, const QString& type, const QString& name = "");
+        void addFeature(const QString& feature);
 
-		void pushToDomElement(QDomElement& element) const;
+        void pushToDomElement(QDomElement& element) const;
 
-		DiscoInfo& operator<<(const QString& feature);
-		DiscoInfo& operator<<(const Identity& identity);
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        DiscoInfo& operator<<(const QString& feature);
+        DiscoInfo& operator<<(const Identity& identity);
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 class DiscoInfo::Identity
 {
-	public:
-		Identity();
-		Identity(const QString& category, const QString& type, const QString& name = "");
-		virtual ~Identity();
+    public:
+        Identity();
+        Identity(const QString& category, const QString& type, const QString& name = "");
+        virtual ~Identity();
 
-		QString category() const;
-		QString type() const;
-		QString name() const;
+        QString category() const;
+        QString type() const;
+        QString name() const;
 
-		void setCategory(const QString& category);
-		void setType(const QString& type);
-		void setName(const QString& name);
-	private:
-		QString m_category;
-		QString m_type;
-		QString m_name;
+        void setCategory(const QString& category);
+        void setType(const QString& type);
+        void setName(const QString& name);
+    private:
+        QString m_category;
+        QString m_type;
+        QString m_name;
 };
 
 class DiscoItem
 {
-	public:
-		DiscoItem();
-		DiscoItem(const Jid& jid, const QString& node = "", const QString& name = "");
-		virtual ~DiscoItem();
+    public:
+        DiscoItem();
+        DiscoItem(const Jid& jid, const QString& node = "", const QString& name = "");
+        virtual ~DiscoItem();
 
-		Jid jid() const;
-		QString name() const;
-		QString node() const;
+        Jid jid() const;
+        QString name() const;
+        QString node() const;
 
-		void setJid(const Jid& jid);
-		void setName(const QString& name);
-		void setNode(const QString& node);
-	private:
-		Jid m_jid;
-		QString m_name;
-		QString m_node;
+        void setJid(const Jid& jid);
+        void setName(const QString& name);
+        void setNode(const QString& node);
+    private:
+        Jid m_jid;
+        QString m_name;
+        QString m_node;
 };
 
 class DiscoItems
 {
-	public:
-		DiscoItems();
-		virtual ~DiscoItems();
+    public:
+        DiscoItems();
+        virtual ~DiscoItems();
 
-		void addItem(const DiscoItem& item);
-		DiscoItems& operator<<(const DiscoItem& item);
+        void addItem(const DiscoItem& item);
+        DiscoItems& operator<<(const DiscoItem& item);
 
-		void clear();
+        void clear();
 
-		QList<DiscoItem> items() const;
+        QList<DiscoItem> items() const;
 
-		void pushToDomElement(QDomElement& element) const;
-	private:
-		QList<DiscoItem> m_items;
+        void pushToDomElement(QDomElement& element) const;
+    private:
+        QList<DiscoItem> m_items;
 };
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:nowrap:noet
+// vim:ts=4:sw=4:nowrap:et
 #endif /* XMPP_SERVICE_DISCOVERY_H_ */

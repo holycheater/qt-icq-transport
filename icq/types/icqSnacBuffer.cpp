@@ -26,168 +26,168 @@ namespace ICQ
 
 SnacBuffer::SnacBuffer(Word family, Word subtype)
 {
-	setChannel(DataChannel);
-	m_family = family;
-	m_subtype = subtype;
-	m_flags = 0;
-	m_requestId = 0;
+    setChannel(DataChannel);
+    m_family = family;
+    m_subtype = subtype;
+    m_flags = 0;
+    m_requestId = 0;
 
-	m_Buffer.open(QBuffer::ReadWrite);
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 SnacBuffer::SnacBuffer(Word family, Word subtype, const QByteArray& data)
 {
-	m_family = family;
-	m_subtype = subtype;
-	m_flags = 0x0;
-	m_requestId = 0;
-	setChannel(DataChannel);
+    m_family = family;
+    m_subtype = subtype;
+    m_flags = 0x0;
+    m_requestId = 0;
+    setChannel(DataChannel);
 
-	setData(data);
+    setData(data);
 }
 
 SnacBuffer::SnacBuffer(const FlapBuffer& flap)
 {
-	*this = flap;
+    *this = flap;
 }
 
 QByteArray SnacBuffer::data() const
 {
-	Buffer tmpBuf;
+    Buffer tmpBuf;
 
-	tmpBuf.addData( flapHeader() );
+    tmpBuf.addData( flapHeader() );
 
-	tmpBuf.addWord(m_family);
-	tmpBuf.addWord(m_subtype);
-	tmpBuf.addWord(m_flags);
-	tmpBuf.addDWord(m_requestId);
+    tmpBuf.addWord(m_family);
+    tmpBuf.addWord(m_subtype);
+    tmpBuf.addWord(m_flags);
+    tmpBuf.addDWord(m_requestId);
 
-	tmpBuf.addData( m_Buffer.data() );
+    tmpBuf.addData( m_Buffer.data() );
 
-	return tmpBuf.data();
+    return tmpBuf.data();
 }
 
 Word SnacBuffer::dataSize() const
 {
-	return m_Buffer.size();
+    return m_Buffer.size();
 }
 
 Word SnacBuffer::family() const
 {
-	return m_family;
+    return m_family;
 }
 
 Word SnacBuffer::subtype() const
 {
-	return m_subtype;
+    return m_subtype;
 }
 
 Word SnacBuffer::flags() const
 {
-	return m_flags;
+    return m_flags;
 }
 
 DWord SnacBuffer::requestId() const
 {
-	return m_requestId;
+    return m_requestId;
 }
 
 void SnacBuffer::setFamily(Word family)
 {
-	m_family = family;
+    m_family = family;
 }
 
 void SnacBuffer::setSubtype(Word subtype)
 {
-	m_subtype = subtype;
+    m_subtype = subtype;
 }
 
 void SnacBuffer::setFlags(Word flags)
 {
-	m_flags = flags;
+    m_flags = flags;
 }
 
 void SnacBuffer::setRequestId(DWord requestId)
 {
-	m_requestId = requestId;
+    m_requestId = requestId;
 }
 
 Word SnacBuffer::size() const
 {
-	return m_Buffer.size() + SNAC_HEADER_SIZE;
+    return m_Buffer.size() + SNAC_HEADER_SIZE;
 }
 
 SnacBuffer& SnacBuffer::operator=(const Buffer& other)
 {
-	Buffer tmpBuf = other;
+    Buffer tmpBuf = other;
 
-	tmpBuf.getByte(); // 0x2A
-	setChannel( tmpBuf.getByte() );
-	setSequence( tmpBuf.getWord() );
-	Word size = tmpBuf.getWord();
+    tmpBuf.getByte(); // 0x2A
+    setChannel( tmpBuf.getByte() );
+    setSequence( tmpBuf.getWord() );
+    Word size = tmpBuf.getWord();
 
-	m_family = tmpBuf.getWord();
-	m_subtype = tmpBuf.getWord();
-	m_flags = tmpBuf.getWord();
-	m_requestId = tmpBuf.getWord();
+    m_family = tmpBuf.getWord();
+    m_subtype = tmpBuf.getWord();
+    m_flags = tmpBuf.getWord();
+    m_requestId = tmpBuf.getWord();
 
-	setData( tmpBuf.read(size - SNAC_HEADER_SIZE) );
+    setData( tmpBuf.read(size - SNAC_HEADER_SIZE) );
 
-	return *this;
+    return *this;
 }
 
 SnacBuffer& SnacBuffer::operator=(const FlapBuffer& other)
 {
-	QByteArray data = other.data();
-	data.remove(0, FLAP_HEADER_SIZE);
-	Buffer tmpBuf(data);
+    QByteArray data = other.data();
+    data.remove(0, FLAP_HEADER_SIZE);
+    Buffer tmpBuf(data);
 
-	setChannel( other.channel() );
-	setSequence( other.sequence() );
+    setChannel( other.channel() );
+    setSequence( other.sequence() );
 
-	m_family = tmpBuf.getWord();
-	m_subtype = tmpBuf.getWord();
-	m_flags = tmpBuf.getWord();
-	m_requestId = tmpBuf.getDWord();
+    m_family = tmpBuf.getWord();
+    m_subtype = tmpBuf.getWord();
+    m_flags = tmpBuf.getWord();
+    m_requestId = tmpBuf.getDWord();
 
-	setData( tmpBuf.readAll() );
+    setData( tmpBuf.readAll() );
 
-	return *this;
+    return *this;
 }
 
 SnacBuffer& SnacBuffer::operator=(const SnacBuffer& other)
 {
 
-	m_family = other.m_family;
-	m_subtype = other.m_subtype;
-	m_flags = other.m_flags;
-	m_requestId = other.m_requestId;
+    m_family = other.m_family;
+    m_subtype = other.m_subtype;
+    m_flags = other.m_flags;
+    m_requestId = other.m_requestId;
 
-	setData( other.m_Buffer.data() );
+    setData( other.m_Buffer.data() );
 
-	return *this;
+    return *this;
 }
 
 SnacBuffer& SnacBuffer::operator=(const QByteArray& other)
 {
-	Buffer tmpBuf = other;
+    Buffer tmpBuf = other;
 
-	tmpBuf.getByte(); // flap 0x2A;
-	setChannel( tmpBuf.getByte() ); // flap channel
-	setSequence( tmpBuf.getWord() );
-	tmpBuf.getWord(); // flap size
+    tmpBuf.getByte(); // flap 0x2A;
+    setChannel( tmpBuf.getByte() ); // flap channel
+    setSequence( tmpBuf.getWord() );
+    tmpBuf.getWord(); // flap size
 
-	m_family = tmpBuf.getWord();
-	m_subtype = tmpBuf.getWord();
-	m_flags = tmpBuf.getWord();
-	m_requestId = tmpBuf.getDWord();
+    m_family = tmpBuf.getWord();
+    m_subtype = tmpBuf.getWord();
+    m_flags = tmpBuf.getWord();
+    m_requestId = tmpBuf.getDWord();
 
-	setData( tmpBuf.readAll() );
+    setData( tmpBuf.readAll() );
 
-	return *this;
+    return *this;
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

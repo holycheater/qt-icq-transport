@@ -27,33 +27,33 @@ namespace ICQ
 
 class Contact::Private : public QSharedData
 {
-	public:
-		Private();
-		Private(const Private& other);
-		~Private();
+    public:
+        Private();
+        Private(const Private& other);
+        ~Private();
 
-		QString name;
-		Word groupId;
-		Word itemId;
-		Word type;
-		TlvChain data;
+        QString name;
+        Word groupId;
+        Word itemId;
+        Word type;
+        TlvChain data;
 };
 
 Contact::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
-	groupId = 0;
-	itemId = 0;
-	type = 0xFFFF;
+    groupId = 0;
+    itemId = 0;
+    type = 0xFFFF;
 }
 Contact::Private::Private(const Private& other)
-	: QSharedData(other)
+    : QSharedData(other)
 {
-	name = other.name;
-	groupId = other.groupId;
-	itemId = other.itemId;
-	type = other.type;
-	data = other.data;
+    name = other.name;
+    groupId = other.groupId;
+    itemId = other.itemId;
+    type = other.type;
+    data = other.data;
 }
 
 Contact::Private::~Private()
@@ -61,23 +61,23 @@ Contact::Private::~Private()
 }
 
 Contact::Contact()
-	: d(new Private)
+    : d(new Private)
 {
 }
 
 Contact::Contact(const Contact& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
 Contact::Contact(const QString& name, Word groupId, Word itemId, Word type, const TlvChain& data)
-	: d(new Private)
+    : d(new Private)
 {
-	d->name = name;
-	d->groupId = groupId;
-	d->itemId = itemId;
-	d->type = type;
-	d->data = data;
+    d->name = name;
+    d->groupId = groupId;
+    d->itemId = itemId;
+    d->type = type;
+    d->data = data;
 }
 
 Contact::~Contact()
@@ -86,27 +86,27 @@ Contact::~Contact()
 
 bool Contact::isValid() const
 {
-	return (d->type != 0xFFFF);
+    return (d->type != 0xFFFF);
 }
 
 QString Contact::name() const
 {
-	return d->name;
+    return d->name;
 }
 
 Word Contact::groupId() const
 {
-	return d->groupId;
+    return d->groupId;
 }
 
 Word Contact::id() const
 {
-	return d->itemId;
+    return d->itemId;
 }
 
 Word Contact::type() const
 {
-	return d->type;
+    return d->type;
 }
 
 /**
@@ -115,40 +115,40 @@ Word Contact::type() const
  */
 QList<Word> Contact::childs() const
 {
-	if ( d->type != Group ) {
-		return QList<Word>();
-	}
-	QList<Word> childs;
-	Tlv tlvChilds = d->data.getTlv(0xC8);
-	while ( !tlvChilds.atEnd() ) {
-		childs << tlvChilds.getWord();
-	}
-	return childs;
+    if ( d->type != Group ) {
+        return QList<Word>();
+    }
+    QList<Word> childs;
+    Tlv tlvChilds = d->data.getTlv(0xC8);
+    while ( !tlvChilds.atEnd() ) {
+        childs << tlvChilds.getWord();
+    }
+    return childs;
 }
 
 TlvChain Contact::tlvChain() const
 {
-	return d->data;
+    return d->data;
 }
 
 void Contact::setName(const QString& name)
 {
-	d->name = name;
+    d->name = name;
 }
 
 void Contact::setGroupId(Word id)
 {
-	d->groupId = id;
+    d->groupId = id;
 }
 
 void Contact::setItemId(Word id)
 {
-	d->itemId = id;
+    d->itemId = id;
 }
 
 void Contact::setType(Word type)
 {
-	d->type = type;
+    d->type = type;
 }
 
 /**
@@ -157,85 +157,85 @@ void Contact::setType(Word type)
  */
 void Contact::setChilds(const QList<Word>& childs)
 {
-	if ( d->type != Group ) {
-		return;
-	}
-	Tlv tlv(0xC8);
+    if ( d->type != Group ) {
+        return;
+    }
+    Tlv tlv(0xC8);
 
-	QListIterator<Word> i(childs);
-	while ( i.hasNext() ) {
-		tlv.addWord( i.next() );
-	}
+    QListIterator<Word> i(childs);
+    while ( i.hasNext() ) {
+        tlv.addWord( i.next() );
+    }
 
-	d->data.addTlv(tlv);
+    d->data.addTlv(tlv);
 }
 
 void Contact::setTlvChain(const TlvChain& chain)
 {
-	d->data = chain;
+    d->data = chain;
 }
 
 bool Contact::awaitingAuth() const
 {
-	return d->data.hasTlv(0x0066);
+    return d->data.hasTlv(0x0066);
 }
 
 void Contact::setAwaitingAuth(bool awaitingAuth)
 {
-	if ( awaitingAuth == false ) {
-		d->data.removeTlv(0x0066);
-	} else if ( !d->data.hasTlv(0x0066) ) {
-		d->data.addTlv(0x0066);
-	}
+    if ( awaitingAuth == false ) {
+        d->data.removeTlv(0x0066);
+    } else if ( !d->data.hasTlv(0x0066) ) {
+        d->data.addTlv(0x0066);
+    }
 }
 
 QString Contact::displayName() const
 {
-	if ( d->type == Buddy ) {
-		return d->data.getTlvData(0x0131);
-	}
-	return d->name;
+    if ( d->type == Buddy ) {
+        return d->data.getTlvData(0x0131);
+    }
+    return d->name;
 }
 
 void Contact::setDisplayName(const QString& name)
 {
-	if ( d->type == 0 ) {
-		d->data.addTlv(0x0131).addData(name);
-	}
+    if ( d->type == 0 ) {
+        d->data.addTlv(0x0131).addData(name);
+    }
 }
 
 Contact& Contact::operator=(const Contact& other)
 {
-	d = other.d;
-	return *this;
+    d = other.d;
+    return *this;
 }
 
 bool Contact::operator==(const Contact& other) const
 {
-	if ( d->name == other.d->name && d->groupId == other.d->groupId && d->itemId == other.d->itemId && d->type == other.d->type ) {
-		return true;
-	}
-	return false;
+    if ( d->name == other.d->name && d->groupId == other.d->groupId && d->itemId == other.d->itemId && d->type == other.d->type ) {
+        return true;
+    }
+    return false;
 }
 
 Contact::operator QByteArray() const
 {
-	Buffer result;
+    Buffer result;
 
-	result.addWord( d->name.length() );
-	result.addData(d->name);
-	result.addWord(d->groupId);
-	result.addWord(d->itemId);
-	result.addWord(d->type);
+    result.addWord( d->name.length() );
+    result.addData(d->name);
+    result.addWord(d->groupId);
+    result.addWord(d->itemId);
+    result.addWord(d->type);
 
-	QByteArray data = d->data.data();
-	result.addWord( data.length() );
-	result.addData(data);
+    QByteArray data = d->data.data();
+    result.addWord( data.length() );
+    result.addData(data);
 
-	return result;
+    return result;
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

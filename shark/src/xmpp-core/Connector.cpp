@@ -25,64 +25,64 @@
 using namespace XMPP;
 
 Connector::Connector(QObject *parent)
-	: QObject(parent)
+    : QObject(parent)
 {
-	d = new Private(this);
+    d = new Private(this);
 }
 
 Connector::~Connector()
 {
-	d->reset();
-	delete d;
+    d->reset();
+    delete d;
 }
 
 QTcpSocket* Connector::socket() const
 {
-	return d->socket;
+    return d->socket;
 }
 
 void Connector::setOptHostPort(const QString& host, quint16 port)
 {
-	if (d->mode != Private::Idle) {
-		return;
-	}
+    if (d->mode != Private::Idle) {
+        return;
+    }
 
-	d->host = host;
-	d->port = port;
+    d->host = host;
+    d->port = port;
 }
 
 void Connector::connectToServer(const QString& server)
 {
-	if (d->mode != Private::Idle) {
-		qWarning("[XMPP::Connector] Already connected/connecting");
-		return;
-	}
-	if ( server.isEmpty() ) {
-		emit error(EHostLookupFailed);
-		qWarning("[XMPP::Connector] Server address not specified");
-		return;
-	}
-	d->mode = Private::Connecting;
+    if (d->mode != Private::Idle) {
+        qWarning("[XMPP::Connector] Already connected/connecting");
+        return;
+    }
+    if ( server.isEmpty() ) {
+        emit error(EHostLookupFailed);
+        qWarning("[XMPP::Connector] Server address not specified");
+        return;
+    }
+    d->mode = Private::Connecting;
 
-	QString host;
+    QString host;
 
-	if ( !d->host.isEmpty() && d->port != 0 ) {
-		host = d->host;
-	} else {
-		host = server;
-	}
+    if ( !d->host.isEmpty() && d->port != 0 ) {
+        host = d->host;
+    } else {
+        host = server;
+    }
 
-	if ( QHostAddress(host).isNull() ) {
-		d->lookupTimer = new QTimer(this);
-		QObject::connect( d->lookupTimer, SIGNAL( timeout() ), d, SLOT( processLookupTimeout() ) );
-		d->lookupTimer->setSingleShot(true);
-		d->lookupTimer->start(d->lookupTimeout);
+    if ( QHostAddress(host).isNull() ) {
+        d->lookupTimer = new QTimer(this);
+        QObject::connect( d->lookupTimer, SIGNAL( timeout() ), d, SLOT( processLookupTimeout() ) );
+        d->lookupTimer->setSingleShot(true);
+        d->lookupTimer->start(d->lookupTimeout);
 
-		d->lookupID = QHostInfo::lookupHost(host, d, SLOT( processLookupResult(QHostInfo) ) );
-	} else {
-		d->addr.setAddress(host);
-		d->beginConnect();
-	}
+        d->lookupID = QHostInfo::lookupHost(host, d, SLOT( processLookupResult(QHostInfo) ) );
+    } else {
+        d->addr.setAddress(host);
+        d->beginConnect();
+    }
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

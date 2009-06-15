@@ -28,41 +28,41 @@ namespace XMPP {
 
 class IQ : public Stanza
 {
-	public:
-		enum Type { Get, Set, Result, Error };
+    public:
+        enum Type { Get, Set, Result, Error };
 
-		IQ();
-		IQ(const IQ& other);
-		IQ(const QDomDocument& document);
-		IQ(const QDomElement& element);
-		~IQ();
+        IQ();
+        IQ(const IQ& other);
+        IQ(const QDomDocument& document);
+        IQ(const QDomElement& element);
+        ~IQ();
 
-		static IQ createReply(const IQ& iq, Type type = Result);
+        static IQ createReply(const IQ& iq, Type type = Result);
 
-		QDomElement& childElement();
-		const QDomElement& childElement() const;
+        QDomElement& childElement();
+        const QDomElement& childElement() const;
 
-		void clearChild();
+        void clearChild();
 
-		void setChildElement(const QString& name, const QString& ns);
+        void setChildElement(const QString& name, const QString& ns);
 
-		using Stanza::setType;
-		void setType(Type type);
-	private:
-		/* XEP-0172: User Nickname */
-		QString nick() const;
-		void setNick(const QString& nick);
+        using Stanza::setType;
+        void setType(Type type);
+    private:
+        /* XEP-0172: User Nickname */
+        QString nick() const;
+        void setNick(const QString& nick);
 
-		static QString typeToString(Type type);
-		static int stringToType(const QString& type);
+        static QString typeToString(Type type);
+        static int stringToType(const QString& type);
 
-		static int m_id;
+        static int m_id;
 
-		QDomElement m_element;
+        QDomElement m_element;
 };
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_STANZA_IQ_H_ */

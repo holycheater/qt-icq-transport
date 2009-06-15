@@ -29,32 +29,32 @@ namespace ICQ
 
 class ShortUserDetails::Private : public QSharedData
 {
-	public:
-		Private();
-		Private(const Private& other);
-		virtual ~Private();
+    public:
+        Private();
+        Private(const Private& other);
+        virtual ~Private();
 
-		QString uin;
+        QString uin;
 
-		QString nick;
-		QString firstName, lastName;
-		QString email;
+        QString nick;
+        QString firstName, lastName;
+        QString email;
 };
 
 ShortUserDetails::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
 }
 
 ShortUserDetails::Private::Private(const Private& other)
-	: QSharedData(other)
+    : QSharedData(other)
 {
-	uin = other.uin;
+    uin = other.uin;
 
-	nick = other.nick;
-	firstName = other.firstName;
-	lastName = other.lastName;
-	email = other.email;
+    nick = other.nick;
+    firstName = other.firstName;
+    lastName = other.lastName;
+    email = other.email;
 }
 
 ShortUserDetails::Private::~Private()
@@ -62,12 +62,12 @@ ShortUserDetails::Private::~Private()
 }
 
 ShortUserDetails::ShortUserDetails()
-	: d(new Private)
+    : d(new Private)
 {
 }
 
 ShortUserDetails::ShortUserDetails(const ShortUserDetails& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
@@ -77,71 +77,71 @@ ShortUserDetails::~ShortUserDetails()
 
 ShortUserDetails& ShortUserDetails::operator=(const ShortUserDetails& other)
 {
-	d = other.d;
-	return *this;
+    d = other.d;
+    return *this;
 }
 
 QString ShortUserDetails::uin() const
 {
-	return d->uin;
+    return d->uin;
 }
 
 QString ShortUserDetails::nick() const
 {
-	return d->nick;
+    return d->nick;
 }
 QString ShortUserDetails::firstName() const
 {
-	return d->firstName;
+    return d->firstName;
 }
 
 QString ShortUserDetails::lastName() const
 {
-	return d->lastName;
+    return d->lastName;
 }
 
 QString ShortUserDetails::email() const
 {
-	return d->email;
+    return d->email;
 }
 
 void ShortUserDetails::setUin(const QString& uin)
 {
-	d->uin = uin;
+    d->uin = uin;
 }
 
 void ShortUserDetails::setNick(const QString& nick)
 {
-	d->nick = nick;
+    d->nick = nick;
 }
 
 void ShortUserDetails::setFirstName(const QString& firstName)
 {
-	d->firstName = firstName;
+    d->firstName = firstName;
 }
 
 void ShortUserDetails::setLastName(const QString& lastName)
 {
-	d->lastName = lastName;
+    d->lastName = lastName;
 }
 
 void ShortUserDetails::setEmail(const QString& email)
 {
-	d->email = email;
+    d->email = email;
 }
 
 bool ShortUserDetails::isEmpty()
 {
-	if ( d->uin.isEmpty() ) {
-		return true;
-	}
-	if ( d->nick.isEmpty() && d->firstName.isEmpty() && d->lastName.isEmpty() && d->email.isEmpty() ) {
-		return true;
-	}
-	return false;
+    if ( d->uin.isEmpty() ) {
+        return true;
+    }
+    if ( d->nick.isEmpty() && d->firstName.isEmpty() && d->lastName.isEmpty() && d->email.isEmpty() ) {
+        return true;
+    }
+    return false;
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

@@ -34,27 +34,27 @@ namespace XMPP {
  * Constructs XMPP 'presence' stanza.
  */
 Presence::Presence()
-	: Stanza()
+    : Stanza()
 {
-	QDomElement element = doc()->createElement("presence");
-	doc()->appendChild(element);
+    QDomElement element = doc()->createElement("presence");
+    doc()->appendChild(element);
 }
 
 /**
  * Constructs a deep copy of @a other presence stanza.
  */
 Presence::Presence(const Presence& other)
-	: Stanza(other)
+    : Stanza(other)
 {
 }
 
 /**
  * Constructs presence stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
  *
- * @param document	DOM document
+ * @param document  DOM document
  */
 Presence::Presence(const QDomDocument& document)
-	: Stanza(document)
+    : Stanza(document)
 {
 }
 
@@ -63,7 +63,7 @@ Presence::Presence(const QDomDocument& document)
  * Constructor makes a deep copy of QDomElement.
  */
 Presence::Presence(const QDomElement& element)
-	: Stanza(element)
+    : Stanza(element)
 {
 }
 
@@ -79,16 +79,16 @@ Presence::~Presence()
  */
 int Presence::priority() const
 {
-	QDomElement element = doc()->documentElement().firstChildElement("priority");
-	if ( element.isNull() ) {
-		return 0;
-	}
-	return element.text().toInt();
+    QDomElement element = doc()->documentElement().firstChildElement("priority");
+    if ( element.isNull() ) {
+        return 0;
+    }
+    return element.text().toInt();
 }
 
 Presence::Show Presence::show() const
 {
-	return stringToShow( doc()->documentElement().firstChildElement("show").text() );
+    return stringToShow( doc()->documentElement().firstChildElement("show").text() );
 }
 
 /**
@@ -96,12 +96,12 @@ Presence::Show Presence::show() const
  */
 QString Presence::status() const
 {
-	return doc()->documentElement().firstChildElement("show").text();
+    return doc()->documentElement().firstChildElement("show").text();
 }
 
 Presence::Type Presence::type() const
 {
-	return stringToType( doc()->documentElement().attribute("type") );
+    return stringToType( doc()->documentElement().attribute("type") );
 }
 
 /**
@@ -109,43 +109,43 @@ Presence::Type Presence::type() const
  */
 void Presence::setPriority(int priority)
 {
-	if (priority < -128) {
-		priority = -128;
-	} else if (priority > 128) {
-		priority = 128;
-	}
+    if (priority < -128) {
+        priority = -128;
+    } else if (priority > 128) {
+        priority = 128;
+    }
 
-	setProperty( "priority", QString::number(priority) );
+    setProperty( "priority", QString::number(priority) );
 }
 
 /**
  * Sets presence "show" value to @a showState which specifies particulary availability status.
  * The show value can only be set if presence type is "available" (no presence type set).
  *
- * @param showState		Presence show value
+ * @param showState     Presence show value
  * @sa Show
  */
 void Presence::setShow(Show showState)
 {
-	QString str;
-	switch (showState) {
-		case Chat:
-			str = "chat";
-			break;
-		case Away:
-			str = "away";
-			break;
-		case NotAvailable:
-			str = "xa";
-			break;
-		case DoNotDisturb:
-			str = "dnd";
-			break;
-		default:
-			return;
-			break;
-	}
-	setProperty("show", str);
+    QString str;
+    switch (showState) {
+        case Chat:
+            str = "chat";
+            break;
+        case Away:
+            str = "away";
+            break;
+        case NotAvailable:
+            str = "xa";
+            break;
+        case DoNotDisturb:
+            str = "dnd";
+            break;
+        default:
+            return;
+            break;
+    }
+    setProperty("show", str);
 }
 
 /**
@@ -153,7 +153,7 @@ void Presence::setShow(Show showState)
  */
 void Presence::setStatus(const QString& status)
 {
-	setProperty("status", status);
+    setProperty("status", status);
 }
 
 /**
@@ -163,7 +163,7 @@ void Presence::setStatus(const QString& status)
  */
 void Presence::setType(Type type)
 {
-	setType( typeToString(type) );
+    setType( typeToString(type) );
 }
 
 /**
@@ -173,79 +173,79 @@ void Presence::setType(Type type)
  */
 QString Presence::typeToString(Type type)
 {
-	switch (type) {
-		case Unavailable:
-			return "unavailable";
-			break;
-		case Subscribe:
-			return "subscribe";
-		case Subscribed:
-			return "subscribed";
-		case Unsubscribe:
-			return "unsubscribe";
-			break;
-		case Unsubscribed:
-			return "unsubscribed";
-			break;
-		case Probe:
-			return "probe";
-			break;
-		case Error:
-			return "error";
-			break;
-		default:
-			return QString();
-			break;
-	}
+    switch (type) {
+        case Unavailable:
+            return "unavailable";
+            break;
+        case Subscribe:
+            return "subscribe";
+        case Subscribed:
+            return "subscribed";
+        case Unsubscribe:
+            return "unsubscribe";
+            break;
+        case Unsubscribed:
+            return "unsubscribed";
+            break;
+        case Probe:
+            return "probe";
+            break;
+        case Error:
+            return "error";
+            break;
+        default:
+            return QString();
+            break;
+    }
 }
 
 Presence::Type Presence::stringToType(const QString& type)
 {
-	if ( type.isEmpty() ) {
-		return Available;
-	}
-	if (type == "unavailable") {
-		return Unavailable;
-	}
-	if (type == "subscribe") {
-		return Subscribe;
-	}
-	if (type == "subscribed") {
-		return Subscribed;
-	}
-	if (type == "unsubscribe") {
-		return Unsubscribe;
-	}
-	if (type == "unsubscribed") {
-		return Unsubscribed;
-	}
-	if (type == "probe") {
-		return Probe;
-	}
-	if (type == "error") {
-		return Error;
-	}
-	return Error;
+    if ( type.isEmpty() ) {
+        return Available;
+    }
+    if (type == "unavailable") {
+        return Unavailable;
+    }
+    if (type == "subscribe") {
+        return Subscribe;
+    }
+    if (type == "subscribed") {
+        return Subscribed;
+    }
+    if (type == "unsubscribe") {
+        return Unsubscribe;
+    }
+    if (type == "unsubscribed") {
+        return Unsubscribed;
+    }
+    if (type == "probe") {
+        return Probe;
+    }
+    if (type == "error") {
+        return Error;
+    }
+    return Error;
 }
 
 Presence::Show Presence::stringToShow(const QString& show)
 {
-	if ( show.isEmpty() ) {
-		return None;
-	}
-	if (show == "chat") {
-		return Chat;
-	}
-	if (show == "away") {
-		return Away;
-	}
-	if (show == "xa") {
-		return NotAvailable;
-	}
-	if (show == "dnd") {
-		return DoNotDisturb;
-	}
-	return None;
+    if ( show.isEmpty() ) {
+        return None;
+    }
+    if (show == "chat") {
+        return Chat;
+    }
+    if (show == "away") {
+        return Away;
+    }
+    if (show == "xa") {
+        return NotAvailable;
+    }
+    if (show == "dnd") {
+        return DoNotDisturb;
+    }
+    return None;
 }
 
 /**
@@ -316,4 +316,4 @@ Presence::Show Presence::stringToShow(const QString& show)
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

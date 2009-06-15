@@ -32,90 +32,90 @@ namespace ICQ {
 
 class Buffer
 {
-	public:
-		Buffer();
-		Buffer(const QByteArray& data);
-		Buffer(const Buffer& buffer);
-		virtual ~Buffer();
+    public:
+        Buffer();
+        Buffer(const QByteArray& data);
+        Buffer(const Buffer& buffer);
+        virtual ~Buffer();
 
-		/* add byte */
-		Buffer& addByte(Byte data);
+        /* add byte */
+        Buffer& addByte(Byte data);
 
-		/* add word */
-		Buffer& addWord(Word data);
+        /* add word */
+        Buffer& addWord(Word data);
 
-		/* add double-word */
-		Buffer& addDWord(DWord data);
+        /* add double-word */
+        Buffer& addDWord(DWord data);
 
-		/* add little-endian word */
-		Buffer& addLEWord(Word data);
+        /* add little-endian word */
+        Buffer& addLEWord(Word data);
 
-		/* add little-endian double-word */
-		Buffer& addLEDWord(DWord data);
+        /* add little-endian double-word */
+        Buffer& addLEDWord(DWord data);
 
-		/* add data to the buffer */
-		Buffer& addData(const Buffer& buffer);
-		Buffer& addData(const QByteArray& data);
-		Buffer& addData(const QString& data);
+        /* add data to the buffer */
+        Buffer& addData(const Buffer& buffer);
+        Buffer& addData(const QByteArray& data);
+        Buffer& addData(const QString& data);
 
-		bool atEnd() const;
+        bool atEnd() const;
 
-		/* get number of bytes available to read (from current position to the end) */
-		Word bytesAvailable() const;
+        /* get number of bytes available to read (from current position to the end) */
+        Word bytesAvailable() const;
 
-		void close();
+        void close();
 
-		/* get data from the buffer */
-		virtual QByteArray data() const;
+        /* get data from the buffer */
+        virtual QByteArray data() const;
 
-		/* get byte from the buffer */
-		Byte getByte();
+        /* get byte from the buffer */
+        Byte getByte();
 
-		/* get block of specified size. same as read */
-		QByteArray getBlock(Word blockSize);
+        /* get block of specified size. same as read */
+        QByteArray getBlock(Word blockSize);
 
-		/* get word from the buffer */
-		Word getWord();
+        /* get word from the buffer */
+        Word getWord();
 
-		/* get double word from the buffer */
-		DWord getDWord();
+        /* get double word from the buffer */
+        DWord getDWord();
 
-		/* get little-endian word from the buffer */
-		Word getLEWord();
+        /* get little-endian word from the buffer */
+        Word getLEWord();
 
-		/* get little-endian double-word from the buffer */
-		DWord getLEDWord();
+        /* get little-endian double-word from the buffer */
+        DWord getLEDWord();
 
-		void open();
+        void open();
 
-		Word pos() const;
+        Word pos() const;
 
-		/* read maxSize bytes */
-		QByteArray read(Word maxSize);
+        /* read maxSize bytes */
+        QByteArray read(Word maxSize);
 
-		/* read everything from current pos to the end */
-		QByteArray readAll();
+        /* read everything from current pos to the end */
+        QByteArray readAll();
 
-		/* move internal buffer pointer to position pos */
-		bool seek(Word pos);
-		void seekEnd();
-		bool seekForward(Word count);
-		bool seekBackward(Word count);
+        /* move internal buffer pointer to position pos */
+        bool seek(Word pos);
+        void seekEnd();
+        bool seekForward(Word count);
+        bool seekBackward(Word count);
 
-		void setData(const QByteArray& data);
+        void setData(const QByteArray& data);
 
-		/* get buffer size */
-		virtual Word size() const;
+        /* get buffer size */
+        virtual Word size() const;
 
-		operator QByteArray() const;
-		Buffer& operator=(const Buffer& other);
-		Buffer& operator=(const QByteArray& data);
-	protected:
-		QBuffer m_Buffer;
+        operator QByteArray() const;
+        Buffer& operator=(const Buffer& other);
+        Buffer& operator=(const QByteArray& data);
+    protected:
+        QBuffer m_Buffer;
 };
 
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQBUFFER_H_ */

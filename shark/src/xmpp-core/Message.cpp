@@ -35,28 +35,28 @@ namespace XMPP {
  * Constructs message stanza.
  */
 Message::Message()
-	: Stanza()
+    : Stanza()
 {
-	setType(Normal);
-	QDomElement element = doc()->createElement("message");
-	doc()->appendChild(element);
+    setType(Normal);
+    QDomElement element = doc()->createElement("message");
+    doc()->appendChild(element);
 }
 
 /**
  * Constructs a deep copy of @a other message stanza.
  */
 Message::Message(const Message& other)
-	: Stanza(other)
+    : Stanza(other)
 {
 }
 
 /**
  * Constructs message stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
  *
- * @param document	DOM document
+ * @param document  DOM document
  */
 Message::Message(const QDomDocument& document)
-	: Stanza(document)
+    : Stanza(document)
 {
 }
 
@@ -65,7 +65,7 @@ Message::Message(const QDomDocument& document)
  * Constructor makes a deep copy of QDomElement.
  */
 Message::Message(const QDomElement& element)
-	: Stanza(element)
+    : Stanza(element)
 {
 }
 
@@ -84,7 +84,7 @@ Message::~Message()
  */
 QString Message::body() const
 {
-	return doc()->documentElement().firstChildElement("body").text();
+    return doc()->documentElement().firstChildElement("body").text();
 }
 
 /**
@@ -95,18 +95,18 @@ QString Message::body() const
  */
 QString Message::subject() const
 {
-	return doc()->documentElement().firstChildElement("subject").text();
+    return doc()->documentElement().firstChildElement("subject").text();
 }
 
 /**
  * Get message thread.
  *
- * @return	message thread string
+ * @return  message thread string
  * @sa body(), subject()
  */
 QString Message::thread() const
 {
-	return doc()->documentElement().firstChildElement("thread").text();
+    return doc()->documentElement().firstChildElement("thread").text();
 }
 
 /**
@@ -116,7 +116,7 @@ QString Message::thread() const
  */
 void Message::setBody(const QString& body)
 {
-	setProperty("body", body);
+    setProperty("body", body);
 }
 
 /**
@@ -126,7 +126,7 @@ void Message::setBody(const QString& body)
  */
 void Message::setSubject(const QString& subject)
 {
-	setProperty("subject", subject);
+    setProperty("subject", subject);
 }
 
 /**
@@ -136,7 +136,7 @@ void Message::setSubject(const QString& subject)
  */
 void Message::setThread(const QString& thread)
 {
-	setProperty("thread", thread);
+    setProperty("thread", thread);
 }
 
 /**
@@ -144,14 +144,14 @@ void Message::setThread(const QString& thread)
  */
 QDateTime Message::timestamp() const
 {
-	QDomNodeList list = doc()->documentElement().elementsByTagNameNS("jabber:x:delay", "x");
-	if ( list.isEmpty() ) {
-		return QDateTime::currentDateTime();
-	}
-	QDomElement eStamp = list.at(0).toElement();
-	QString stamp = eStamp.attribute("stamp",
-									 QDateTime::currentDateTime().toString("yyyyMMddThh:mm:ss"));
-	return QDateTime::fromString(stamp, "yyyyMMddThh:mm:ss");
+    QDomNodeList list = doc()->documentElement().elementsByTagNameNS("jabber:x:delay", "x");
+    if ( list.isEmpty() ) {
+        return QDateTime::currentDateTime();
+    }
+    QDomElement eStamp = list.at(0).toElement();
+    QString stamp = eStamp.attribute("stamp",
+                                     QDateTime::currentDateTime().toString("yyyyMMddThh:mm:ss"));
+    return QDateTime::fromString(stamp, "yyyyMMddThh:mm:ss");
 }
 
 /**
@@ -159,9 +159,9 @@ QDateTime Message::timestamp() const
  */
 void Message::setTimestamp(const QDateTime& t)
 {
-	QDomElement eStamp = doc()->createElementNS("jabber:x:delay", "x");
-	eStamp.setAttribute("stamp", t.toString("yyyyMMddThh:mm:ss"));
-	doc()->documentElement().appendChild(eStamp);
+    QDomElement eStamp = doc()->createElementNS("jabber:x:delay", "x");
+    eStamp.setAttribute("stamp", t.toString("yyyyMMddThh:mm:ss"));
+    doc()->documentElement().appendChild(eStamp);
 }
 
 /**
@@ -172,7 +172,7 @@ void Message::setTimestamp(const QDateTime& t)
  */
 void Message::setType(Type type)
 {
-	setType( typeToString(type) );
+    setType( typeToString(type) );
 }
 
 /**
@@ -182,26 +182,26 @@ void Message::setType(Type type)
  */
 QString Message::typeToString(Type type)
 {
-	switch (type) {
-		case Normal:
-			return "normal";
-			break;
-		case Chat:
-			return "chat";
-			break;
-		case GroupChat:
-			return "groupchat";
-			break;
-		case Headline:
-			return "headline";
-			break;
-		case Error:
-			return "error";
-			break;
-		default:
-			return QString();
-			break;
-	}
+    switch (type) {
+        case Normal:
+            return "normal";
+            break;
+        case Chat:
+            return "chat";
+            break;
+        case GroupChat:
+            return "groupchat";
+            break;
+        case Headline:
+            return "headline";
+            break;
+        case Error:
+            return "error";
+            break;
+        default:
+            return QString();
+            break;
+    }
 }
 
 /**
@@ -236,4 +236,4 @@ QString Message::typeToString(Type type)
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

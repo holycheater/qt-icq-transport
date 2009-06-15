@@ -55,66 +55,66 @@ static const int SEC_WEEK   = 604800;
 
 class JabberConnection::Private {
 
-	public:
-		void processAdHoc(const IQ& iq);
-		void processDiscoInfo(const IQ& iq);
-		void processDiscoItems(const IQ& iq);
-		void processRegisterRequest(const IQ& iq);
-		void processRegisterForm(const Registration& iq);
-		void processPromptRequest(const IQ& iq);
-		void processPrompt(const IQ& iq);
+    public:
+        void processAdHoc(const IQ& iq);
+        void processDiscoInfo(const IQ& iq);
+        void processDiscoItems(const IQ& iq);
+        void processRegisterRequest(const IQ& iq);
+        void processRegisterForm(const Registration& iq);
+        void processPromptRequest(const IQ& iq);
+        void processPrompt(const IQ& iq);
 
-		void initCommands();
+        void initCommands();
 
-		JabberConnection *q;
+        JabberConnection *q;
 
-		Connector* connector;
-		ComponentStream* stream;
-		Jid jid;
-		vCard vcard;
-		DiscoInfo disco;
-		QString secret;
+        Connector* connector;
+        ComponentStream* stream;
+        Jid jid;
+        vCard vcard;
+        DiscoInfo disco;
+        QString secret;
 
-		QDateTime startTime;
+        QDateTime startTime;
 
-		/* list of adhoc commands */
-		QHash<QString,DiscoItem> commands;
+        /* list of adhoc commands */
+        QHash<QString,DiscoItem> commands;
 };
 
 void JabberConnection::Private::initCommands()
 {
-	commands.clear();
+    commands.clear();
 
-	commands.insert( "fetch-contacts", DiscoItem(jid, "fetch-contacts", "Fetch ICQ contacts") );
-	commands.insert( "cmd-uptime",     DiscoItem(jid, "cmd-uptime",     "Report service uptime") );
-	commands.insert( "set-options",    DiscoItem(jid, "set-options",    "Set service parameters") );
+    commands.insert( "fetch-contacts", DiscoItem(jid, "fetch-contacts", "Fetch ICQ contacts") );
+    commands.insert( "cmd-uptime",     DiscoItem(jid, "cmd-uptime",     "Report service uptime") );
+    commands.insert( "set-options",    DiscoItem(jid, "set-options",    "Set service parameters") );
 }
 
 /**
  * Constructs jabber-connection object.
  */
 JabberConnection::JabberConnection(QObject *parent)
-	: QObject(parent)
+    : QObject(parent)
 {
-	d = new Private;
-	d->q = this;
+    d = new Private;
+    d->q = this;
 
-	d->connector = new Connector;
-	d->stream = new ComponentStream(d->connector);
+    d->connector = new Connector;
+    d->stream = new ComponentStream(d->connector);
 
-	d->disco << DiscoInfo::Identity("gateway", "icq", "ICQ Transport");
-	d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP << NS_IQ_GATEWAY;
+    d->disco << DiscoInfo::Identity("gateway", "icq", "ICQ Transport");
+    d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP << NS_IQ_GATEWAY;
 
-	d->vcard.setFullName("ICQ Transport");
-	d->vcard.setDescription("Qt ICQ Transport");
-	d->vcard.setUrl( QUrl("http://github.com/holycheater/qt-icq-transport") );
+    d->vcard.setFullName("ICQ Transport");
+    d->vcard.setDescription("Qt ICQ Transport");
+    d->vcard.setUrl( QUrl("http://github.com/holycheater/qt-icq-transport") );
 
-	QObject::connect( d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
-	QObject::connect( d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
-	QObject::connect( d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
-	QObject::connect( d->stream, SIGNAL( error(ComponentStream::ErrorType) ), SLOT( stream_error(ComponentStream::ErrorType) ) );
-	QObject::connect( d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
-	QObject::connect( d->stream, SIGNAL( connected() ), SIGNAL( connected() ) );
+    QObject::connect( d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
+    QObject::connect( d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
+    QObject::connect( d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
+    QObject::connect( d->stream, SIGNAL( error(ComponentStream::ErrorType) ), SLOT( stream_error(ComponentStream::ErrorType) ) );
+    QObject::connect( d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
+    QObject::connect( d->stream, SIGNAL( connected() ), SIGNAL( connected() ) );
 }
 
 /**
@@ -122,8 +122,8 @@ JabberConnection::JabberConnection(QObject *parent)
  */
 JabberConnection::~JabberConnection()
 {
-	delete d->stream;
-	delete d->connector;
+    delete d->stream;
+    delete d->connector;
 }
 
 /**
@@ -131,7 +131,7 @@ JabberConnection::~JabberConnection()
  */
 void JabberConnection::login()
 {
-	d->stream->connectToServer(d->jid, d->secret);
+    d->stream->connectToServer(d->jid, d->secret);
 }
 
 /**
@@ -139,8 +139,8 @@ void JabberConnection::login()
  */
 void JabberConnection::setUsername(const QString& username)
 {
-	d->jid = username;
-	d->initCommands();
+    d->jid = username;
+    d->initCommands();
 }
 
 /**
@@ -148,7 +148,7 @@ void JabberConnection::setUsername(const QString& username)
  */
 void JabberConnection::setServer(const QString& host, quint16 port)
 {
-	d->connector->setOptHostPort(host, port);
+    d->connector->setOptHostPort(host, port);
 }
 
 /**
@@ -156,7 +156,7 @@ void JabberConnection::setServer(const QString& host, quint16 port)
  */
 void JabberConnection::setPassword(const QString& password)
 {
-	d->secret = password;
+    d->secret = password;
 }
 
 /**
@@ -164,13 +164,13 @@ void JabberConnection::setPassword(const QString& password)
  */
 void JabberConnection::sendSubscribe(const Jid& toUser, const QString& uin)
 {
-	Presence subscribe;
+    Presence subscribe;
 
-	subscribe.setType(Presence::Subscribe);
-	subscribe.setFrom( d->jid.withNode(uin) );
-	subscribe.setTo(toUser);
+    subscribe.setType(Presence::Subscribe);
+    subscribe.setFrom( d->jid.withNode(uin) );
+    subscribe.setTo(toUser);
 
-	d->stream->sendStanza(subscribe);
+    d->stream->sendStanza(subscribe);
 }
 
 /**
@@ -178,14 +178,14 @@ void JabberConnection::sendSubscribe(const Jid& toUser, const QString& uin)
  */
 void JabberConnection::sendSubscribed(const Jid& toUser, const QString& fromUin, const QString& nick)
 {
-	Presence subscribed;
+    Presence subscribed;
 
-	subscribed.setType(Presence::Subscribed);
-	subscribed.setFrom( d->jid.withNode(fromUin) );
-	subscribed.setTo(toUser);
-	subscribed.setNick(nick);
+    subscribed.setType(Presence::Subscribed);
+    subscribed.setFrom( d->jid.withNode(fromUin) );
+    subscribed.setTo(toUser);
+    subscribed.setNick(nick);
 
-	d->stream->sendStanza(subscribed);
+    d->stream->sendStanza(subscribed);
 }
 
 /**
@@ -193,13 +193,13 @@ void JabberConnection::sendSubscribed(const Jid& toUser, const QString& fromUin,
  */
 void JabberConnection::sendUnsubscribe(const Jid& toUser, const QString& fromUin)
 {
-	Presence unsubscribe;
+    Presence unsubscribe;
 
-	unsubscribe.setType(Presence::Unsubscribe);
-	unsubscribe.setFrom( d->jid.withNode(fromUin) );
-	unsubscribe.setTo(toUser);
+    unsubscribe.setType(Presence::Unsubscribe);
+    unsubscribe.setFrom( d->jid.withNode(fromUin) );
+    unsubscribe.setTo(toUser);
 
-	d->stream->sendStanza(unsubscribe);
+    d->stream->sendStanza(unsubscribe);
 }
 
 /**
@@ -207,13 +207,13 @@ void JabberConnection::sendUnsubscribe(const Jid& toUser, const QString& fromUin
  */
 void JabberConnection::sendUnsubscribed(const Jid& toUser, const QString& fromUin)
 {
-	Presence unsubscribed;
+    Presence unsubscribed;
 
-	unsubscribed.setType(Presence::Unsubscribed);
-	unsubscribed.setFrom( d->jid.withNode(fromUin) );
-	unsubscribed.setTo(toUser);
+    unsubscribed.setType(Presence::Unsubscribed);
+    unsubscribed.setFrom( d->jid.withNode(fromUin) );
+    unsubscribed.setTo(toUser);
 
-	d->stream->sendStanza(unsubscribed);
+    d->stream->sendStanza(unsubscribed);
 }
 
 /**
@@ -221,13 +221,13 @@ void JabberConnection::sendUnsubscribed(const Jid& toUser, const QString& fromUi
  */
 void JabberConnection::sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus, const QString& nick)
 {
-	Presence presence;
-	presence.setFrom( d->jid.withNode(fromUin) );
-	presence.setTo(toUser);
-	presence.setShow( Presence::Show(showStatus) );
-	presence.setNick(nick);
+    Presence presence;
+    presence.setFrom( d->jid.withNode(fromUin) );
+    presence.setTo(toUser);
+    presence.setShow( Presence::Show(showStatus) );
+    presence.setNick(nick);
 
-	d->stream->sendStanza(presence);
+    d->stream->sendStanza(presence);
 }
 
 /**
@@ -235,12 +235,12 @@ void JabberConnection::sendOnlinePresence(const Jid& toUser, const QString& from
  */
 void JabberConnection::sendOfflinePresence(const Jid& toUser, const QString& fromUin)
 {
-	Presence presence;
-	presence.setFrom( d->jid.withNode(fromUin) );
-	presence.setTo(toUser);
-	presence.setType(Presence::Unavailable);
+    Presence presence;
+    presence.setFrom( d->jid.withNode(fromUin) );
+    presence.setTo(toUser);
+    presence.setType(Presence::Unavailable);
 
-	d->stream->sendStanza(presence);
+    d->stream->sendStanza(presence);
 }
 
 /**
@@ -248,12 +248,12 @@ void JabberConnection::sendOfflinePresence(const Jid& toUser, const QString& fro
  */
 void JabberConnection::sendOnlinePresence(const Jid& recipient, int showStatus)
 {
-	Presence presence;
-	presence.setFrom(d->jid);
-	presence.setTo(recipient);
-	presence.setShow( Presence::Show(showStatus) );
+    Presence presence;
+    presence.setFrom(d->jid);
+    presence.setTo(recipient);
+    presence.setShow( Presence::Show(showStatus) );
 
-	d->stream->sendStanza(presence);
+    d->stream->sendStanza(presence);
 }
 
 /**
@@ -261,22 +261,22 @@ void JabberConnection::sendOnlinePresence(const Jid& recipient, int showStatus)
  */
 void JabberConnection::sendOfflinePresence(const Jid& recipient)
 {
-	Presence presence;
-	presence.setFrom(d->jid);
-	presence.setTo(recipient);
-	presence.setType(Presence::Unavailable);
+    Presence presence;
+    presence.setFrom(d->jid);
+    presence.setTo(recipient);
+    presence.setType(Presence::Unavailable);
 
-	d->stream->sendStanza(presence);
+    d->stream->sendStanza(presence);
 }
 
 void JabberConnection::sendPresenceProbe(const Jid& user)
 {
-	Presence presence;
-	presence.setFrom(d->jid);
-	presence.setTo(user);
-	presence.setType(Presence::Probe);
+    Presence presence;
+    presence.setFrom(d->jid);
+    presence.setTo(user);
+    presence.setType(Presence::Probe);
 
-	d->stream->sendStanza(presence);
+    d->stream->sendStanza(presence);
 }
 
 /**
@@ -289,26 +289,26 @@ void JabberConnection::sendPresenceProbe(const Jid& user)
  */
 void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick, const QDateTime& timestamp)
 {
-	Message msg;
-	msg.setFrom( d->jid.withNode(uin) );
-	msg.setTo(recipient);
-	msg.setBody(message);
-	msg.setNick(nick);
-	msg.setTimestamp(timestamp);
+    Message msg;
+    msg.setFrom( d->jid.withNode(uin) );
+    msg.setTo(recipient);
+    msg.setBody(message);
+    msg.setNick(nick);
+    msg.setTimestamp(timestamp);
 
-	d->stream->sendStanza(msg);
+    d->stream->sendStanza(msg);
 }
 
 void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick)
 {
-	Message msg;
-	msg.setFrom( d->jid.withNode(uin) );
-	msg.setTo(recipient);
-	msg.setBody(message);
-	msg.setNick(nick);
-	msg.setType(Message::Chat);
+    Message msg;
+    msg.setFrom( d->jid.withNode(uin) );
+    msg.setTo(recipient);
+    msg.setBody(message);
+    msg.setNick(nick);
+    msg.setType(Message::Chat);
 
-	d->stream->sendStanza(msg);
+    d->stream->sendStanza(msg);
 }
 
 /**
@@ -316,500 +316,500 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, con
  */
 void JabberConnection::sendMessage(const Jid& recipient, const QString& message)
 {
-	Message msg;
-	msg.setFrom(d->jid);
-	msg.setTo(recipient);
-	msg.setBody(message);
-	msg.setType(Message::Chat);
+    Message msg;
+    msg.setFrom(d->jid);
+    msg.setTo(recipient);
+    msg.setBody(message);
+    msg.setType(Message::Chat);
 
-	d->stream->sendStanza(msg);
+    d->stream->sendStanza(msg);
 }
 
 void JabberConnection::sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard)
 {
-	IQ reply;
-	reply.setFrom( d->jid.withNode(uin) );
-	reply.setTo(recipient);
-	reply.setId(requestID);
-	reply.setType(IQ::Result);
+    IQ reply;
+    reply.setFrom( d->jid.withNode(uin) );
+    reply.setTo(recipient);
+    reply.setId(requestID);
+    reply.setType(IQ::Result);
 
-	if ( vcard.isEmpty() ) {
-		reply.setError(Stanza::Error::ItemNotFound);
-		d->stream->sendStanza(reply);
-	}
-	vcard.toIQ(reply);
-	d->stream->sendStanza(reply);
+    if ( vcard.isEmpty() ) {
+        reply.setError(Stanza::Error::ItemNotFound);
+        d->stream->sendStanza(reply);
+    }
+    vcard.toIQ(reply);
+    d->stream->sendStanza(reply);
 }
 
 void JabberConnection::Private::processAdHoc(const IQ& iq)
 {
-	AdHoc cmd = AdHoc::fromIQ(iq);
-	// qDebug() << "[JC]" << "Adhoc command from" << iq.from() << "command" << cmd.node();
+    AdHoc cmd = AdHoc::fromIQ(iq);
+    // qDebug() << "[JC]" << "Adhoc command from" << iq.from() << "command" << cmd.node();
 
-	if ( cmd.action() == AdHoc::Cancel ) {
-		// qDebug() << "[JC]" << "Command" << cmd.node() << "from" << iq.from() << "was canceled";
+    if ( cmd.action() == AdHoc::Cancel ) {
+        // qDebug() << "[JC]" << "Command" << cmd.node() << "from" << iq.from() << "was canceled";
 
-		IQ reply = IQ::createReply(iq);
-		cmd.setStatus(AdHoc::Canceled);
-		cmd.setAction(AdHoc::ActionNone);
-		cmd.toIQ(reply);
+        IQ reply = IQ::createReply(iq);
+        cmd.setStatus(AdHoc::Canceled);
+        cmd.setAction(AdHoc::ActionNone);
+        cmd.toIQ(reply);
 
-		stream->sendStanza(reply);
-		return;
-	}
-	if ( cmd.action() != AdHoc::Execute ) {
-		return;
-	}
+        stream->sendStanza(reply);
+        return;
+    }
+    if ( cmd.action() != AdHoc::Execute ) {
+        return;
+    }
 
-	if ( !commands.contains(cmd.node()) ) {
-		IQ reply = IQ::createReply(iq);
-		reply.setError(Stanza::Error::ItemNotFound);
+    if ( !commands.contains(cmd.node()) ) {
+        IQ reply = IQ::createReply(iq);
+        reply.setError(Stanza::Error::ItemNotFound);
 
-		stream->sendStanza(reply);
-		return;
-	}
+        stream->sendStanza(reply);
+        return;
+    }
 
-	if ( cmd.node() == "fetch-contacts" ) {
-		if ( !UserManager::instance()->isRegistered(iq.from().bare()) ) {
-			IQ err = IQ::createReply(iq);
-			err.setError(Stanza::Error::NotAuthorized);
+    if ( cmd.node() == "fetch-contacts" ) {
+        if ( !UserManager::instance()->isRegistered(iq.from().bare()) ) {
+            IQ err = IQ::createReply(iq);
+            err.setError(Stanza::Error::NotAuthorized);
 
-			stream->sendStanza(err);
-			return;
-		}
-		emit q->cmd_RosterRequest( iq.from() );
-	} else if ( cmd.node() == "cmd-uptime" ) {
-		uint uptime_t = QDateTime::currentDateTime().toTime_t() - startTime.toTime_t();
-		int weeks = qCeil(uptime_t / SEC_WEEK);
-		uptime_t -= weeks*SEC_WEEK;
-		int days = qCeil(uptime_t / SEC_DAY);
-		uptime_t -= days*SEC_DAY;
-		int hours = qCeil(uptime_t / SEC_HOUR);
-		uptime_t -= hours*SEC_HOUR;
-		int minutes = qCeil(uptime_t / SEC_MINUTE);
-		uptime_t -= minutes*SEC_MINUTE;
-		int seconds = uptime_t;
+            stream->sendStanza(err);
+            return;
+        }
+        emit q->cmd_RosterRequest( iq.from() );
+    } else if ( cmd.node() == "cmd-uptime" ) {
+        uint uptime_t = QDateTime::currentDateTime().toTime_t() - startTime.toTime_t();
+        int weeks = qCeil(uptime_t / SEC_WEEK);
+        uptime_t -= weeks*SEC_WEEK;
+        int days = qCeil(uptime_t / SEC_DAY);
+        uptime_t -= days*SEC_DAY;
+        int hours = qCeil(uptime_t / SEC_HOUR);
+        uptime_t -= hours*SEC_HOUR;
+        int minutes = qCeil(uptime_t / SEC_MINUTE);
+        uptime_t -= minutes*SEC_MINUTE;
+        int seconds = uptime_t;
 
-		QString uptimeText = QString::number(weeks) + "w " + QString::number(days) + "d " + QString::number(hours) + "h " + QString::number(minutes) + "m " + QString::number(seconds)+"s.";
+        QString uptimeText = QString::number(weeks) + "w " + QString::number(days) + "d " + QString::number(hours) + "h " + QString::number(minutes) + "m " + QString::number(seconds)+"s.";
 
-		Message msg;
-		msg.setTo( iq.from() );
-		msg.setFrom(jid);
-		msg.setBody("Uptime: "+uptimeText);
-		stream->sendStanza(msg);
-	} else if ( cmd.node() == "set-options" ) {
-		if ( !UserManager::instance()->isRegistered(iq.from().bare()) ) {
-			IQ err = IQ::createReply(iq);
-			err.setError(Stanza::Error::NotAuthorized);
+        Message msg;
+        msg.setTo( iq.from() );
+        msg.setFrom(jid);
+        msg.setBody("Uptime: "+uptimeText);
+        stream->sendStanza(msg);
+    } else if ( cmd.node() == "set-options" ) {
+        if ( !UserManager::instance()->isRegistered(iq.from().bare()) ) {
+            IQ err = IQ::createReply(iq);
+            err.setError(Stanza::Error::NotAuthorized);
 
-			stream->sendStanza(err);
-			return;
-		}
+            stream->sendStanza(err);
+            return;
+        }
 
-		if ( iq.childElement().firstChildElement("x").attribute("type") == "submit" ) {
-			DataForm form = DataForm::fromDomElement( iq.childElement().firstChildElement("x") );
+        if ( iq.childElement().firstChildElement("x").attribute("type") == "submit" ) {
+            DataForm form = DataForm::fromDomElement( iq.childElement().firstChildElement("x") );
 
-			DataForm::Field fai = form.fieldByName("auto-invite");
-			QString auto_invite = fai.values().at(0);
-			bool o_auto_invite;
-			if ( auto_invite == "true" || auto_invite == "1" ) {
-				o_auto_invite = true;
-			} else {
-				o_auto_invite = false;
-			}
-			UserManager::instance()->setOption(iq.from().bare(), "auto-invite", QVariant(o_auto_invite));
+            DataForm::Field fai = form.fieldByName("auto-invite");
+            QString auto_invite = fai.values().at(0);
+            bool o_auto_invite;
+            if ( auto_invite == "true" || auto_invite == "1" ) {
+                o_auto_invite = true;
+            } else {
+                o_auto_invite = false;
+            }
+            UserManager::instance()->setOption(iq.from().bare(), "auto-invite", QVariant(o_auto_invite));
 
-			QString auto_reconnect = form.fieldByName("auto-reconnect").values().at(0);
-			bool o_auto_reconnect;
-			if ( auto_reconnect == "true" || auto_invite == "1" ) {
-				o_auto_reconnect = true;
-			} else {
-				o_auto_reconnect = false;
-			}
-			UserManager::instance()->setOption(iq.from().bare(),
-											   "auto-reconnect", QVariant(o_auto_reconnect));
-			QString encoding = form.fieldByName("encoding").values().at(0);
-			UserManager::instance()->setOption(iq.from().bare(), "encoding", encoding);
-		} else {
-			cmd.setStatus(AdHoc::Executing);
-			cmd.setSessionID( "set-options:"+QDateTime::currentDateTime().toString(Qt::ISODate) );
+            QString auto_reconnect = form.fieldByName("auto-reconnect").values().at(0);
+            bool o_auto_reconnect;
+            if ( auto_reconnect == "true" || auto_invite == "1" ) {
+                o_auto_reconnect = true;
+            } else {
+                o_auto_reconnect = false;
+            }
+            UserManager::instance()->setOption(iq.from().bare(),
+                                               "auto-reconnect", QVariant(o_auto_reconnect));
+            QString encoding = form.fieldByName("encoding").values().at(0);
+            UserManager::instance()->setOption(iq.from().bare(), "encoding", encoding);
+        } else {
+            cmd.setStatus(AdHoc::Executing);
+            cmd.setSessionID( "set-options:"+QDateTime::currentDateTime().toString(Qt::ISODate) );
 
-			DataForm form;
-			form.setTitle("Service configuration");
-			form.setInstructions("Please configure your settings");
+            DataForm form;
+            form.setTitle("Service configuration");
+            form.setInstructions("Please configure your settings");
 
-			DataForm::Field fldAutoInvite("auto-invite", "Auto-Invite", DataForm::Field::Boolean);
-			if ( UserManager::instance()->getOption(iq.from().bare(),"auto-invite").toBool() == true ) {
-				fldAutoInvite.addValue("true");
-			}
-			form.addField(fldAutoInvite);
+            DataForm::Field fldAutoInvite("auto-invite", "Auto-Invite", DataForm::Field::Boolean);
+            if ( UserManager::instance()->getOption(iq.from().bare(),"auto-invite").toBool() == true ) {
+                fldAutoInvite.addValue("true");
+            }
+            form.addField(fldAutoInvite);
 
-			DataForm::Field fldAutoReconnect("auto-reconnect", "Automatically reconnect",
-											 DataForm::Field::Boolean);
-			if ( UserManager::instance()->getOption(iq.from().bare(),"auto-reconnect").toBool() == true ) {
-				fldAutoReconnect.addValue("true");
-			}
-			form.addField(fldAutoReconnect);
+            DataForm::Field fldAutoReconnect("auto-reconnect", "Automatically reconnect",
+                                             DataForm::Field::Boolean);
+            if ( UserManager::instance()->getOption(iq.from().bare(),"auto-reconnect").toBool() == true ) {
+                fldAutoReconnect.addValue("true");
+            }
+            form.addField(fldAutoReconnect);
 
-			DataForm::Field fldEncoding("encoding", "Codepage", DataForm::Field::ListSingle);
+            DataForm::Field fldEncoding("encoding", "Codepage", DataForm::Field::ListSingle);
 
-			QListIterator<QByteArray> ci( QTextCodec::availableCodecs() );
-			while ( ci.hasNext() ) {
-				QString enc = ci.next();
-				fldEncoding.addOption(enc,enc);
-			}
-			QString userEncoding = UserManager::instance()->getOption(iq.from().bare(), "encoding").toString();
-			if ( !userEncoding.isEmpty() ) {
-				fldEncoding.addValue(userEncoding);
-			} else {
-				fldEncoding.addValue("windows-1251");
-			}
-			fldEncoding.setDesc( tr("This option is used to set encoding for retrieving/sending offline messages and user details since ICQ service doesn't fully support UTF-8") );
-			form.addField(fldEncoding);
+            QListIterator<QByteArray> ci( QTextCodec::availableCodecs() );
+            while ( ci.hasNext() ) {
+                QString enc = ci.next();
+                fldEncoding.addOption(enc,enc);
+            }
+            QString userEncoding = UserManager::instance()->getOption(iq.from().bare(), "encoding").toString();
+            if ( !userEncoding.isEmpty() ) {
+                fldEncoding.addValue(userEncoding);
+            } else {
+                fldEncoding.addValue("windows-1251");
+            }
+            fldEncoding.setDesc( tr("This option is used to set encoding for retrieving/sending offline messages and user details since ICQ service doesn't fully support UTF-8") );
+            form.addField(fldEncoding);
 
-			cmd.setForm(form);
+            cmd.setForm(form);
 
-			IQ reply = IQ::createReply(iq);
-			cmd.toIQ(reply);
-			stream->sendStanza(reply);
-			return;
-		}
-	}
+            IQ reply = IQ::createReply(iq);
+            cmd.toIQ(reply);
+            stream->sendStanza(reply);
+            return;
+        }
+    }
 
-	IQ completedNotify = IQ::createReply(iq);
-	cmd.setStatus(AdHoc::Completed);
-	cmd.setAction(AdHoc::ActionNone);
-	cmd.setForm( DataForm() );
-	cmd.toIQ(completedNotify);
+    IQ completedNotify = IQ::createReply(iq);
+    cmd.setStatus(AdHoc::Completed);
+    cmd.setAction(AdHoc::ActionNone);
+    cmd.setForm( DataForm() );
+    cmd.toIQ(completedNotify);
 
-	stream->sendStanza(completedNotify);
+    stream->sendStanza(completedNotify);
 }
 
 void JabberConnection::Private::processDiscoInfo(const IQ& iq)
 {
-	// qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
+    // qDebug() << "disco-info query from" << iq.from().full() << "to" << iq.to().full();
 
-	/* disco-info to command-node query handling */
-	QString node = iq.childElement().attribute("node");
-	if ( !node.isEmpty() & commands.contains(node) ) {
-		// qDebug() << "[JC]" << "disco-info to command node: " << node;
+    /* disco-info to command-node query handling */
+    QString node = iq.childElement().attribute("node");
+    if ( !node.isEmpty() & commands.contains(node) ) {
+        // qDebug() << "[JC]" << "disco-info to command node: " << node;
 
-		IQ adhoc_info = IQ::createReply(iq);
+        IQ adhoc_info = IQ::createReply(iq);
 
-		DiscoInfo info;
-		info << DiscoInfo::Identity("automation", "command-node", commands.value(node).name() );
-		info << NS_DATA_FORMS;
-		info << NS_QUERY_ADHOC;
-		info.pushToDomElement( adhoc_info.childElement() );
+        DiscoInfo info;
+        info << DiscoInfo::Identity("automation", "command-node", commands.value(node).name() );
+        info << NS_DATA_FORMS;
+        info << NS_QUERY_ADHOC;
+        info.pushToDomElement( adhoc_info.childElement() );
 
-		stream->sendStanza(adhoc_info);
-		return;
-	}
+        stream->sendStanza(adhoc_info);
+        return;
+    }
 
-	IQ reply = IQ::createReply(iq);
+    IQ reply = IQ::createReply(iq);
 
-	disco.pushToDomElement( reply.childElement() );
-	stream->sendStanza(reply);
+    disco.pushToDomElement( reply.childElement() );
+    stream->sendStanza(reply);
 }
 
 void JabberConnection::Private::processDiscoItems(const IQ& iq)
 {
-	IQ reply = IQ::createReply(iq);
+    IQ reply = IQ::createReply(iq);
 
-	/* process disco-items to the service itself */
-	if ( iq.childElement().attribute("node").isEmpty() || iq.childElement().attribute("node") == NS_QUERY_ADHOC ) {
-		DiscoItems items;
+    /* process disco-items to the service itself */
+    if ( iq.childElement().attribute("node").isEmpty() || iq.childElement().attribute("node") == NS_QUERY_ADHOC ) {
+        DiscoItems items;
 
-		QHashIterator<QString,DiscoItem> ci(commands);
-		while ( ci.hasNext() ) {
-			ci.next();
-			items << ci.value();
-		}
-		items.pushToDomElement( reply.childElement() );
-	}
+        QHashIterator<QString,DiscoItem> ci(commands);
+        while ( ci.hasNext() ) {
+            ci.next();
+            items << ci.value();
+        }
+        items.pushToDomElement( reply.childElement() );
+    }
 
-	stream->sendStanza(reply);
+    stream->sendStanza(reply);
 }
 
 void JabberConnection::Private::processRegisterRequest(const IQ& iq)
 {
-	Registration regForm = IQ::createReply(iq);
+    Registration regForm = IQ::createReply(iq);
 
-	regForm.setField(Registration::Instructions, QString("Enter UIN and password"));
-	regForm.setField(Registration::Username);
-	regForm.setField(Registration::Password);
+    regForm.setField(Registration::Instructions, QString("Enter UIN and password"));
+    regForm.setField(Registration::Username);
+    regForm.setField(Registration::Password);
 
-	stream->sendStanza(regForm);
+    stream->sendStanza(regForm);
 }
 
 void JabberConnection::Private::processRegisterForm(const Registration& iq)
 {
-	if ( iq.to() != jid ) {
-		Registration err = IQ::createReply(iq);
-		err.setError( Stanza::Error(Stanza::Error::FeatureNotImplemented) );
-		stream->sendStanza(err);
-		return;
-	}
-	if ( iq.hasField(Registration::Remove) ) {
-		if ( iq.fields().size() > 1 ) {
-			/* error, <remove/> is not the only child element */
-			Registration err = IQ::createReply(iq);
-			err.setError( Stanza::Error(Stanza::Error::BadRequest) );
-			stream->sendStanza(err);
-			return;
-		}
-		if ( iq.from().isEmpty() ) {
-			Registration err = IQ::createReply(iq);
-			err.setError( Stanza::Error(Stanza::Error::UnexpectedRequest) );
-			stream->sendStanza(err);
-			return;
-		}
-		Registration reply = IQ::createReply(iq);
-		reply.clearChild();
-		reply.setType(IQ::Result);
-		stream->sendStanza(reply);
+    if ( iq.to() != jid ) {
+        Registration err = IQ::createReply(iq);
+        err.setError( Stanza::Error(Stanza::Error::FeatureNotImplemented) );
+        stream->sendStanza(err);
+        return;
+    }
+    if ( iq.hasField(Registration::Remove) ) {
+        if ( iq.fields().size() > 1 ) {
+            /* error, <remove/> is not the only child element */
+            Registration err = IQ::createReply(iq);
+            err.setError( Stanza::Error(Stanza::Error::BadRequest) );
+            stream->sendStanza(err);
+            return;
+        }
+        if ( iq.from().isEmpty() ) {
+            Registration err = IQ::createReply(iq);
+            err.setError( Stanza::Error(Stanza::Error::UnexpectedRequest) );
+            stream->sendStanza(err);
+            return;
+        }
+        Registration reply = IQ::createReply(iq);
+        reply.clearChild();
+        reply.setType(IQ::Result);
+        stream->sendStanza(reply);
 
-		Presence removeSubscription;
-		removeSubscription.setTo( iq.from().bare() );
-		removeSubscription.setType(Presence::Unsubscribe);
-		stream->sendStanza(removeSubscription);
+        Presence removeSubscription;
+        removeSubscription.setTo( iq.from().bare() );
+        removeSubscription.setType(Presence::Unsubscribe);
+        stream->sendStanza(removeSubscription);
 
-		Presence removeAuth;
-		removeAuth.setTo( iq.from().bare() );
-		removeAuth.setType(Presence::Unsubscribed);
-		stream->sendStanza(removeAuth);
+        Presence removeAuth;
+        removeAuth.setTo( iq.from().bare() );
+        removeAuth.setType(Presence::Unsubscribed);
+        stream->sendStanza(removeAuth);
 
-		Presence logout;
-		logout.setTo( iq.from().bare() );
-		logout.setType(Presence::Unavailable);
-		stream->sendStanza(logout);
+        Presence logout;
+        logout.setTo( iq.from().bare() );
+        logout.setType(Presence::Unavailable);
+        stream->sendStanza(logout);
 
-		/* send unregister signal, slot should remove the user from the database */
-		emit q->userUnregistered( iq.from().bare() );
-		return;
-	}
-	if ( iq.getField(Registration::Username).isEmpty() || iq.getField(Registration::Password).isEmpty() ) {
-		Registration err(iq);
-		err.swapFromTo();
-		err.setError( Stanza::Error(Stanza::Error::NotAcceptable) );
-		stream->sendStanza(err);
-		return;
-	}
+        /* send unregister signal, slot should remove the user from the database */
+        emit q->userUnregistered( iq.from().bare() );
+        return;
+    }
+    if ( iq.getField(Registration::Username).isEmpty() || iq.getField(Registration::Password).isEmpty() ) {
+        Registration err(iq);
+        err.swapFromTo();
+        err.setError( Stanza::Error(Stanza::Error::NotAcceptable) );
+        stream->sendStanza(err);
+        return;
+    }
 
-	/* registration success */
-	IQ reply = IQ::createReply(iq);
-	reply.clearChild();
-	stream->sendStanza(reply);
+    /* registration success */
+    IQ reply = IQ::createReply(iq);
+    reply.clearChild();
+    stream->sendStanza(reply);
 
-	/* subscribe for user presence */
-	Presence subscribe;
-	subscribe.setFrom(jid);
-	subscribe.setTo( iq.from().bare() );
-	subscribe.setType(Presence::Subscribe);
-	stream->sendStanza(subscribe);
+    /* subscribe for user presence */
+    Presence subscribe;
+    subscribe.setFrom(jid);
+    subscribe.setTo( iq.from().bare() );
+    subscribe.setType(Presence::Subscribe);
+    stream->sendStanza(subscribe);
 
-	emit q->userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
+    emit q->userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
 
-	Presence presence;
-	presence.setFrom(jid);
-	presence.setTo( iq.from().bare() );
-	stream->sendStanza(presence);
+    Presence presence;
+    presence.setFrom(jid);
+    presence.setTo( iq.from().bare() );
+    stream->sendStanza(presence);
 
-	/* execute log-in case */
-	emit q->userOnline(iq.from().bare(), Presence::None, true);
+    /* execute log-in case */
+    emit q->userOnline(iq.from().bare(), Presence::None, true);
 }
 
 void JabberConnection::Private::processPromptRequest(const IQ& iq)
 {
-	IQ prompt = IQ::createReply(iq);
+    IQ prompt = IQ::createReply(iq);
 
-	QDomDocument doc = prompt.childElement().ownerDocument();
+    QDomDocument doc = prompt.childElement().ownerDocument();
 
-	QDomElement eDesc = doc.createElement("desc");
-	QDomText eDescText = doc.createTextNode("Please enter the ICQ Number of the person you would like to contact.");
-	prompt.childElement().appendChild(eDesc);
-	eDesc.appendChild(eDescText);
+    QDomElement eDesc = doc.createElement("desc");
+    QDomText eDescText = doc.createTextNode("Please enter the ICQ Number of the person you would like to contact.");
+    prompt.childElement().appendChild(eDesc);
+    eDesc.appendChild(eDescText);
 
-	QDomElement ePrompt = doc.createElement("prompt");
-	QDomText ePromptText = doc.createTextNode("Contact ID");
-	prompt.childElement().appendChild(ePrompt);
-	ePrompt.appendChild(ePromptText);
+    QDomElement ePrompt = doc.createElement("prompt");
+    QDomText ePromptText = doc.createTextNode("Contact ID");
+    prompt.childElement().appendChild(ePrompt);
+    ePrompt.appendChild(ePromptText);
 
-	stream->sendStanza(prompt);
+    stream->sendStanza(prompt);
 }
 
 void JabberConnection::Private::processPrompt(const IQ& iq)
 {
-	QString uin = iq.childElement().firstChildElement("prompt").text();
+    QString uin = iq.childElement().firstChildElement("prompt").text();
 
-	IQ reply = IQ::createReply(iq);
+    IQ reply = IQ::createReply(iq);
 
-	bool ok;
-	int u = uin.toInt(&ok, 10);
-	if ( !ok && u <= 0 ) {
-		reply.setError(Stanza::Error::ItemNotFound);
-		stream->sendStanza(reply);
-		return;
-	}
+    bool ok;
+    int u = uin.toInt(&ok, 10);
+    if ( !ok && u <= 0 ) {
+        reply.setError(Stanza::Error::ItemNotFound);
+        stream->sendStanza(reply);
+        return;
+    }
 
-	reply.clearChild();
-	QDomDocument doc = reply.childElement().ownerDocument();
-	QDomElement eJid = doc.createElement("jid");
-	reply.childElement().appendChild(eJid);
-	QDomText eJidText = doc.createTextNode( jid.withNode(uin) );
-	eJid.appendChild(eJidText);
+    reply.clearChild();
+    QDomDocument doc = reply.childElement().ownerDocument();
+    QDomElement eJid = doc.createElement("jid");
+    reply.childElement().appendChild(eJid);
+    QDomText eJidText = doc.createTextNode( jid.withNode(uin) );
+    eJid.appendChild(eJidText);
 
-	stream->sendStanza(reply);
+    stream->sendStanza(reply);
 }
 
 void JabberConnection::stream_iq(const IQ& iq)
 {
-	if ( iq.childElement().tagName() == "query" && iq.type() == "get" ) {
-		if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_INFO ) {
-			d->processDiscoInfo(iq);
-			return;
-		}
-		if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_ITEMS ) {
-			d->processDiscoItems(iq);
-			return;
-		}
-		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
-			d->processRegisterRequest(iq);
-			return;
-		}
-		if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
-			d->processPromptRequest(iq);
-			return;
-		}
-	}
-	if ( iq.childElement().tagName() == "vCard" && iq.type() == "get" ) {
-		if ( iq.childElement().namespaceURI() != NS_VCARD_TEMP ) {
-			IQ reply(iq);
-			reply.swapFromTo();
-			reply.setError(Stanza::Error::BadRequest);
+    if ( iq.childElement().tagName() == "query" && iq.type() == "get" ) {
+        if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_INFO ) {
+            d->processDiscoInfo(iq);
+            return;
+        }
+        if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_ITEMS ) {
+            d->processDiscoItems(iq);
+            return;
+        }
+        if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
+            d->processRegisterRequest(iq);
+            return;
+        }
+        if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
+            d->processPromptRequest(iq);
+            return;
+        }
+    }
+    if ( iq.childElement().tagName() == "vCard" && iq.type() == "get" ) {
+        if ( iq.childElement().namespaceURI() != NS_VCARD_TEMP ) {
+            IQ reply(iq);
+            reply.swapFromTo();
+            reply.setError(Stanza::Error::BadRequest);
 
-			d->stream->sendStanza(reply);
-			return;
-		}
-		if ( !iq.to().node().isEmpty() ) {
-			emit vCardRequest( iq.from(), iq.to().node(), iq.id() );
-			return;
-		}
+            d->stream->sendStanza(reply);
+            return;
+        }
+        if ( !iq.to().node().isEmpty() ) {
+            emit vCardRequest( iq.from(), iq.to().node(), iq.id() );
+            return;
+        }
 
-		if ( d->vcard.isEmpty() ) {
-			IQ reply(iq);
-			reply.swapFromTo();
-			reply.setError(Stanza::Error::ItemNotFound);
+        if ( d->vcard.isEmpty() ) {
+            IQ reply(iq);
+            reply.swapFromTo();
+            reply.setError(Stanza::Error::ItemNotFound);
 
-			d->stream->sendStanza(reply);
-			return;
-		}
+            d->stream->sendStanza(reply);
+            return;
+        }
 
-		IQ reply = IQ::createReply(iq);
-		d->vcard.toIQ(reply);
+        IQ reply = IQ::createReply(iq);
+        d->vcard.toIQ(reply);
 
-		d->stream->sendStanza(reply);
-		return;
-	}
-	if ( iq.childElement().tagName() == "query" && iq.type() == "set" ) {
-		if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
-			d->processRegisterForm(iq);
-			return;
-		}
-		if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
-			d->processPrompt(iq);
-			return;
-		}
-	}
-	if ( iq.childElement().tagName() == "command" && iq.type() == "set" && iq.childElement().namespaceURI() == NS_QUERY_ADHOC ) {
-		d->processAdHoc(iq);
-		return;
-	}
+        d->stream->sendStanza(reply);
+        return;
+    }
+    if ( iq.childElement().tagName() == "query" && iq.type() == "set" ) {
+        if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
+            d->processRegisterForm(iq);
+            return;
+        }
+        if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
+            d->processPrompt(iq);
+            return;
+        }
+    }
+    if ( iq.childElement().tagName() == "command" && iq.type() == "set" && iq.childElement().namespaceURI() == NS_QUERY_ADHOC ) {
+        d->processAdHoc(iq);
+        return;
+    }
 
-	if ( iq.type() == "error" ) {
-		/* TODO: Error logging? */
-		return;
-	}
-	qWarning("[JC] Unhandled IQ from %s type:%s, tag:%s, nsuri:%s", qPrintable(iq.from().full()), qPrintable(iq.type()), qPrintable(iq.childElement().tagName()), qPrintable(iq.childElement().namespaceURI()) );
+    if ( iq.type() == "error" ) {
+        /* TODO: Error logging? */
+        return;
+    }
+    qWarning("[JC] Unhandled IQ from %s type:%s, tag:%s, nsuri:%s", qPrintable(iq.from().full()), qPrintable(iq.type()), qPrintable(iq.childElement().tagName()), qPrintable(iq.childElement().namespaceURI()) );
 }
 
 void JabberConnection::stream_message(const Message& msg)
 {
-	/* message for legacy user */
-	if ( !msg.to().node().isEmpty() ) {
-		emit outgoingMessage( msg.from(), msg.to().node(), msg.body() );
-	}
+    /* message for legacy user */
+    if ( !msg.to().node().isEmpty() ) {
+        emit outgoingMessage( msg.from(), msg.to().node(), msg.body() );
+    }
 }
 
 void JabberConnection::stream_presence(const Presence& presence)
 {
-	/* approve subscription to gateway */
-	if (presence.type() == Presence::Subscribe && presence.to() == d->jid) {
-		Presence approve;
-		approve.setType(Presence::Subscribed);
-		approve.setTo( presence.from() );
-		approve.setFrom(d->jid);
+    /* approve subscription to gateway */
+    if (presence.type() == Presence::Subscribe && presence.to() == d->jid) {
+        Presence approve;
+        approve.setType(Presence::Subscribed);
+        approve.setTo( presence.from() );
+        approve.setFrom(d->jid);
 
-		d->stream->sendStanza(approve);
-		emit userOnlineStatusRequest( presence.from() );
-		return;
-	}
+        d->stream->sendStanza(approve);
+        emit userOnlineStatusRequest( presence.from() );
+        return;
+    }
 
-	/* process presence to icq-user */
-	if ( !presence.to().node().isEmpty() ) {
-		switch ( presence.type() ) {
-			case Presence::Subscribe:
-				emit userAdd( presence.from(), presence.to().node() );
-				break;
-			case Presence::Unsubscribe:
-				emit userDel( presence.from(), presence.to().node() );
-				break;
-			case Presence::Unsubscribed:
-				emit userAuthDeny( presence.from(), presence.to().node() );
-				break;
-			case Presence::Subscribed:
-				emit userAuthGrant( presence.from(), presence.to().node() );
-				break;
-			default:
-				break;
-		}
-		return;
-	}
+    /* process presence to icq-user */
+    if ( !presence.to().node().isEmpty() ) {
+        switch ( presence.type() ) {
+            case Presence::Subscribe:
+                emit userAdd( presence.from(), presence.to().node() );
+                break;
+            case Presence::Unsubscribe:
+                emit userDel( presence.from(), presence.to().node() );
+                break;
+            case Presence::Unsubscribed:
+                emit userAuthDeny( presence.from(), presence.to().node() );
+                break;
+            case Presence::Subscribed:
+                emit userAuthGrant( presence.from(), presence.to().node() );
+                break;
+            default:
+                break;
+        }
+        return;
+    }
 
-	if ( presence.type() == Presence::Available ) {
-		emit userOnline(presence.from(), presence.show(), false);
-		return;
-	}
-	if ( presence.type() == Presence::Unavailable ) {
-		emit userOffline( presence.from() );
-		return;
-	}
+    if ( presence.type() == Presence::Available ) {
+        emit userOnline(presence.from(), presence.show(), false);
+        return;
+    }
+    if ( presence.type() == Presence::Unavailable ) {
+        emit userOffline( presence.from() );
+        return;
+    }
 }
 
 void JabberConnection::stream_connected()
 {
-	d->startTime = QDateTime::currentDateTime();
-	qDebug("[JC] Component signed on");
+    d->startTime = QDateTime::currentDateTime();
+    qDebug("[JC] Component signed on");
 }
 
 void JabberConnection::stream_error(ComponentStream::ErrorType errType)
 {
-	switch (errType) {
-		case ComponentStream::EHandshakeFailed:
-			qCritical("[JC] Handshaking with jabber-server failed!");
-			break;
-		case ComponentStream::EStreamError:
-			qCritical("[JC] Stream error: %s",
-					  qPrintable(d->stream->lastStreamError().conditionString()) );
-			break;
-		case ComponentStream::EConnectorError:
-			qCritical("[JC] Connector error");
-			break;
-		default:
-			qCritical("[JC] Unknown stream error");
-			break;
-	}
-	exit(1);
+    switch (errType) {
+        case ComponentStream::EHandshakeFailed:
+            qCritical("[JC] Handshaking with jabber-server failed!");
+            break;
+        case ComponentStream::EStreamError:
+            qCritical("[JC] Stream error: %s",
+                      qPrintable(d->stream->lastStreamError().conditionString()) );
+            break;
+        case ComponentStream::EConnectorError:
+            qCritical("[JC] Connector error");
+            break;
+        default:
+            qCritical("[JC] Unknown stream error");
+            break;
+    }
+    exit(1);
 }
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap

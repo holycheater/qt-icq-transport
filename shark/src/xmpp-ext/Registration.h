@@ -30,25 +30,25 @@ namespace XMPP {
 
 class Registration : public IQ
 {
-	public:
-		enum Field { Instructions, Username, Nick, Password, Name, First, Last, Email, Address, City, State, Zip, Phone, Url, Date, Misc, Text, Registered, Remove };
-		Registration();
-		Registration(const IQ& other);
-		Registration(const Registration& other);
-		Registration(const QDomElement& element);
-		~Registration();
+    public:
+        enum Field { Instructions, Username, Nick, Password, Name, First, Last, Email, Address, City, State, Zip, Phone, Url, Date, Misc, Text, Registered, Remove };
+        Registration();
+        Registration(const IQ& other);
+        Registration(const Registration& other);
+        Registration(const QDomElement& element);
+        ~Registration();
 
-		QList<Field> fields() const;
-		QString getField(Field name) const;
-		bool hasField(Field name) const;
-		void setField(Field name, const QString& value);
-		void setField(Field name, bool present = true);
-	private:
-		class Private;
+        QList<Field> fields() const;
+        QString getField(Field name) const;
+        bool hasField(Field name) const;
+        void setField(Field name, const QString& value);
+        void setField(Field name, bool present = true);
+    private:
+        class Private;
 };
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:nowrap:noet
+// vim:ts=4:sw=4:nowrap:et
 #endif /* XMPP_EXT_REGISTRATION_H_ */

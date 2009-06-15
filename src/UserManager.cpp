@@ -28,21 +28,21 @@
 
 UserManager::UserManager()
 {
-	QSqlQuery query;
+    QSqlQuery query;
 
-	query.exec("CREATE TABLE IF NOT EXISTS users ("
-				"jid TEXT,"
-				"uin TEXT,"
-				"password TEXT,"
-				"PRIMARY KEY(jid)"
-				")");
+    query.exec("CREATE TABLE IF NOT EXISTS users ("
+                "jid TEXT,"
+                "uin TEXT,"
+                "password TEXT,"
+                "PRIMARY KEY(jid)"
+                ")");
 
-	query.exec("CREATE TABLE IF NOT EXISTS options ("
-				"jid TEXT,"
-				"option TEXT,"
-				"value TEXT,"
-				"PRIMARY KEY(jid,option)"
-				")");
+    query.exec("CREATE TABLE IF NOT EXISTS options ("
+                "jid TEXT,"
+                "option TEXT,"
+                "value TEXT,"
+                "PRIMARY KEY(jid,option)"
+                ")");
 }
 
 UserManager::~UserManager()
@@ -51,140 +51,140 @@ UserManager::~UserManager()
 
 UserManager* UserManager::instance()
 {
-	static QMutex mutex;
-	if ( !m_instance ) {
-		mutex.lock();
-		if ( !m_instance ) {
-			m_instance = new UserManager;
-		}
-		mutex.unlock();
-	}
-	return m_instance;
+    static QMutex mutex;
+    if ( !m_instance ) {
+        mutex.lock();
+        if ( !m_instance ) {
+            m_instance = new UserManager;
+        }
+        mutex.unlock();
+    }
+    return m_instance;
 }
 
 void UserManager::add(const QString& user, const QString& uin, const QString& passwd)
 {
-	clearOptions(user);
-	QSqlQuery query;
-	/* prepare + bindvalue doesn't work... at least on sqlite */
-	query.exec( QString("REPLACE INTO users VALUES('%1', '%2', '%3')").arg(user,uin,passwd) );
+    clearOptions(user);
+    QSqlQuery query;
+    /* prepare + bindvalue doesn't work... at least on sqlite */
+    query.exec( QString("REPLACE INTO users VALUES('%1', '%2', '%3')").arg(user,uin,passwd) );
 }
 
 void UserManager::del(const QString& user)
 {
-	QSqlQuery query;
+    QSqlQuery query;
 
-	query.exec( QString("SELECT * FROM users WHERE jid = '%1'").arg(user) );
-	if ( !query.first() ) {
-		return;
-	}
+    query.exec( QString("SELECT * FROM users WHERE jid = '%1'").arg(user) );
+    if ( !query.first() ) {
+        return;
+    }
 
-	query.exec( QString("DELETE FROM users WHERE jid = '%1'").arg(user) );
-	query.exec( QString("DELETE FROM options WHERE jid = '%1'").arg(user) );
+    query.exec( QString("DELETE FROM users WHERE jid = '%1'").arg(user) );
+    query.exec( QString("DELETE FROM options WHERE jid = '%1'").arg(user) );
 }
 
 bool UserManager::isRegistered(const QString& user) const
 {
-	QSqlQuery query;
-	query.exec( QString("SELECT jid FROM users WHERE jid = '%1'").arg(user) );
-	return query.first();
+    QSqlQuery query;
+    query.exec( QString("SELECT jid FROM users WHERE jid = '%1'").arg(user) );
+    return query.first();
 }
 
 QString UserManager::getUin(const QString& user) const
 {
-	QSqlQuery query;
-	query.exec( QString("SELECT uin from users WHERE jid = '%1'").arg(user) );
-	if ( query.first() ) {
-		return query.value(0).toString();
-	}
-	return QString();
+    QSqlQuery query;
+    query.exec( QString("SELECT uin from users WHERE jid = '%1'").arg(user) );
+    if ( query.first() ) {
+        return query.value(0).toString();
+    }
+    return QString();
 }
 
 QString UserManager::getPassword(const QString& user) const
 {
-	QSqlQuery query;
-	query.exec( QString("SELECT password from users WHERE jid = '%1'").arg(user) );
-	if ( query.first() ) {
-		return query.value(0).toString();
-	}
-	return QString();
+    QSqlQuery query;
+    query.exec( QString("SELECT password from users WHERE jid = '%1'").arg(user) );
+    if ( query.first() ) {
+        return query.value(0).toString();
+    }
+    return QString();
 }
 
 QStringList UserManager::getUserList() const
 {
-	QSqlQuery query;
-	query.exec("SELECT jid FROM users");
-	QStringList users;
-	while ( query.next() ) {
-		users << query.value(0).toString();
-	}
-	return users;
+    QSqlQuery query;
+    query.exec("SELECT jid FROM users");
+    QStringList users;
+    while ( query.next() ) {
+        users << query.value(0).toString();
+    }
+    return users;
 }
 
 QStringList UserManager::getUserListByOptVal(const QString& option, const QVariant& value) const
 {
-	QSqlQuery query;
-	query.exec( QString("SELECT jid FROM options WHERE option = '%1' AND value = '%2'").arg(option,value.toString()) );
+    QSqlQuery query;
+    query.exec( QString("SELECT jid FROM options WHERE option = '%1' AND value = '%2'").arg(option,value.toString()) );
 
-	QStringList users;
-	while ( query.next() ) {
-		users << query.value(0).toString();
-	}
-	return users;
+    QStringList users;
+    while ( query.next() ) {
+        users << query.value(0).toString();
+    }
+    return users;
 }
 
 QVariant UserManager::getOption(const QString& user, const QString& option) const
 {
-	QSqlQuery query;
-	query.exec( QString("SELECT value from options WHERE jid = '%1' AND option='%2'").arg(user,option) );
+    QSqlQuery query;
+    query.exec( QString("SELECT value from options WHERE jid = '%1' AND option='%2'").arg(user,option) );
 
-	if ( query.first() ) {
-		QVariant value = query.value(0);
-		return value;
-	}
-	return QVariant();
+    if ( query.first() ) {
+        QVariant value = query.value(0);
+        return value;
+    }
+    return QVariant();
 }
 
 void UserManager::setOption(const QString& user, const QString& option, const QVariant& value)
 {
-	QSqlQuery query;
-	query.exec( QString("REPLACE INTO options (jid,option,value) VALUES('%1', '%2', '%3')").arg(user,option, value.toString()) );
+    QSqlQuery query;
+    query.exec( QString("REPLACE INTO options (jid,option,value) VALUES('%1', '%2', '%3')").arg(user,option, value.toString()) );
 }
 
 bool UserManager::hasOption(const QString& user, const QString& option) const
 {
-	QSqlQuery query;
-	query.exec( QString("SELECT value from options WHERE jid = '%1' AND option='%2'").arg(user,option) );
-	return query.first();
+    QSqlQuery query;
+    query.exec( QString("SELECT value from options WHERE jid = '%1' AND option='%2'").arg(user,option) );
+    return query.first();
 }
 
 QHash<QString,QVariant> UserManager::options(const QString& user) const
 {
-	QSqlQuery query;
-	query.exec( QString("SELECT option, value from options WHERE jid = '%1'").arg(user) );
+    QSqlQuery query;
+    query.exec( QString("SELECT option, value from options WHERE jid = '%1'").arg(user) );
 
-	QHash<QString,QVariant> list;
-	while ( query.next() ) {
-		list.insert(query.value(0).toString(), query.value(1));
-	}
-	return list;
+    QHash<QString,QVariant> list;
+    while ( query.next() ) {
+        list.insert(query.value(0).toString(), query.value(1));
+    }
+    return list;
 }
 
 void UserManager::setOptions(const QString& user, const QHash<QString,QVariant>& list)
 {
-	QHashIterator<QString,QVariant> i(list);
-	while ( i.hasNext() ) {
-		i.next();
-		setOption(user, i.key(), i.value());
-	}
+    QHashIterator<QString,QVariant> i(list);
+    while ( i.hasNext() ) {
+        i.next();
+        setOption(user, i.key(), i.value());
+    }
 }
 
 void UserManager::clearOptions(const QString& user)
 {
-	QSqlQuery query;
-	query.exec( QString("DELETE FROM options WHERE jid='%1'").arg(user) );
+    QSqlQuery query;
+    query.exec( QString("DELETE FROM options WHERE jid='%1'").arg(user) );
 }
 
 UserManager* UserManager::m_instance = 0;
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap

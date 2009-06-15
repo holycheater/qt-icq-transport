@@ -44,89 +44,89 @@ class Presence;
 
 class ComponentStream : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
+    enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
 
-	public:
-		enum ErrorType { EStreamError, EHandshakeFailed, EConnectorError };
+    public:
+        enum ErrorType { EStreamError, EHandshakeFailed, EConnectorError };
 
-		ComponentStream(Connector *connector, QObject *parent = 0);
-		~ComponentStream();
+        ComponentStream(Connector *connector, QObject *parent = 0);
+        ~ComponentStream();
 
-		class Error;
+        class Error;
 
-		QString lastErrorString() const;
-		Error lastStreamError() const;
+        QString lastErrorString() const;
+        Error lastStreamError() const;
 
-		QString baseNS() const;
+        QString baseNS() const;
 
-		void connectToServer(const Jid& jid, const QString& secret);
-		void close();
+        void connectToServer(const Jid& jid, const QString& secret);
+        void close();
 
-		void sendStanza(const Stanza& stanza);
-	signals:
-		void connected();
-		void disconnected();
-		void error(ComponentStream::ErrorType errType);
-		void stanzaIQ(const IQ&);
-		void stanzaMessage(const Message&);
-		void stanzaPresence(const Presence&);
-	private:
-		void handleStreamError(const Parser::Event& event);
-		void processEvent(const Parser::Event& event);
-		void processStanza(const Parser::Event& event);
-		void recv_stream_open(const Parser::Event& event);
-		void recv_handshake_reply(const Parser::Event& event);
-		void send_stream_open();
-		void send_handshake();
-		void write(const QByteArray& data);
-	private slots:
-		void bs_readyRead();
-		void bs_closed();
-		void cr_connected();
-		void cr_error(Connector::ErrorType errcode);
-		void send_keepalive();
-	private:
-		class Private;
-		Private *d;
+        void sendStanza(const Stanza& stanza);
+    signals:
+        void connected();
+        void disconnected();
+        void error(ComponentStream::ErrorType errType);
+        void stanzaIQ(const IQ&);
+        void stanzaMessage(const Message&);
+        void stanzaPresence(const Presence&);
+    private:
+        void handleStreamError(const Parser::Event& event);
+        void processEvent(const Parser::Event& event);
+        void processStanza(const Parser::Event& event);
+        void recv_stream_open(const Parser::Event& event);
+        void recv_handshake_reply(const Parser::Event& event);
+        void send_stream_open();
+        void send_handshake();
+        void write(const QByteArray& data);
+    private slots:
+        void bs_readyRead();
+        void bs_closed();
+        void cr_connected();
+        void cr_error(Connector::ErrorType errcode);
+        void send_keepalive();
+    private:
+        class Private;
+        Private *d;
 };
 
 class ComponentStream::Error
 {
-	public:
-		enum Condition {
-			BadFormat, BadNamespacePrefix, Conflict, ConnectionTimeout, HostGone,
-			HostUnknown, ImproperAddressing, InternalServerError, InvalidFrom,
-			InvalidId, InvalidNamespace, InvalidXml, NotAuthorized, PolicyViolation,
-			RemoteConnectionFailed, ResourceConstraint, RestrictedXml, SeeOtherHost,
-			SystemShutdown, UndefinedCondition, UnsupportedEncoding, UnsupportedStanzaType,
-			UnsupportedVersion, XmlNotWellFormed
-		};
+    public:
+        enum Condition {
+            BadFormat, BadNamespacePrefix, Conflict, ConnectionTimeout, HostGone,
+            HostUnknown, ImproperAddressing, InternalServerError, InvalidFrom,
+            InvalidId, InvalidNamespace, InvalidXml, NotAuthorized, PolicyViolation,
+            RemoteConnectionFailed, ResourceConstraint, RestrictedXml, SeeOtherHost,
+            SystemShutdown, UndefinedCondition, UnsupportedEncoding, UnsupportedStanzaType,
+            UnsupportedVersion, XmlNotWellFormed
+        };
 
-		Error();
-		Error(const Error& other);
-		Error(const QDomDocument& document);
-		Error(const QDomElement& element);
-		~Error();
-		Error& operator=(const Error& other);
+        Error();
+        Error(const Error& other);
+        Error(const QDomDocument& document);
+        Error(const QDomElement& element);
+        ~Error();
+        Error& operator=(const Error& other);
 
-		QString appSpec() const;
-		QString appSpecNS() const;
-		Condition condition() const;
-		QString conditionString() const;
-		QString text() const;
+        QString appSpec() const;
+        QString appSpecNS() const;
+        Condition condition() const;
+        QString conditionString() const;
+        QString text() const;
 
-		void setAppSpec(const QString& ns, const QString& spec);
-		void setCondition(Condition type);
-		void setText(const QString& text);
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        void setAppSpec(const QString& ns, const QString& spec);
+        void setCondition(Condition type);
+        void setText(const QString& text);
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_COMPONENTSTREAM_H_ */

@@ -53,30 +53,30 @@ namespace XMPP {
 
 class ComponentStream::Error::Private : public QSharedData
 {
-	public:
-		Private();
-		Private(const Private& other);
-		~Private();
+    public:
+        Private();
+        Private(const Private& other);
+        ~Private();
 
-		static QString conditionToString(Condition condition);
-		static int stringToCondition(const QString& condition);
+        static QString conditionToString(Condition condition);
+        static int stringToCondition(const QString& condition);
 
-		typedef QPair<int, const char*> ErrorEnumStringPair;
-		static ErrorEnumStringPair errorConditionTable[];
+        typedef QPair<int, const char*> ErrorEnumStringPair;
+        static ErrorEnumStringPair errorConditionTable[];
 
-		QDomDocument doc;
-		QDomElement errorCondition;
-		QDomElement text;
-		QDomElement appSpec;
+        QDomDocument doc;
+        QDomElement errorCondition;
+        QDomElement text;
+        QDomElement appSpec;
 };
 
 ComponentStream::Error::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
 }
 
 ComponentStream::Error::Private::Private(const Private& other)
-	: QSharedData(other)
+    : QSharedData(other)
 {
 }
 
@@ -85,106 +85,106 @@ ComponentStream::Error::Private::~Private()
 }
 
 ComponentStream::Error::Private::ErrorEnumStringPair ComponentStream::Error::Private::errorConditionTable[] = {
-		ErrorEnumStringPair(BadFormat				, "bad-format"),
-		ErrorEnumStringPair(BadNamespacePrefix		, "bad-namespace-prefix"),
-		ErrorEnumStringPair(Conflict				, "conflict"),
-		ErrorEnumStringPair(ConnectionTimeout		, "connection-timeout"),
-		ErrorEnumStringPair(HostGone				, "host-gone"),
-		ErrorEnumStringPair(HostUnknown				, "host-unknown"),
-		ErrorEnumStringPair(ImproperAddressing		, "improper-addressing"),
-		ErrorEnumStringPair(InternalServerError		, "internal-server-error"),
-		ErrorEnumStringPair(InvalidFrom				, "invalid-from"),
-		ErrorEnumStringPair(InvalidId				, "invalid-id"),
-		ErrorEnumStringPair(InvalidNamespace		, "invalid-namespace"),
-		ErrorEnumStringPair(InvalidXml				, "invalid-xml"),
-		ErrorEnumStringPair(NotAuthorized			, "not-authorized"),
-		ErrorEnumStringPair(PolicyViolation			, "policy-violation"),
-		ErrorEnumStringPair(RemoteConnectionFailed	, "remote-connection-failed"),
-		ErrorEnumStringPair(ResourceConstraint		, "resource-constraint"),
-		ErrorEnumStringPair(RestrictedXml			, "restricted-xml"),
-		ErrorEnumStringPair(SeeOtherHost			, "see-other-host"),
-		ErrorEnumStringPair(SystemShutdown			, "system-shutdown"),
-		ErrorEnumStringPair(UndefinedCondition		, "undefined-condition"),
-		ErrorEnumStringPair(UnsupportedEncoding		, "unsupported-encoding"),
-		ErrorEnumStringPair(UnsupportedStanzaType	, "unsupported-stanza-type"),
-		ErrorEnumStringPair(UnsupportedVersion		, "unsupported-version"),
-		ErrorEnumStringPair(XmlNotWellFormed		, "xml-not-well-formed"),
-		ErrorEnumStringPair(0, 0)
+        ErrorEnumStringPair(BadFormat               , "bad-format"),
+        ErrorEnumStringPair(BadNamespacePrefix      , "bad-namespace-prefix"),
+        ErrorEnumStringPair(Conflict                , "conflict"),
+        ErrorEnumStringPair(ConnectionTimeout       , "connection-timeout"),
+        ErrorEnumStringPair(HostGone                , "host-gone"),
+        ErrorEnumStringPair(HostUnknown             , "host-unknown"),
+        ErrorEnumStringPair(ImproperAddressing      , "improper-addressing"),
+        ErrorEnumStringPair(InternalServerError     , "internal-server-error"),
+        ErrorEnumStringPair(InvalidFrom             , "invalid-from"),
+        ErrorEnumStringPair(InvalidId               , "invalid-id"),
+        ErrorEnumStringPair(InvalidNamespace        , "invalid-namespace"),
+        ErrorEnumStringPair(InvalidXml              , "invalid-xml"),
+        ErrorEnumStringPair(NotAuthorized           , "not-authorized"),
+        ErrorEnumStringPair(PolicyViolation         , "policy-violation"),
+        ErrorEnumStringPair(RemoteConnectionFailed  , "remote-connection-failed"),
+        ErrorEnumStringPair(ResourceConstraint      , "resource-constraint"),
+        ErrorEnumStringPair(RestrictedXml           , "restricted-xml"),
+        ErrorEnumStringPair(SeeOtherHost            , "see-other-host"),
+        ErrorEnumStringPair(SystemShutdown          , "system-shutdown"),
+        ErrorEnumStringPair(UndefinedCondition      , "undefined-condition"),
+        ErrorEnumStringPair(UnsupportedEncoding     , "unsupported-encoding"),
+        ErrorEnumStringPair(UnsupportedStanzaType   , "unsupported-stanza-type"),
+        ErrorEnumStringPair(UnsupportedVersion      , "unsupported-version"),
+        ErrorEnumStringPair(XmlNotWellFormed        , "xml-not-well-formed"),
+        ErrorEnumStringPair(0, 0)
 };
 
 QString ComponentStream::Error::Private::conditionToString(Condition condition)
 {
-	for (int i = 0; errorConditionTable[i].second; ++i) {
-		if (errorConditionTable[i].first == condition) {
-			return errorConditionTable[i].second;
-		}
-	}
-	return "undefined-condition";
+    for (int i = 0; errorConditionTable[i].second; ++i) {
+        if (errorConditionTable[i].first == condition) {
+            return errorConditionTable[i].second;
+        }
+    }
+    return "undefined-condition";
 }
 
 int ComponentStream::Error::Private::stringToCondition(const QString& condition)
 {
-	for (int i = 0; errorConditionTable[i].second; ++i) {
-		if (errorConditionTable[i].second == condition) {
-			return errorConditionTable[i].first;
-		}
-	}
-	return -1;
+    for (int i = 0; errorConditionTable[i].second; ++i) {
+        if (errorConditionTable[i].second == condition) {
+            return errorConditionTable[i].first;
+        }
+    }
+    return -1;
 }
 
 /**
  * Constructs stream-error object.
  */
 ComponentStream::Error::Error()
-	: d(new Private)
+    : d(new Private)
 {
-	QDomElement element = d->doc.createElement("stream:error");
-	d->doc.appendChild(element);
+    QDomElement element = d->doc.createElement("stream:error");
+    d->doc.appendChild(element);
 }
 
 /**
  * Constructs a deep copy of @a other
  */
 ComponentStream::Error::Error(const Error& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
 /**
  * Constructs stream-error object from a DOM element.
  *
- * @param element	\<stream:error/\> DOM element.
+ * @param element   \<stream:error/\> DOM element.
  */
 ComponentStream::Error::Error(const QDomElement& element)
-	: d(new Private)
+    : d(new Private)
 {
-	QDomNode root = d->doc.importNode(element, true);
-	d->doc.appendChild(root);
+    QDomNode root = d->doc.importNode(element, true);
+    d->doc.appendChild(root);
 
-	QDomNodeList childs = root.childNodes();
-	for (int i = 0; i < childs.count(); ++i) {
-		QDomElement element = childs.item(i).toElement();
-		if (element.namespaceURI() == NS_STREAMS) {
-			int condition = Private::stringToCondition(element.tagName() );
-			if ( condition != -1 ) {
-				d->errorCondition = element;
-				break;
-			}
-		}
-	}
+    QDomNodeList childs = root.childNodes();
+    for (int i = 0; i < childs.count(); ++i) {
+        QDomElement element = childs.item(i).toElement();
+        if (element.namespaceURI() == NS_STREAMS) {
+            int condition = Private::stringToCondition(element.tagName() );
+            if ( condition != -1 ) {
+                d->errorCondition = element;
+                break;
+            }
+        }
+    }
 
-	QDomElement eText = root.firstChildElement("text");
-	if (eText.namespaceURI() == NS_STREAMS) {
-		d->text = eText;
-	}
+    QDomElement eText = root.firstChildElement("text");
+    if (eText.namespaceURI() == NS_STREAMS) {
+        d->text = eText;
+    }
 
-	for (int i = 0; i < childs.count(); ++i) {
-		QDomElement element = childs.item(i).toElement();
-		/* first element outside NS_STREAMS ns will be an app-specific error condition */
-		if (element.namespaceURI() != NS_STREAMS) {
-			d->appSpec = element;
-		}
-	}
+    for (int i = 0; i < childs.count(); ++i) {
+        QDomElement element = childs.item(i).toElement();
+        /* first element outside NS_STREAMS ns will be an app-specific error condition */
+        if (element.namespaceURI() != NS_STREAMS) {
+            d->appSpec = element;
+        }
+    }
 }
 
 /**
@@ -196,8 +196,8 @@ ComponentStream::Error::~Error()
 
 ComponentStream::Error& ComponentStream::Error::operator=(const Error& other)
 {
-	d = other.d;
-	return *this;
+    d = other.d;
+    return *this;
 }
 
 /**
@@ -207,7 +207,7 @@ ComponentStream::Error& ComponentStream::Error::operator=(const Error& other)
  */
 QString ComponentStream::Error::appSpec() const
 {
-	return d->appSpec.tagName();
+    return d->appSpec.tagName();
 }
 
 /**
@@ -217,7 +217,7 @@ QString ComponentStream::Error::appSpec() const
  */
 QString ComponentStream::Error::appSpecNS() const
 {
-	return d->appSpec.namespaceURI();
+    return d->appSpec.namespaceURI();
 }
 
 /**
@@ -227,16 +227,16 @@ QString ComponentStream::Error::appSpecNS() const
  */
 ComponentStream::Error::Condition ComponentStream::Error::condition() const
 {
-	int condition = Private::stringToCondition( d->errorCondition.tagName() );
-	if ( condition != -1 ) {
-		return (Condition)condition;
-	}
-	return UndefinedCondition;
+    int condition = Private::stringToCondition( d->errorCondition.tagName() );
+    if ( condition != -1 ) {
+        return (Condition)condition;
+    }
+    return UndefinedCondition;
 }
 
 QString ComponentStream::Error::conditionString() const
 {
-	return d->errorCondition.tagName();
+    return d->errorCondition.tagName();
 }
 
 /**
@@ -246,21 +246,21 @@ QString ComponentStream::Error::conditionString() const
  */
 QString ComponentStream::Error::text() const
 {
-	return d->text.text();
+    return d->text.text();
 }
 
 /**
  * Sets application-specific error condition.
  *
- * @param ns	application namespace
- * @param spec	application-specific error condition
+ * @param ns    application namespace
+ * @param spec  application-specific error condition
  * @sa setText(), setCondition()
  */
 void ComponentStream::Error::setAppSpec(const QString& ns, const QString& spec)
 {
-	d->doc.documentElement().removeChild(d->appSpec);
-	d->appSpec = d->doc.createElementNS(ns, spec);
-	d->doc.documentElement().appendChild(d->appSpec);
+    d->doc.documentElement().removeChild(d->appSpec);
+    d->appSpec = d->doc.createElementNS(ns, spec);
+    d->doc.documentElement().appendChild(d->appSpec);
 }
 
 /**
@@ -270,9 +270,9 @@ void ComponentStream::Error::setAppSpec(const QString& ns, const QString& spec)
  */
 void ComponentStream::Error::setCondition(Condition condition)
 {
-	d->doc.documentElement().removeChild(d->errorCondition);
-	d->errorCondition = d->doc.createElementNS( NS_STREAMS, Private::conditionToString(condition) );
-	d->doc.documentElement().appendChild(d->errorCondition);
+    d->doc.documentElement().removeChild(d->errorCondition);
+    d->errorCondition = d->doc.createElementNS( NS_STREAMS, Private::conditionToString(condition) );
+    d->doc.documentElement().appendChild(d->errorCondition);
 }
 
 /**
@@ -282,12 +282,12 @@ void ComponentStream::Error::setCondition(Condition condition)
  */
 void ComponentStream::Error::setText(const QString& text)
 {
-	d->doc.documentElement().removeChild(d->text);
-	d->text = d->doc.createElementNS(NS_STREAMS, "text");
-	d->doc.documentElement().appendChild(d->text);
+    d->doc.documentElement().removeChild(d->text);
+    d->text = d->doc.createElementNS(NS_STREAMS, "text");
+    d->doc.documentElement().appendChild(d->text);
 
-	QDomText errdesc = d->doc.createTextNode(text);
-	d->text.appendChild(errdesc);
+    QDomText errdesc = d->doc.createTextNode(text);
+    d->text.appendChild(errdesc);
 }
 
 /**
@@ -418,4 +418,4 @@ void ComponentStream::Error::setText(const QString& text)
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

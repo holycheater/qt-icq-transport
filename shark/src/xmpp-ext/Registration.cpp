@@ -29,58 +29,58 @@ namespace XMPP {
 
 class Registration::Private
 {
-	public:
-		static QString fieldToString(Field name);
-		static int stringToField(const QString& name);
+    public:
+        static QString fieldToString(Field name);
+        static int stringToField(const QString& name);
 
-		typedef struct {
-			int num;
-			const char* str;
-		} IntStringPair;
+        typedef struct {
+            int num;
+            const char* str;
+        } IntStringPair;
 
-		static IntStringPair fieldStringTable[];
+        static IntStringPair fieldStringTable[];
 };
 Registration::Private::IntStringPair Registration::Private::fieldStringTable[] = {
-		{ Instructions	, "instructions" },
-		{ Username		, "username" },
-		{ Nick			, "nick" },
-		{ Password		, "password" },
-		{ Name			, "name" },
-		{ First			, "first" },
-		{ Last			, "last" },
-		{ Email			, "email" },
-		{ Address		, "address" },
-		{ City			, "city" },
-		{ State			, "state" },
-		{ Zip			, "zip" },
-		{ Phone			, "phone" },
-		{ Url			, "url" },
-		{ Date			, "date" },
-		{ Misc			, "misc" },
-		{ Text			, "text" },
-		{ Registered	, "registered" },
-		{ Remove		, "remove" },
-		{ 0, 0 }
+        { Instructions  , "instructions" },
+        { Username      , "username" },
+        { Nick          , "nick" },
+        { Password      , "password" },
+        { Name          , "name" },
+        { First         , "first" },
+        { Last          , "last" },
+        { Email         , "email" },
+        { Address       , "address" },
+        { City          , "city" },
+        { State         , "state" },
+        { Zip           , "zip" },
+        { Phone         , "phone" },
+        { Url           , "url" },
+        { Date          , "date" },
+        { Misc          , "misc" },
+        { Text          , "text" },
+        { Registered    , "registered" },
+        { Remove        , "remove" },
+        { 0, 0 }
 };
 
 QString Registration::Private::fieldToString(Field name)
 {
-	for (int i = 0; fieldStringTable[i].str; ++i) {
-		if (fieldStringTable[i].num == name) {
-			return fieldStringTable[i].str;
-		}
-	}
-	return QString();
+    for (int i = 0; fieldStringTable[i].str; ++i) {
+        if (fieldStringTable[i].num == name) {
+            return fieldStringTable[i].str;
+        }
+    }
+    return QString();
 }
 
 int Registration::Private::stringToField(const QString& name)
 {
-	for (int i = 0; fieldStringTable[i].str; ++i) {
-		if (fieldStringTable[i].str == name) {
-			return fieldStringTable[i].num;
-		}
-	}
-	return -1;
+    for (int i = 0; fieldStringTable[i].str; ++i) {
+        if (fieldStringTable[i].str == name) {
+            return fieldStringTable[i].num;
+        }
+    }
+    return -1;
 }
 
 /**
@@ -92,16 +92,16 @@ int Registration::Private::stringToField(const QString& name)
  * Constructs registration iq-stanza.
  */
 Registration::Registration()
-	: IQ()
+    : IQ()
 {
-	setChildElement("query", NS_IQ_REGISTER);
+    setChildElement("query", NS_IQ_REGISTER);
 }
 
 /**
  * Constructs registration iq-stanza from IQ-object.
  */
 Registration::Registration(const IQ& other)
-	: IQ(other)
+    : IQ(other)
 {
 }
 
@@ -109,7 +109,7 @@ Registration::Registration(const IQ& other)
  * Constructs a deep copy of other registration-stanza.
  */
 Registration::Registration(const Registration& other)
-	: IQ(other)
+    : IQ(other)
 {
 }
 
@@ -117,7 +117,7 @@ Registration::Registration(const Registration& other)
  * Constructs a registration stanza from stanza dom-element.
  */
 Registration::Registration(const QDomElement& element)
-	: IQ(element)
+    : IQ(element)
 {
 }
 
@@ -133,18 +133,18 @@ Registration::~Registration()
  */
 QList<Registration::Field> Registration::fields() const
 {
-	QList<Field> list;
+    QList<Field> list;
 
-	QDomNodeList childs = childElement().childNodes();
-	for (int i = 0; i < childs.size(); ++i) {
-		if ( childs.item(i).namespaceURI() != NS_IQ_REGISTER ) {
-			// we don't count non-standard fields from something like jabber:x:data
-			continue;
-		}
-		list << (Field)Private::stringToField( childs.item(i).nodeName() );
-	}
+    QDomNodeList childs = childElement().childNodes();
+    for (int i = 0; i < childs.size(); ++i) {
+        if ( childs.item(i).namespaceURI() != NS_IQ_REGISTER ) {
+            // we don't count non-standard fields from something like jabber:x:data
+            continue;
+        }
+        list << (Field)Private::stringToField( childs.item(i).nodeName() );
+    }
 
-	return list;
+    return list;
 }
 
 /**
@@ -152,7 +152,7 @@ QList<Registration::Field> Registration::fields() const
  */
 QString Registration::getField(Field name) const
 {
-	return childElement().firstChildElement( Private::fieldToString(name) ).text().trimmed();
+    return childElement().firstChildElement( Private::fieldToString(name) ).text().trimmed();
 }
 
 /**
@@ -161,7 +161,7 @@ QString Registration::getField(Field name) const
  */
 bool Registration::hasField(Field name) const
 {
-	return !childElement().firstChildElement( Private::fieldToString(name) ).isNull();
+    return !childElement().firstChildElement( Private::fieldToString(name) ).isNull();
 }
 
 /**
@@ -169,14 +169,14 @@ bool Registration::hasField(Field name) const
  */
 void Registration::setField(Field name, const QString& value)
 {
-	QString field = Private::fieldToString(name);
+    QString field = Private::fieldToString(name);
 
-	childElement().removeChild( childElement().firstChildElement(field) );
-	QDomElement element = doc()->createElement(field);
-	childElement().appendChild(element);
+    childElement().removeChild( childElement().firstChildElement(field) );
+    QDomElement element = doc()->createElement(field);
+    childElement().appendChild(element);
 
-	QDomText text = doc()->createTextNode(value);
-	element.appendChild(text);
+    QDomText text = doc()->createTextNode(value);
+    element.appendChild(text);
 }
 
 /**
@@ -186,16 +186,16 @@ void Registration::setField(Field name, const QString& value)
  */
 void Registration::setField(Field name, bool present)
 {
-	QString field = Private::fieldToString(name);
+    QString field = Private::fieldToString(name);
 
-	childElement().removeChild( childElement().firstChildElement(field) );
-	if (present) {
-		QDomElement element = doc()->createElement(field);
-		childElement().appendChild(element);
-	}
+    childElement().removeChild( childElement().firstChildElement(field) );
+    if (present) {
+        QDomElement element = doc()->createElement(field);
+        childElement().appendChild(element);
+    }
 }
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:nowrap:noet
+// vim:ts=4:sw=4:nowrap:et

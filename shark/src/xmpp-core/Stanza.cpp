@@ -41,17 +41,17 @@ Stanza::Stanza()
  */
 Stanza::Stanza(const Stanza& other)
 {
-	m_doc = other.m_doc.cloneNode(true).toDocument();
+    m_doc = other.m_doc.cloneNode(true).toDocument();
 }
 
 /**
  * Constructs stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
  *
- * @param document	DOM document
+ * @param document  DOM document
  */
 Stanza::Stanza(const QDomDocument& document)
 {
-	m_doc = document.cloneNode(true).toDocument();
+    m_doc = document.cloneNode(true).toDocument();
 }
 
 /**
@@ -60,8 +60,8 @@ Stanza::Stanza(const QDomDocument& document)
  */
 Stanza::Stanza(const QDomElement& element)
 {
-	QDomNode root = m_doc.importNode(element, true);
-	m_doc.appendChild(root);
+    QDomNode root = m_doc.importNode(element, true);
+    m_doc.appendChild(root);
 }
 
 /**
@@ -73,7 +73,7 @@ Stanza::~Stanza()
 
 Stanza::Error Stanza::error() const
 {
-	return Stanza::Error::fromStanza(*this);
+    return Stanza::Error::fromStanza(*this);
 }
 
 /**
@@ -81,13 +81,13 @@ Stanza::Error Stanza::error() const
  */
 bool Stanza::hasError() const
 {
-	return !m_doc.documentElement().firstChildElement("error").isNull();
+    return !m_doc.documentElement().firstChildElement("error").isNull();
 }
 
 void Stanza::setError(const Error& error)
 {
-	setType("error");
-	error.pushToDomElement( m_doc.documentElement() );
+    setType("error");
+    error.pushToDomElement( m_doc.documentElement() );
 }
 
 /**
@@ -95,8 +95,8 @@ void Stanza::setError(const Error& error)
  */
 bool Stanza::isValid() const
 {
-	/* TODO: Some stanzas can have no type set.. Some stanzas require other attributes, like IQ requires ID to be set */
-	return !m_doc.documentElement().attribute("type").isEmpty();
+    /* TODO: Some stanzas can have no type set.. Some stanzas require other attributes, like IQ requires ID to be set */
+    return !m_doc.documentElement().attribute("type").isEmpty();
 }
 
 /**
@@ -104,7 +104,7 @@ bool Stanza::isValid() const
  */
 Jid Stanza::to() const
 {
-	return m_doc.documentElement().attribute("to");
+    return m_doc.documentElement().attribute("to");
 }
 
 /**
@@ -112,7 +112,7 @@ Jid Stanza::to() const
  */
 Jid Stanza::from() const
 {
-	return m_doc.documentElement().attribute("from");
+    return m_doc.documentElement().attribute("from");
 }
 
 /**
@@ -120,7 +120,7 @@ Jid Stanza::from() const
  */
 QString Stanza::type() const
 {
-	return m_doc.documentElement().attribute("type");
+    return m_doc.documentElement().attribute("type");
 }
 
 /**
@@ -128,7 +128,7 @@ QString Stanza::type() const
  */
 QString Stanza::id() const
 {
-	return m_doc.documentElement().attribute("id");
+    return m_doc.documentElement().attribute("id");
 }
 
 /**
@@ -136,7 +136,7 @@ QString Stanza::id() const
  */
 void Stanza::setTo(const Jid& toJid)
 {
-	m_doc.documentElement().setAttribute( "to", toJid.full() );
+    m_doc.documentElement().setAttribute( "to", toJid.full() );
 }
 
 /**
@@ -144,7 +144,7 @@ void Stanza::setTo(const Jid& toJid)
  */
 void Stanza::setFrom(const Jid& fromJid)
 {
-	m_doc.documentElement().setAttribute( "from",fromJid.full() );
+    m_doc.documentElement().setAttribute( "from",fromJid.full() );
 }
 
 /**
@@ -152,7 +152,7 @@ void Stanza::setFrom(const Jid& fromJid)
  */
 void Stanza::setType(const QString& type)
 {
-	m_doc.documentElement().setAttribute("type", type);
+    m_doc.documentElement().setAttribute("type", type);
 }
 
 /**
@@ -160,7 +160,7 @@ void Stanza::setType(const QString& type)
  */
 void Stanza::setId(const QString& id)
 {
-	m_doc.documentElement().setAttribute("id", id);
+    m_doc.documentElement().setAttribute("id", id);
 }
 
 /**
@@ -169,18 +169,18 @@ void Stanza::setId(const QString& id)
  */
 void Stanza::swapFromTo()
 {
-	QString from = m_doc.documentElement().attribute("from");
-	QString to   = m_doc.documentElement().attribute("to");
+    QString from = m_doc.documentElement().attribute("from");
+    QString to   = m_doc.documentElement().attribute("to");
 
-	m_doc.documentElement().setAttribute("from", to);
-	m_doc.documentElement().setAttribute("to", from);
+    m_doc.documentElement().setAttribute("from", to);
+    m_doc.documentElement().setAttribute("to", from);
 
-	if ( from.isEmpty() ) {
-		m_doc.documentElement().removeAttribute("to");
-	}
-	if ( to.isEmpty() ) {
-		m_doc.documentElement().removeAttribute("from");
-	}
+    if ( from.isEmpty() ) {
+        m_doc.documentElement().removeAttribute("to");
+    }
+    if ( to.isEmpty() ) {
+        m_doc.documentElement().removeAttribute("from");
+    }
 }
 
 /**
@@ -189,7 +189,7 @@ void Stanza::swapFromTo()
  */
 QString Stanza::toString() const
 {
-	return m_doc.toString();
+    return m_doc.toString();
 }
 
 /**
@@ -197,7 +197,7 @@ QString Stanza::toString() const
  */
 QDomDocument* Stanza::doc()
 {
-	return &m_doc;
+    return &m_doc;
 }
 
 /**
@@ -207,27 +207,27 @@ QDomDocument* Stanza::doc()
  */
 QDomDocument* Stanza::doc() const
 {
-	return const_cast<QDomDocument*>(&m_doc);
+    return const_cast<QDomDocument*>(&m_doc);
 }
 
 /**
  * Sets internal stanza element called @a name to @a value
  *
- * @param name		tag name
- * @param value		tag value
+ * @param name      tag name
+ * @param value     tag value
  */
 void Stanza::setProperty(const QString& name, const QString& value)
 {
-	QDomElement element;
-	if ( !m_doc.documentElement().elementsByTagName(name).isEmpty() ) {
-		element = m_doc.documentElement().elementsByTagName(name).item(0).toElement();
-		m_doc.documentElement().removeChild(element);
-	}
-	element = m_doc.createElement(name);
-	m_doc.documentElement().appendChild(element);
+    QDomElement element;
+    if ( !m_doc.documentElement().elementsByTagName(name).isEmpty() ) {
+        element = m_doc.documentElement().elementsByTagName(name).item(0).toElement();
+        m_doc.documentElement().removeChild(element);
+    }
+    element = m_doc.createElement(name);
+    m_doc.documentElement().appendChild(element);
 
-	QDomText text = m_doc.createTextNode(value);
-	element.appendChild(text);
+    QDomText text = m_doc.createTextNode(value);
+    element.appendChild(text);
 }
 
 /**
@@ -235,7 +235,7 @@ void Stanza::setProperty(const QString& name, const QString& value)
  */
 QString Stanza::nick() const
 {
-	return m_doc.documentElement().firstChildElement("nick").text();
+    return m_doc.documentElement().firstChildElement("nick").text();
 }
 
 /**
@@ -243,19 +243,19 @@ QString Stanza::nick() const
  */
 void Stanza::setNick(const QString& nick)
 {
-	if ( nick.isEmpty() ) {
-		return;
-	}
+    if ( nick.isEmpty() ) {
+        return;
+    }
 
-	m_doc.documentElement().removeChild( m_doc.documentElement().firstChildElement("nick") );
-	QDomElement eNick = m_doc.createElementNS(NS_PROTOCOL_NICK, "nick");
-	QDomText eNickText = m_doc.createTextNode(nick);
+    m_doc.documentElement().removeChild( m_doc.documentElement().firstChildElement("nick") );
+    QDomElement eNick = m_doc.createElementNS(NS_PROTOCOL_NICK, "nick");
+    QDomText eNickText = m_doc.createTextNode(nick);
 
-	m_doc.documentElement().appendChild(eNick);
-	eNick.appendChild(eNickText);
+    m_doc.documentElement().appendChild(eNick);
+    eNick.appendChild(eNickText);
 }
 
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

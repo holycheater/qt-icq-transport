@@ -30,37 +30,37 @@ namespace XMPP {
 
 class Message : public Stanza
 {
-	public:
-		enum Type { Normal, Chat, GroupChat, Headline, Error };
+    public:
+        enum Type { Normal, Chat, GroupChat, Headline, Error };
 
-		Message();
-		Message(const Message& other);
-		Message(const QDomDocument& document);
-		Message(const QDomElement& element);
-		~Message();
+        Message();
+        Message(const Message& other);
+        Message(const QDomDocument& document);
+        Message(const QDomElement& element);
+        ~Message();
 
-		QString body() const;
-		QString subject() const;
-		QString thread() const;
+        QString body() const;
+        QString subject() const;
+        QString thread() const;
 
-		void setBody(const QString& body);
-		void setSubject(const QString& subject);
-		void setThread(const QString& thread);
+        void setBody(const QString& body);
+        void setSubject(const QString& subject);
+        void setThread(const QString& thread);
 
-		/* XEP-0091: jabber:x:delay
-		 * this XEP is deprecated, so the code is temporarily.
-		 */
-		QDateTime timestamp() const;
-		void setTimestamp(const QDateTime& t);
+        /* XEP-0091: jabber:x:delay
+         * this XEP is deprecated, so the code is temporarily.
+         */
+        QDateTime timestamp() const;
+        void setTimestamp(const QDateTime& t);
 
-		using Stanza::setType;
-		void setType(Type type);
-	private:
-		static QString typeToString(Type type);
+        using Stanza::setType;
+        void setType(Type type);
+    private:
+        static QString typeToString(Type type);
 };
 
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_STANZA_MESSAGE_H_ */

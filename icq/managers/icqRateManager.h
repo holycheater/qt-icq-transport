@@ -37,36 +37,36 @@ class Socket;
 
 class RateManager: public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		RateManager(Socket *socket, QObject *parent = 0);
-		~RateManager();
+    public:
+        RateManager(Socket *socket, QObject *parent = 0);
+        ~RateManager();
 
-		/* reset the rate manager */
-		void reset();
+        /* reset the rate manager */
+        void reset();
 
-		/* add new rate class */
-		void addClass(RateClass* rc);
+        /* add new rate class */
+        void addClass(RateClass* rc);
 
-		/* check if we can send the packet right now */
-		bool canSend(const SnacBuffer& snac) const;
+        /* check if we can send the packet right now */
+        bool canSend(const SnacBuffer& snac) const;
 
-		/* enqueue the packet */
-		void enqueue(const SnacBuffer& snac);
+        /* enqueue the packet */
+        void enqueue(const SnacBuffer& snac);
 
-		void requestRates();
-	public slots:
-		/* this slot sends data to socket */
-		void dataAvailable(SnacBuffer* snac);
-	private slots:
-		void incomingSnac(SnacBuffer& snac);
-	private:
-		class Private;
-		Private* d;
+        void requestRates();
+    public slots:
+        /* this slot sends data to socket */
+        void dataAvailable(SnacBuffer* snac);
+    private slots:
+        void incomingSnac(SnacBuffer& snac);
+    private:
+        class Private;
+        Private* d;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /*ICQRATEMANAGER_H_*/

@@ -28,79 +28,79 @@
 class QDateTime;
 
 namespace XMPP {
-	class Jid;
-	class Registration;
-	class vCard;
+    class Jid;
+    class Registration;
+    class vCard;
 }
 
 class JabberConnection : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	/* typedefs for slots */
-	typedef XMPP::IQ IQ;
-	typedef XMPP::Message Message;
-	typedef XMPP::Presence Presence;
-	typedef XMPP::ComponentStream ComponentStream;
-	typedef XMPP::Registration Registration;
-	typedef XMPP::Jid Jid;
-	typedef XMPP::vCard vCard;
+    /* typedefs for slots */
+    typedef XMPP::IQ IQ;
+    typedef XMPP::Message Message;
+    typedef XMPP::Presence Presence;
+    typedef XMPP::ComponentStream ComponentStream;
+    typedef XMPP::Registration Registration;
+    typedef XMPP::Jid Jid;
+    typedef XMPP::vCard vCard;
 
-	public:
-		JabberConnection(QObject *parent = 0);
-		~JabberConnection();
+    public:
+        JabberConnection(QObject *parent = 0);
+        ~JabberConnection();
 
-		void login();
+        void login();
 
-		void setUsername(const QString& username);
-		void setServer(const QString& host, quint16 port);
-		void setPassword(const QString& password);
-	public slots:
-		void sendSubscribe(const Jid& toUser, const QString& fromUin);
-		void sendSubscribed(const Jid& toUser, const QString& fromUin, const QString& nick);
-		void sendUnsubscribe(const Jid& toUser, const QString& fromUin);
-		void sendUnsubscribed(const Jid& toUser, const QString& fromUin);
+        void setUsername(const QString& username);
+        void setServer(const QString& host, quint16 port);
+        void setPassword(const QString& password);
+    public slots:
+        void sendSubscribe(const Jid& toUser, const QString& fromUin);
+        void sendSubscribed(const Jid& toUser, const QString& fromUin, const QString& nick);
+        void sendUnsubscribe(const Jid& toUser, const QString& fromUin);
+        void sendUnsubscribed(const Jid& toUser, const QString& fromUin);
 
-		void sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus, const QString& nick);
-		void sendOfflinePresence(const Jid& toUser, const QString& fromUin);
+        void sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus, const QString& nick);
+        void sendOfflinePresence(const Jid& toUser, const QString& fromUin);
 
-		void sendOnlinePresence(const Jid& recipient, int showStatus);
-		void sendOfflinePresence(const Jid& recipient);
-		void sendPresenceProbe(const Jid& user);
+        void sendOnlinePresence(const Jid& recipient, int showStatus);
+        void sendOfflinePresence(const Jid& recipient);
+        void sendPresenceProbe(const Jid& user);
 
-		void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick, const QDateTime& timestamp);
-		void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick);
-		void sendMessage(const Jid& recipient, const QString& message);
+        void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick, const QDateTime& timestamp);
+        void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick);
+        void sendMessage(const Jid& recipient, const QString& message);
 
-		void sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard);
-	signals:
-		void userUnregistered(const QString& jid);
-		void userRegistered(const QString& jid, const QString& uin, const QString& password);
-		void userOnline(const Jid& jid, int showStatus, bool first_login);
-		void userOffline(const Jid& jid);
-		void userOnlineStatusRequest(const Jid& jid);
-		void userAdd(const Jid& jid, const QString& uin);
-		void userDel(const Jid& jid, const QString& uin);
-		void userAuthGrant(const Jid& jid, const QString& uin);
-		void userAuthDeny(const Jid& jid, const QString& uin);
+        void sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard);
+    signals:
+        void userUnregistered(const QString& jid);
+        void userRegistered(const QString& jid, const QString& uin, const QString& password);
+        void userOnline(const Jid& jid, int showStatus, bool first_login);
+        void userOffline(const Jid& jid);
+        void userOnlineStatusRequest(const Jid& jid);
+        void userAdd(const Jid& jid, const QString& uin);
+        void userDel(const Jid& jid, const QString& uin);
+        void userAuthGrant(const Jid& jid, const QString& uin);
+        void userAuthDeny(const Jid& jid, const QString& uin);
 
-		void vCardRequest(const Jid& jid, const QString& uin, const QString& requestID);
+        void vCardRequest(const Jid& jid, const QString& uin, const QString& requestID);
 
-		void outgoingMessage(const Jid& fromUser, const QString& toUin, const QString& message);
+        void outgoingMessage(const Jid& fromUser, const QString& toUin, const QString& message);
 
-		void connected();
+        void connected();
 
-		void cmd_RosterRequest(const Jid& user);
-	private slots:
-		void stream_error(ComponentStream::ErrorType);
-		void stream_connected();
-		void stream_iq(const IQ&);
-		void stream_message(const Message&);
-		void stream_presence(const Presence&);
-	private:
-		class Private;
-		Private *d;
+        void cmd_RosterRequest(const Jid& user);
+    private slots:
+        void stream_error(ComponentStream::ErrorType);
+        void stream_connected();
+        void stream_iq(const IQ&);
+        void stream_message(const Message&);
+        void stream_presence(const Presence&);
+    private:
+        class Private;
+        Private *d;
 };
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap
 #endif /* JABBERCONNECTION_H_ */

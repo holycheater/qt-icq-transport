@@ -30,32 +30,32 @@ namespace ICQ {
 
 class Guid
 {
-	public:
-		Guid();
+    public:
+        Guid();
 
-		static Guid fromRawData(const char* raw);
-		static Guid fromRawData(const QByteArray& raw);
-		static Guid fromString(const QString& guidstr);
+        static Guid fromRawData(const char* raw);
+        static Guid fromRawData(const QByteArray& raw);
+        static Guid fromString(const QString& guidstr);
 
-		QByteArray data() const;
+        QByteArray data() const;
 
-		bool isEqual(const Guid& rhs, int n = 16) const;
-		bool isValid() const;
-		bool isZero() const;
+        bool isEqual(const Guid& rhs, int n = 16) const;
+        bool isValid() const;
+        bool isZero() const;
 
-		void setData(const QByteArray& data);
+        void setData(const QByteArray& data);
 
-		QString toString() const;
+        QString toString() const;
 
-		Guid& operator=(const QByteArray& data);
-		bool operator==(const Guid& rhs) const;
-		operator QByteArray() const;
-	private:
-		void initData(const QString& data);
-		QByteArray m_data;
+        Guid& operator=(const QByteArray& data);
+        bool operator==(const Guid& rhs) const;
+        operator QByteArray() const;
+    private:
+        void initData(const QString& data);
+        QByteArray m_data;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /*ICQGUID_H_*/

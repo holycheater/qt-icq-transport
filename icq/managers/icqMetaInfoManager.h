@@ -35,28 +35,28 @@ class Socket;
 
 class MetaInfoManager : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		MetaInfoManager(Socket *socket, QObject *parent = 0);
-		~MetaInfoManager();
+    public:
+        MetaInfoManager(Socket *socket, QObject *parent = 0);
+        ~MetaInfoManager();
 
-		void setUin(const QString uin);
+        void setUin(const QString uin);
 
-		void sendMetaRequest(Word type);
-		void sendMetaRequest(Word type, Buffer& metadata);
-	signals:
-		void metaInfoAvailable(Word type, Buffer& data);
-	private:
-		void handle_meta_info(SnacBuffer& snac);
-	private slots:
-		void incomingSnac(SnacBuffer& snac);
-	private:
-		class Private;
-		Private *d;
+        void sendMetaRequest(Word type);
+        void sendMetaRequest(Word type, Buffer& metadata);
+    signals:
+        void metaInfoAvailable(Word type, Buffer& data);
+    private:
+        void handle_meta_info(SnacBuffer& snac);
+    private slots:
+        void incomingSnac(SnacBuffer& snac);
+    private:
+        class Private;
+        Private *d;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQMETAINFOMANAGER_H_ */

@@ -34,39 +34,39 @@ namespace XMPP
 
 class DataForm::Private : public QSharedData
 {
-	public:
-		Private();
-		Private(const Private& other);
-		~Private();
+    public:
+        Private();
+        Private(const Private& other);
+        ~Private();
 
-		static QString typeToString(Type type);
-		static Type stringToType(const QString& type);
+        static QString typeToString(Type type);
+        static Type stringToType(const QString& type);
 
-		QString title, instructions;
-		Type type;
+        QString title, instructions;
+        Type type;
 
-		QList<Field> fields;
-		QList<Field> reported;
-		QList<Item> items;
+        QList<Field> fields;
+        QList<Field> reported;
+        QList<Item> items;
 };
 
 DataForm::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
-	type = Form;
+    type = Form;
 }
 
 DataForm::Private::Private(const Private& other)
-	: QSharedData(other)
+    : QSharedData(other)
 {
-	title = other.title;
-	instructions = other.instructions;
+    title = other.title;
+    instructions = other.instructions;
 
-	type = other.type;
+    type = other.type;
 
-	fields = other.fields;
-	items = other.items;
-	reported = other.reported;
+    fields = other.fields;
+    items = other.items;
+    reported = other.reported;
 }
 
 DataForm::Private::~Private()
@@ -75,43 +75,43 @@ DataForm::Private::~Private()
 
 QString DataForm::Private::typeToString(Type type)
 {
-	switch ( type ) {
-		case Form:
-			return "form";
-		case Submit:
-			return "submit";
-		case Cancel:
-			return "cancel";
-		case Result:
-			return "result";
-		case Invalid:
-		default:
-			return QString();
-	}
+    switch ( type ) {
+        case Form:
+            return "form";
+        case Submit:
+            return "submit";
+        case Cancel:
+            return "cancel";
+        case Result:
+            return "result";
+        case Invalid:
+        default:
+            return QString();
+    }
 }
 
 DataForm::Type DataForm::Private::stringToType(const QString& type)
 {
-	if ( type == "form" ) {
-		return Form;
-	}
-	if ( type == "submit" ) {
-		return Submit;
-	}
-	if ( type == "cancel" ) {
-		return Cancel;
-	}
-	if ( type == "result" ) {
-		return Result;
-	}
-	return Invalid;
+    if ( type == "form" ) {
+        return Form;
+    }
+    if ( type == "submit" ) {
+        return Submit;
+    }
+    if ( type == "cancel" ) {
+        return Cancel;
+    }
+    if ( type == "result" ) {
+        return Result;
+    }
+    return Invalid;
 }
 
 /**
  * Constructs and empty DataForm object.
  */
 DataForm::DataForm()
-	: d(new Private)
+    : d(new Private)
 {
 }
 
@@ -119,7 +119,7 @@ DataForm::DataForm()
  * Makes a deep copy of @a other.
  */
 DataForm::DataForm(const DataForm& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
@@ -135,24 +135,24 @@ DataForm::~DataForm()
  */
 DataForm& DataForm::operator=(const DataForm& other)
 {
-	d = other.d;
-	return *this;
+    d = other.d;
+    return *this;
 }
 
 bool DataForm::isEmpty() const
 {
-	if ( d->fields.isEmpty() && d->items.isEmpty() && d->reported.isEmpty() && d->instructions.isEmpty() && d->title.isEmpty() ) {
-		return true;
-	}
-	return false;
+    if ( d->fields.isEmpty() && d->items.isEmpty() && d->reported.isEmpty() && d->instructions.isEmpty() && d->title.isEmpty() ) {
+        return true;
+    }
+    return false;
 }
 
 bool DataForm::isValid() const
 {
-	if ( isEmpty() || d->type == Invalid ) {
-		return false;
-	}
-	return true;
+    if ( isEmpty() || d->type == Invalid ) {
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -160,54 +160,54 @@ bool DataForm::isValid() const
  */
 DataForm DataForm::fromDomElement(const QDomElement& form)
 {
-	if ( form.namespaceURI() != NS_DATA_FORMS ) {
-		qWarning("Form is not jabber:x:data");
-	}
+    if ( form.namespaceURI() != NS_DATA_FORMS ) {
+        qWarning("Form is not jabber:x:data");
+    }
 
-	DataForm dataForm;
+    DataForm dataForm;
 
-	dataForm.d->type = Private::stringToType( form.attribute("type") );
+    dataForm.d->type = Private::stringToType( form.attribute("type") );
 
-	QDomNodeList childs = form.childNodes();
-	for (int i = 0; i < childs.count(); ++i) {
-		QDomNode node = childs.item(i);
+    QDomNodeList childs = form.childNodes();
+    for (int i = 0; i < childs.count(); ++i) {
+        QDomNode node = childs.item(i);
 
-		if ( !node.isElement() ) {
-			continue;
-		}
+        if ( !node.isElement() ) {
+            continue;
+        }
 
-		if ( node.nodeName() == "field" ) {
-			dataForm.d->fields << Field::fromDomElement( node.toElement() );
-			continue;
-		}
-		if ( node.nodeName() == "item" ) {
-			dataForm.d->items << Item::fromDomElement( node.toElement() );
-			continue;
-		}
-		if ( node.nodeName() == "reported" ) {
-			QDomNodeList reportedFields = node.childNodes();
-			for (int j = 0; j < reportedFields.count(); ++j) {
-				QDomNode rnode = reportedFields.item(j);
-				if ( rnode.nodeName() != "field" ) {
-					qWarning( "Ignoring unknown field in <reported>: %s", qPrintable( rnode.nodeName() ) );
-					continue;
-				}
-				dataForm.d->reported << Field::fromDomElement( rnode.toElement() );
-			}
-			continue;
-		}
-		if ( node.nodeName() == "title" ) {
-			dataForm.d->title = node.toElement().text();
-			continue;
-		}
-		if ( node.nodeName() == "instructions" ) {
-			dataForm.d->instructions = node.toElement().text();
-			continue;
-		}
-		qWarning( "unknown element: %s", qPrintable( node.nodeName() ) );
-	}
+        if ( node.nodeName() == "field" ) {
+            dataForm.d->fields << Field::fromDomElement( node.toElement() );
+            continue;
+        }
+        if ( node.nodeName() == "item" ) {
+            dataForm.d->items << Item::fromDomElement( node.toElement() );
+            continue;
+        }
+        if ( node.nodeName() == "reported" ) {
+            QDomNodeList reportedFields = node.childNodes();
+            for (int j = 0; j < reportedFields.count(); ++j) {
+                QDomNode rnode = reportedFields.item(j);
+                if ( rnode.nodeName() != "field" ) {
+                    qWarning( "Ignoring unknown field in <reported>: %s", qPrintable( rnode.nodeName() ) );
+                    continue;
+                }
+                dataForm.d->reported << Field::fromDomElement( rnode.toElement() );
+            }
+            continue;
+        }
+        if ( node.nodeName() == "title" ) {
+            dataForm.d->title = node.toElement().text();
+            continue;
+        }
+        if ( node.nodeName() == "instructions" ) {
+            dataForm.d->instructions = node.toElement().text();
+            continue;
+        }
+        qWarning( "unknown element: %s", qPrintable( node.nodeName() ) );
+    }
 
-	return dataForm;
+    return dataForm;
 }
 
 /**
@@ -215,52 +215,52 @@ DataForm DataForm::fromDomElement(const QDomElement& form)
  */
 void DataForm::toDomElement(QDomElement& element) const
 {
-	QDomDocument doc = element.ownerDocument();
+    QDomDocument doc = element.ownerDocument();
 
-	QDomElement eForm = doc.createElementNS(NS_DATA_FORMS, "x");
-	element.appendChild(eForm);
+    QDomElement eForm = doc.createElementNS(NS_DATA_FORMS, "x");
+    element.appendChild(eForm);
 
-	eForm.setAttribute("type", Private::typeToString(d->type) );
+    eForm.setAttribute("type", Private::typeToString(d->type) );
 
-	if ( !d->title.isEmpty() ) {
-		QDomElement eTitle = doc.createElement("title");
-		QDomText eTitleText = doc.createTextNode(d->title);
+    if ( !d->title.isEmpty() ) {
+        QDomElement eTitle = doc.createElement("title");
+        QDomText eTitleText = doc.createTextNode(d->title);
 
-		eForm.appendChild(eTitle);
-		eTitle.appendChild(eTitleText);
-	}
+        eForm.appendChild(eTitle);
+        eTitle.appendChild(eTitleText);
+    }
 
-	if ( !d->instructions.isEmpty() ) {
-		QDomElement eInstructions = doc.createElement("instructions");
-		QDomText eInstructionsText = doc.createTextNode(d->instructions);
+    if ( !d->instructions.isEmpty() ) {
+        QDomElement eInstructions = doc.createElement("instructions");
+        QDomText eInstructionsText = doc.createTextNode(d->instructions);
 
-		eForm.appendChild(eInstructions);
-		eInstructions.appendChild(eInstructionsText);
-	}
+        eForm.appendChild(eInstructions);
+        eInstructions.appendChild(eInstructionsText);
+    }
 
-	if ( !d->reported.isEmpty() ) {
-		QDomElement eReported = doc.createElement("reported");
-		eForm.appendChild(eReported);
+    if ( !d->reported.isEmpty() ) {
+        QDomElement eReported = doc.createElement("reported");
+        eForm.appendChild(eReported);
 
-		QListIterator<Field> ri(d->reported);
-		while ( ri.hasNext() ) {
-			ri.next().toDomElement(eReported);
-		}
-	}
+        QListIterator<Field> ri(d->reported);
+        while ( ri.hasNext() ) {
+            ri.next().toDomElement(eReported);
+        }
+    }
 
-	if ( !d->items.isEmpty() ) {
-		QListIterator<Item> ii(d->items);
-		while ( ii.hasNext() ) {
-			ii.next().toDomElement(eForm);
-		}
-	}
+    if ( !d->items.isEmpty() ) {
+        QListIterator<Item> ii(d->items);
+        while ( ii.hasNext() ) {
+            ii.next().toDomElement(eForm);
+        }
+    }
 
-	if ( !d->fields.isEmpty() ) {
-		QListIterator<Field> fi(d->fields);
-		while ( fi.hasNext() ) {
-			fi.next().toDomElement(eForm);
-		}
-	}
+    if ( !d->fields.isEmpty() ) {
+        QListIterator<Field> fi(d->fields);
+        while ( fi.hasNext() ) {
+            fi.next().toDomElement(eForm);
+        }
+    }
 }
 
 /**
@@ -268,7 +268,7 @@ void DataForm::toDomElement(QDomElement& element) const
  */
 void DataForm::addField(const Field& field)
 {
-	d->fields << field;
+    d->fields << field;
 }
 
 /**
@@ -276,7 +276,7 @@ void DataForm::addField(const Field& field)
  */
 void DataForm::addItem(const Item& item)
 {
-	d->items << item;
+    d->items << item;
 }
 
 /**
@@ -284,8 +284,8 @@ void DataForm::addItem(const Item& item)
  */
 DataForm& DataForm::operator<<(const Field& field)
 {
-	d->fields << field;
-	return *this;
+    d->fields << field;
+    return *this;
 }
 
 /**
@@ -293,8 +293,8 @@ DataForm& DataForm::operator<<(const Field& field)
  */
 DataForm& DataForm::operator<<(const Item& item)
 {
-	d->items << item;
-	return *this;
+    d->items << item;
+    return *this;
 }
 
 /**
@@ -302,7 +302,7 @@ DataForm& DataForm::operator<<(const Item& item)
  */
 void DataForm::addReportedField(const Field& field)
 {
-	d->reported << field;
+    d->reported << field;
 }
 
 /**
@@ -310,7 +310,7 @@ void DataForm::addReportedField(const Field& field)
  */
 QList<DataForm::Field> DataForm::fields() const
 {
-	return d->fields;
+    return d->fields;
 }
 
 /**
@@ -318,7 +318,7 @@ QList<DataForm::Field> DataForm::fields() const
  */
 QList<DataForm::Item> DataForm::items() const
 {
-	return d->items;
+    return d->items;
 }
 
 /**
@@ -326,7 +326,7 @@ QList<DataForm::Item> DataForm::items() const
  */
 QList<DataForm::Field> DataForm::reportedFields() const
 {
-	return d->reported;
+    return d->reported;
 }
 
 /**
@@ -334,7 +334,7 @@ QList<DataForm::Field> DataForm::reportedFields() const
  */
 void DataForm::setReportedFields(const QList<Field>& reported)
 {
-	d->reported = reported;
+    d->reported = reported;
 }
 
 /**
@@ -343,8 +343,8 @@ void DataForm::setReportedFields(const QList<Field>& reported)
  */
 void DataForm::setReportedFields(const Field& field)
 {
-	d->reported.clear();
-	d->reported << field;
+    d->reported.clear();
+    d->reported << field;
 }
 
 /**
@@ -352,7 +352,7 @@ void DataForm::setReportedFields(const Field& field)
  */
 DataForm::Type DataForm::type() const
 {
-	return d->type;
+    return d->type;
 }
 
 /**
@@ -360,7 +360,7 @@ DataForm::Type DataForm::type() const
  */
 QString DataForm::title() const
 {
-	return d->title;
+    return d->title;
 }
 
 /**
@@ -368,7 +368,7 @@ QString DataForm::title() const
  */
 QString DataForm::instructions() const
 {
-	return d->instructions;
+    return d->instructions;
 }
 
 /**
@@ -376,7 +376,7 @@ QString DataForm::instructions() const
  */
 void DataForm::setType(Type type)
 {
-	d->type = type;
+    d->type = type;
 }
 
 /**
@@ -384,7 +384,7 @@ void DataForm::setType(Type type)
  */
 void DataForm::setTitle(const QString& title)
 {
-	d->title = title;
+    d->title = title;
 }
 
 /**
@@ -392,19 +392,19 @@ void DataForm::setTitle(const QString& title)
  */
 void DataForm::setInstructions(const QString& instructions)
 {
-	d->instructions = instructions;
+    d->instructions = instructions;
 }
 
 DataForm::Field DataForm::fieldByName(const QString& name)
 {
-	QListIterator<Field> fi(d->fields);
-	while ( fi.hasNext() ) {
-		if ( fi.peekNext().name() == name ) {
-			return fi.peekNext();
-		}
-		fi.next();
-	}
-	return Field();
+    QListIterator<Field> fi(d->fields);
+    while ( fi.hasNext() ) {
+        if ( fi.peekNext().name() == name ) {
+            return fi.peekNext();
+        }
+        fi.next();
+    }
+    return Field();
 }
 
 /**
@@ -439,43 +439,43 @@ DataForm::Field DataForm::fieldByName(const QString& name)
 
 class DataForm::Field::Private : public QSharedData
 {
-	public:
-		Private();
-		Private(const Private& other);
-		virtual ~Private();
+    public:
+        Private();
+        Private(const Private& other);
+        virtual ~Private();
 
-		static QString typeToString(FieldType type);
-		static FieldType stringToType(const QString& type);
+        static QString typeToString(FieldType type);
+        static FieldType stringToType(const QString& type);
 
-		bool required;
-		FieldType type;
+        bool required;
+        FieldType type;
 
-		QString label, name;
-		QString desc;
+        QString label, name;
+        QString desc;
 
-		QStringList values;
-		/* label-value options hash */
-		QHash<QString,QString> options;
+        QStringList values;
+        /* label-value options hash */
+        QHash<QString,QString> options;
 };
 
 DataForm::Field::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
-	required = false;
-	type = TextSingle;
+    required = false;
+    type = TextSingle;
 }
 
 DataForm::Field::Private::Private(const Private& other)
-	: QSharedData(other)
+    : QSharedData(other)
 {
-	required = other.required;
-	type = other.type;
+    required = other.required;
+    type = other.type;
 
-	label = other.label;
-	name = other.name;
-	desc = other.desc;
+    label = other.label;
+    name = other.name;
+    desc = other.desc;
 
-	values = other.values;
+    values = other.values;
 }
 
 DataForm::Field::Private::~Private()
@@ -484,73 +484,73 @@ DataForm::Field::Private::~Private()
 
 QString DataForm::Field::Private::typeToString(FieldType type)
 {
-	switch ( type ) {
-		case Boolean:
-			return "boolean";
-		case Fixed:
-			return "fixed";
-		case Hidden:
-			return "hidden";
-		case JidMulti:
-			return "jid-multi";
-		case JidSingle:
-			return "jid-single";
-		case ListMulti:
-			return "list-multi";
-		case ListSingle:
-			return "list-single";
-		case TextMulti:
-			return "text-multi";
-		case TextPrivate:
-			return "text-private";
-		case TextSingle:
-			return "text-single";
-		case Invalid:
-		default:
-			return QString();
-	}
+    switch ( type ) {
+        case Boolean:
+            return "boolean";
+        case Fixed:
+            return "fixed";
+        case Hidden:
+            return "hidden";
+        case JidMulti:
+            return "jid-multi";
+        case JidSingle:
+            return "jid-single";
+        case ListMulti:
+            return "list-multi";
+        case ListSingle:
+            return "list-single";
+        case TextMulti:
+            return "text-multi";
+        case TextPrivate:
+            return "text-private";
+        case TextSingle:
+            return "text-single";
+        case Invalid:
+        default:
+            return QString();
+    }
 }
 
 DataForm::Field::FieldType DataForm::Field::Private::stringToType(const QString& type)
 {
-	if ( type == "boolean" ) {
-		return Boolean;
-	}
-	if ( type == "fixed" ) {
-		return Fixed;
-	}
-	if ( type == "hidden" ) {
-		return Hidden;
-	}
-	if ( type == "jid-multi" ) {
-		return JidMulti;
-	}
-	if ( type == "jid-single" ) {
-		return JidSingle;
-	}
-	if ( type == "list-multi" ) {
-		return ListMulti;
-	}
-	if ( type == "list-single" ) {
-		return ListSingle;
-	}
-	if ( type == "text-multi" ) {
-		return TextMulti;
-	}
-	if ( type == "text-private" ) {
-		return TextPrivate;
-	}
-	if ( type == "text-single" ) {
-		return TextSingle;
-	}
-	return Invalid;
+    if ( type == "boolean" ) {
+        return Boolean;
+    }
+    if ( type == "fixed" ) {
+        return Fixed;
+    }
+    if ( type == "hidden" ) {
+        return Hidden;
+    }
+    if ( type == "jid-multi" ) {
+        return JidMulti;
+    }
+    if ( type == "jid-single" ) {
+        return JidSingle;
+    }
+    if ( type == "list-multi" ) {
+        return ListMulti;
+    }
+    if ( type == "list-single" ) {
+        return ListSingle;
+    }
+    if ( type == "text-multi" ) {
+        return TextMulti;
+    }
+    if ( type == "text-private" ) {
+        return TextPrivate;
+    }
+    if ( type == "text-single" ) {
+        return TextSingle;
+    }
+    return Invalid;
 }
 
 /**
  * Constructs data-form field object.
  */
 DataForm::Field::Field()
-	: d(new Private)
+    : d(new Private)
 {
 }
 
@@ -558,7 +558,7 @@ DataForm::Field::Field()
  * Constructs a deep copy of @a other.
  */
 DataForm::Field::Field(const Field& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
@@ -566,21 +566,21 @@ DataForm::Field::Field(const Field& other)
  * Constructs data-form field object with given @a type and @a name.
  */
 DataForm::Field::Field(const QString& name, FieldType type)
-	: d(new Private)
+    : d(new Private)
 {
-	d->type = type;
-	d->name = name;
+    d->type = type;
+    d->name = name;
 }
 
 /**
  * Constructs data-form field object with given @a type, @a name and @a label.
  */
 DataForm::Field::Field(const QString& name, const QString& label, FieldType type)
-	: d(new Private)
+    : d(new Private)
 {
-	d->type = type;
-	d->name = name;
-	d->label = label;
+    d->type = type;
+    d->name = name;
+    d->label = label;
 }
 
 /**
@@ -595,13 +595,13 @@ DataForm::Field::~Field()
  */
 DataForm::Field DataForm::Field::fromNameValue(const QString& name, const QString& value, FieldType type)
 {
-	Field fld;
+    Field fld;
 
-	fld.d->name = name;
-	fld.addValue(value);
-	fld.d->type = type;
+    fld.d->name = name;
+    fld.addValue(value);
+    fld.d->type = type;
 
-	return fld;
+    return fld;
 }
 
 /**
@@ -609,14 +609,14 @@ DataForm::Field DataForm::Field::fromNameValue(const QString& name, const QStrin
  */
 DataForm::Field DataForm::Field::fromNameLabelValue(const QString& name, const QString& label, const QString& value, FieldType type)
 {
-	Field fld;
+    Field fld;
 
-	fld.d->name = name;
-	fld.d->label = label;
-	fld.addValue(value);
-	fld.d->type = type;
+    fld.d->name = name;
+    fld.d->label = label;
+    fld.addValue(value);
+    fld.d->type = type;
 
-	return fld;
+    return fld;
 }
 
 /**
@@ -624,37 +624,37 @@ DataForm::Field DataForm::Field::fromNameLabelValue(const QString& name, const Q
  */
 DataForm::Field DataForm::Field::fromDomElement(const QDomElement& field)
 {
-	Field fld;
+    Field fld;
 
-	fld.d->type = Private::stringToType( field.attribute("type", "text-single") );
-	fld.d->name = field.attribute("var");
-	fld.d->label = field.attribute("label");
+    fld.d->type = Private::stringToType( field.attribute("type", "text-single") );
+    fld.d->name = field.attribute("var");
+    fld.d->label = field.attribute("label");
 
-	QDomNodeList options = field.elementsByTagName("option");
-	for (uint i = 0; i < options.length(); ++i) {
-		QDomElement eOption = options.item(i).toElement();
-		QString option = eOption.attribute("label");
-		QString value = eOption.firstChildElement("value").text().trimmed();
+    QDomNodeList options = field.elementsByTagName("option");
+    for (uint i = 0; i < options.length(); ++i) {
+        QDomElement eOption = options.item(i).toElement();
+        QString option = eOption.attribute("label");
+        QString value = eOption.firstChildElement("value").text().trimmed();
 
-		fld.d->options.insert(option, value);
-	}
+        fld.d->options.insert(option, value);
+    }
 
-	QDomNodeList values = field.elementsByTagName("value");
+    QDomNodeList values = field.elementsByTagName("value");
 
-	for (uint i = 0; i < values.length(); ++i) {
-		fld.d->values << values.item(i).toElement().text().trimmed();
-	}
+    for (uint i = 0; i < values.length(); ++i) {
+        fld.d->values << values.item(i).toElement().text().trimmed();
+    }
 
-	QDomElement eDesc = field.firstChildElement("desc");
-	if ( !eDesc.isNull() ) {
-		fld.d->desc = eDesc.text().trimmed();
-	}
+    QDomElement eDesc = field.firstChildElement("desc");
+    if ( !eDesc.isNull() ) {
+        fld.d->desc = eDesc.text().trimmed();
+    }
 
-	if ( !field.firstChildElement("required").isNull() ) {
-		fld.d->required = true;
-	}
+    if ( !field.firstChildElement("required").isNull() ) {
+        fld.d->required = true;
+    }
 
-	return fld;
+    return fld;
 }
 
 /**
@@ -662,59 +662,59 @@ DataForm::Field DataForm::Field::fromDomElement(const QDomElement& field)
  */
 void DataForm::Field::toDomElement(QDomElement& element) const
 {
-	QDomDocument doc = element.ownerDocument();
+    QDomDocument doc = element.ownerDocument();
 
-	QDomElement eField = doc.createElement("field");
-	element.appendChild(eField);
+    QDomElement eField = doc.createElement("field");
+    element.appendChild(eField);
 
-	eField.setAttribute("type", Private::typeToString(d->type) );
+    eField.setAttribute("type", Private::typeToString(d->type) );
 
-	if ( !d->name.isEmpty() ) {
-		eField.setAttribute("var", d->name);
-	}
+    if ( !d->name.isEmpty() ) {
+        eField.setAttribute("var", d->name);
+    }
 
-	if ( !d->label.isEmpty() ) {
-		eField.setAttribute("label", d->label);
-	}
+    if ( !d->label.isEmpty() ) {
+        eField.setAttribute("label", d->label);
+    }
 
-	if ( !d->options.isEmpty() ) {
-		QHashIterator<QString, QString> oi(d->options);
-		while ( oi.hasNext() ) {
-			oi.next();
-			QDomElement eOption = doc.createElement("option");
-			eField.appendChild(eOption);
-			eOption.setAttribute( "label", oi.key() );
+    if ( !d->options.isEmpty() ) {
+        QHashIterator<QString, QString> oi(d->options);
+        while ( oi.hasNext() ) {
+            oi.next();
+            QDomElement eOption = doc.createElement("option");
+            eField.appendChild(eOption);
+            eOption.setAttribute( "label", oi.key() );
 
-			QDomElement eValue = doc.createElement("value");
-			eOption.appendChild(eValue);
+            QDomElement eValue = doc.createElement("value");
+            eOption.appendChild(eValue);
 
-			QDomText eValueText = doc.createTextNode( oi.value() );
-			eValue.appendChild(eValueText);
-		}
-	}
+            QDomText eValueText = doc.createTextNode( oi.value() );
+            eValue.appendChild(eValueText);
+        }
+    }
 
-	if ( !d->values.isEmpty() ) {
-		QStringListIterator vi(d->values);
-		while ( vi.hasNext() ) {
-			QDomElement eValue = doc.createElement("value");
-			eField.appendChild(eValue);
+    if ( !d->values.isEmpty() ) {
+        QStringListIterator vi(d->values);
+        while ( vi.hasNext() ) {
+            QDomElement eValue = doc.createElement("value");
+            eField.appendChild(eValue);
 
-			QDomText eValueText = doc.createTextNode( vi.next() );
-			eValue.appendChild(eValueText);
-		}
-	}
+            QDomText eValueText = doc.createTextNode( vi.next() );
+            eValue.appendChild(eValueText);
+        }
+    }
 
-	if ( !d->desc.isEmpty() ) {
-		QDomElement eDesc = doc.createElement("desc");
-		eField.appendChild(eDesc);
+    if ( !d->desc.isEmpty() ) {
+        QDomElement eDesc = doc.createElement("desc");
+        eField.appendChild(eDesc);
 
-		QDomText eDescText = doc.createTextNode(d->desc);
-		eDesc.appendChild(eDescText);
-	}
+        QDomText eDescText = doc.createTextNode(d->desc);
+        eDesc.appendChild(eDescText);
+    }
 
-	if ( d->required ) {
-		eField.appendChild( doc.createElement("required") );
-	}
+    if ( d->required ) {
+        eField.appendChild( doc.createElement("required") );
+    }
 }
 
 /**
@@ -722,7 +722,7 @@ void DataForm::Field::toDomElement(QDomElement& element) const
  */
 void DataForm::Field::addOption(const QString& optionLabel, const QString& value)
 {
-	d->options.insert(optionLabel, value);
+    d->options.insert(optionLabel, value);
 }
 
 /**
@@ -730,12 +730,12 @@ void DataForm::Field::addOption(const QString& optionLabel, const QString& value
  */
 void DataForm::Field::addValue(const QString& value)
 {
-	d->values << value;
+    d->values << value;
 }
 
 QStringList DataForm::Field::values() const
 {
-	return d->values;
+    return d->values;
 }
 
 /**
@@ -743,7 +743,7 @@ QStringList DataForm::Field::values() const
  */
 DataForm::Field::FieldType DataForm::Field::type() const
 {
-	return d->type;
+    return d->type;
 }
 
 /**
@@ -751,7 +751,7 @@ DataForm::Field::FieldType DataForm::Field::type() const
  */
 void DataForm::Field::setType(FieldType type)
 {
-	d->type = type;
+    d->type = type;
 }
 
 /**
@@ -759,7 +759,7 @@ void DataForm::Field::setType(FieldType type)
  */
 bool DataForm::Field::isRequred() const
 {
-	return d->required;
+    return d->required;
 }
 
 /**
@@ -767,7 +767,7 @@ bool DataForm::Field::isRequred() const
  */
 void DataForm::Field::setRequired(bool required)
 {
-	d->required = required;
+    d->required = required;
 }
 
 /**
@@ -775,7 +775,7 @@ void DataForm::Field::setRequired(bool required)
  */
 QString DataForm::Field::label() const
 {
-	return d->label;
+    return d->label;
 }
 
 /**
@@ -783,7 +783,7 @@ QString DataForm::Field::label() const
  */
 void DataForm::Field::setLabel(const QString& label)
 {
-	d->label = label;
+    d->label = label;
 }
 
 /**
@@ -791,7 +791,7 @@ void DataForm::Field::setLabel(const QString& label)
  */
 QString DataForm::Field::name() const
 {
-	return d->name;
+    return d->name;
 }
 
 /**
@@ -799,7 +799,7 @@ QString DataForm::Field::name() const
  */
 void DataForm::Field::setName(const QString& name)
 {
-	d->name = name;
+    d->name = name;
 }
 
 /**
@@ -807,7 +807,7 @@ void DataForm::Field::setName(const QString& name)
  */
 QString DataForm::Field::desc() const
 {
-	return d->desc;
+    return d->desc;
 }
 
 /**
@@ -815,7 +815,7 @@ QString DataForm::Field::desc() const
  */
 void DataForm::Field::setDesc(const QString& desc)
 {
-	d->desc = desc;
+    d->desc = desc;
 }
 
 /**
@@ -888,23 +888,23 @@ void DataForm::Field::setDesc(const QString& desc)
 
 class DataForm::Item::Private : public QSharedData
 {
-	public:
-		Private();
-		Private(const Private& other);
-		virtual ~Private();
+    public:
+        Private();
+        Private(const Private& other);
+        virtual ~Private();
 
-		QList<Field> fields;
+        QList<Field> fields;
 };
 
 DataForm::Item::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
 }
 
 DataForm::Item::Private::Private(const Private& other)
-	: QSharedData(other)
+    : QSharedData(other)
 {
-	fields = other.fields;
+    fields = other.fields;
 }
 
 DataForm::Item::Private::~Private()
@@ -915,7 +915,7 @@ DataForm::Item::Private::~Private()
  * Constructs data-form item object.
  */
 DataForm::Item::Item()
-	: d(new Private)
+    : d(new Private)
 {
 }
 
@@ -923,7 +923,7 @@ DataForm::Item::Item()
  * Constructs a deep copy of @a other.
  */
 DataForm::Item::Item(const Item& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
@@ -939,19 +939,19 @@ DataForm::Item::~Item()
  */
 DataForm::Item DataForm::Item::fromDomElement(const QDomElement& item)
 {
-	Item dfItem;
+    Item dfItem;
 
-	QDomNodeList childs = item.childNodes();
-	for (int i = 0; i < childs.size(); ++i) {
-		QDomElement eField = childs.item(i).toElement();
-		if ( eField.tagName() != "field" ) {
-			qWarning( "DataForm::Item: item contains unknown tag called '%s'", qPrintable( eField.tagName() ) );
-			continue;
-		}
-		dfItem.d->fields << Field::fromDomElement(eField);
-	}
+    QDomNodeList childs = item.childNodes();
+    for (int i = 0; i < childs.size(); ++i) {
+        QDomElement eField = childs.item(i).toElement();
+        if ( eField.tagName() != "field" ) {
+            qWarning( "DataForm::Item: item contains unknown tag called '%s'", qPrintable( eField.tagName() ) );
+            continue;
+        }
+        dfItem.d->fields << Field::fromDomElement(eField);
+    }
 
-	return dfItem;
+    return dfItem;
 }
 
 /**
@@ -960,18 +960,18 @@ DataForm::Item DataForm::Item::fromDomElement(const QDomElement& item)
  */
 void DataForm::Item::toDomElement(QDomElement& element) const
 {
-	if ( d->fields.isEmpty() ) {
-		qWarning("DataForm::Item: item has no fields.. ignoring..");
-		return;
-	}
+    if ( d->fields.isEmpty() ) {
+        qWarning("DataForm::Item: item has no fields.. ignoring..");
+        return;
+    }
 
-	QDomElement eItem = element.ownerDocument().createElement("item");
-	element.appendChild(eItem);
+    QDomElement eItem = element.ownerDocument().createElement("item");
+    element.appendChild(eItem);
 
-	QListIterator<Field> fi(d->fields);
-	while ( fi.hasNext() ) {
-		fi.next().toDomElement(eItem);
-	}
+    QListIterator<Field> fi(d->fields);
+    while ( fi.hasNext() ) {
+        fi.next().toDomElement(eItem);
+    }
 }
 
 /**
@@ -979,7 +979,7 @@ void DataForm::Item::toDomElement(QDomElement& element) const
  */
 void DataForm::Item::addField(const DataForm::Field& field)
 {
-	d->fields << field;
+    d->fields << field;
 }
 
 /**
@@ -987,8 +987,8 @@ void DataForm::Item::addField(const DataForm::Field& field)
  */
 DataForm::Item& DataForm::Item::operator<<(const DataForm::Field& field)
 {
-	d->fields << field;
-	return *this;
+    d->fields << field;
+    return *this;
 }
 
 /**
@@ -996,7 +996,7 @@ DataForm::Item& DataForm::Item::operator<<(const DataForm::Field& field)
  */
 QList<DataForm::Field> DataForm::Item::fields() const
 {
-	return d->fields;
+    return d->fields;
 }
 
 /**
@@ -1004,10 +1004,10 @@ QList<DataForm::Field> DataForm::Item::fields() const
  */
 void DataForm::Item::setFields(const QList<DataForm::Field>& flist)
 {
-	d->fields = flist;
+    d->fields = flist;
 }
 
 
 }
 
-// vim:ts=4:sw=4:nowrap:noet
+// vim:ts=4:sw=4:nowrap:et

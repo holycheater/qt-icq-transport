@@ -29,44 +29,44 @@ namespace ICQ
 
 class SnacBuffer: public FlapBuffer
 {
-	public:
-		SnacBuffer(Word family, Word subtype);
-		SnacBuffer(Word family, Word subtype, const QByteArray& data);
-		SnacBuffer(const FlapBuffer& flap);
+    public:
+        SnacBuffer(Word family, Word subtype);
+        SnacBuffer(Word family, Word subtype, const QByteArray& data);
+        SnacBuffer(const FlapBuffer& flap);
 
-		/* get snac data */
-		virtual QByteArray data() const;
+        /* get snac data */
+        virtual QByteArray data() const;
 
-		/* packet data size (no header, data only) */
-		Word dataSize() const;
+        /* packet data size (no header, data only) */
+        Word dataSize() const;
 
-		/* get header params */
-		Word family() const;
-		Word subtype() const;
-		Word flags() const;
-		DWord requestId() const;
+        /* get header params */
+        Word family() const;
+        Word subtype() const;
+        Word flags() const;
+        DWord requestId() const;
 
-		/* set header params */
-		void setFamily(Word family);
-		void setSubtype(Word subtype);
-		void setFlags(Word flags);
-		void setRequestId(DWord requestId);
+        /* set header params */
+        void setFamily(Word family);
+        void setSubtype(Word subtype);
+        void setFlags(Word flags);
+        void setRequestId(DWord requestId);
 
-		/* packet data size with header */
-		Word size() const;
+        /* packet data size with header */
+        Word size() const;
 
-		SnacBuffer& operator=(const Buffer& other);
-		SnacBuffer& operator=(const FlapBuffer& other);
-		SnacBuffer& operator=(const SnacBuffer& other);
-		SnacBuffer& operator=(const QByteArray& other);
-	private:
-		Word m_family;
-		Word m_subtype;
-		Word m_flags;
-		DWord m_requestId;
+        SnacBuffer& operator=(const Buffer& other);
+        SnacBuffer& operator=(const FlapBuffer& other);
+        SnacBuffer& operator=(const SnacBuffer& other);
+        SnacBuffer& operator=(const QByteArray& other);
+    private:
+        Word m_family;
+        Word m_subtype;
+        Word m_flags;
+        DWord m_requestId;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQSNACBUFFER_H_ */

@@ -24,8 +24,8 @@
 #include <QObject>
 
 namespace XMPP {
-	class Jid;
-	class vCard;
+    class Jid;
+    class vCard;
 }
 
 class QDateTime;
@@ -33,72 +33,72 @@ class QSqlDatabase;
 
 class GatewayTask : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	typedef XMPP::Jid Jid;
-	typedef XMPP::vCard vCard;
+    typedef XMPP::Jid Jid;
+    typedef XMPP::vCard vCard;
 
-	public:
-		GatewayTask(QObject *parent = 0);
-		virtual ~GatewayTask();
+    public:
+        GatewayTask(QObject *parent = 0);
+        virtual ~GatewayTask();
 
-		void setIcqServer(const QString& host, quint16 port);
-	public slots:
-		void processRegister(const QString& user, const QString& uin, const QString& password);
-		void processUnregister(const QString& user);
-		void processUserOnline(const Jid& user, int showStatus, bool first_login);
-		void processUserOffline(const Jid& user);
-		void processUserStatusRequest(const Jid& user);
-		void processSubscribeRequest(const Jid& user, const QString& uin);
-		void processUnsubscribeRequest(const Jid& user, const QString& uin);
-		void processAuthGrant(const Jid& user, const QString& uin);
-		void processAuthDeny(const Jid& user, const QString& uin);
-		void processSendMessage(const Jid& user, const QString& uin, const QString& message);
+        void setIcqServer(const QString& host, quint16 port);
+    public slots:
+        void processRegister(const QString& user, const QString& uin, const QString& password);
+        void processUnregister(const QString& user);
+        void processUserOnline(const Jid& user, int showStatus, bool first_login);
+        void processUserOffline(const Jid& user);
+        void processUserStatusRequest(const Jid& user);
+        void processSubscribeRequest(const Jid& user, const QString& uin);
+        void processUnsubscribeRequest(const Jid& user, const QString& uin);
+        void processAuthGrant(const Jid& user, const QString& uin);
+        void processAuthDeny(const Jid& user, const QString& uin);
+        void processSendMessage(const Jid& user, const QString& uin, const QString& message);
 
-		void processVCardRequest(const Jid& user, const QString& uin, const QString& requestID);
+        void processVCardRequest(const Jid& user, const QString& uin, const QString& requestID);
 
-		void processCmd_RosterRequest(const Jid& user);
+        void processCmd_RosterRequest(const Jid& user);
 
-		void processGatewayOnline();
-		void processShutdown();
-	signals:
-		void subscriptionReceived(const Jid& user, const QString& uin, const QString& nick);
-		void subscriptionRemoved(const Jid& user, const QString& uin);
-		void subscriptionRequest(const Jid& user, const QString& uin);
+        void processGatewayOnline();
+        void processShutdown();
+    signals:
+        void subscriptionReceived(const Jid& user, const QString& uin, const QString& nick);
+        void subscriptionRemoved(const Jid& user, const QString& uin);
+        void subscriptionRequest(const Jid& user, const QString& uin);
 
-		void contactOnline(const Jid& user, const QString& uin, int status, const QString& nick);
-		void contactOffline(const Jid& user, const QString& uin);
+        void contactOnline(const Jid& user, const QString& uin, int status, const QString& nick);
+        void contactOffline(const Jid& user, const QString& uin);
 
-		void onlineNotifyFor(const Jid& user, int show);
-		void offlineNotifyFor(const Jid& user);
-		void probeRequest(const Jid& user);
+        void onlineNotifyFor(const Jid& user, int show);
+        void offlineNotifyFor(const Jid& user);
+        void probeRequest(const Jid& user);
 
-		void incomingVCard(const Jid& user, const QString& uin, const QString& requestID, const vCard& vcard);
+        void incomingVCard(const Jid& user, const QString& uin, const QString& requestID, const vCard& vcard);
 
-		void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick);
-		void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick, const QDateTime& timestamp);
-		void gatewayMessage(const Jid& user, const QString& text);
-	private slots:
-		void processIcqError(const QString& desc);
-		void processIcqSignOn();
-		void processIcqSignOff();
-		void processIcqStatus(int status);
-		void processIcqFirstLogin();
+        void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick);
+        void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick, const QDateTime& timestamp);
+        void gatewayMessage(const Jid& user, const QString& text);
+    private slots:
+        void processIcqError(const QString& desc);
+        void processIcqSignOn();
+        void processIcqSignOff();
+        void processIcqStatus(int status);
+        void processIcqFirstLogin();
 
-		void processContactOnline(const QString& uin, int status);
-		void processContactOffline(const QString& uin);
-		void processIncomingMessage(const QString& senderUin, const QString& message);
-		void processIncomingMessage(const QString& senderUin, const QString& message, const QDateTime& timestamp);
+        void processContactOnline(const QString& uin, int status);
+        void processContactOffline(const QString& uin);
+        void processIncomingMessage(const QString& senderUin, const QString& message);
+        void processIncomingMessage(const QString& senderUin, const QString& message, const QDateTime& timestamp);
 
-		void processAuthGranted(const QString& uin);
-		void processAuthDenied(const QString& uin);
-		void processAuthRequest(const QString& uin);
+        void processAuthGranted(const QString& uin);
+        void processAuthDenied(const QString& uin);
+        void processAuthRequest(const QString& uin);
 
-		void processShortUserDetails(const QString& uin);
-	private:
-		class Private;
-		Private *d;
+        void processShortUserDetails(const QString& uin);
+    private:
+        class Private;
+        Private *d;
 };
 
-// vim:noet:ts=4:sw=4:nowrap
+// vim:et:ts=4:sw=4:nowrap
 #endif /* GATEWAYTASK_H_ */

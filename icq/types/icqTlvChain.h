@@ -33,42 +33,42 @@ namespace ICQ
 
 class TlvChain
 {
-	public:
-		TlvChain();
-		TlvChain(const Buffer& data);
-		TlvChain(const QByteArray& data);
+    public:
+        TlvChain();
+        TlvChain(const Buffer& data);
+        TlvChain(const QByteArray& data);
 
-		/* add a tlv to the chain. if it already exists, it will be overwritten */
-		TlvChain& addTlv(const Tlv& tlv);
-		TlvChain& addTlv(Word type, const QByteArray& data);
-		Tlv& addTlv(Word type);
+        /* add a tlv to the chain. if it already exists, it will be overwritten */
+        TlvChain& addTlv(const Tlv& tlv);
+        TlvChain& addTlv(Word type, const QByteArray& data);
+        Tlv& addTlv(Word type);
 
-		QByteArray data() const;
+        QByteArray data() const;
 
-		/* get Tlv from chain */
-		Tlv getTlv(Word type) const;
+        /* get Tlv from chain */
+        Tlv getTlv(Word type) const;
 
-		/* get tlv data from chain */
-		QByteArray getTlvData(Word type) const;
+        /* get tlv data from chain */
+        QByteArray getTlvData(Word type) const;
 
-		/* check if chain contains specified tlv type */
-		bool hasTlv(Word type) const;
+        /* check if chain contains specified tlv type */
+        bool hasTlv(Word type) const;
 
-		const QHash<Word, Tlv>& list() const;
+        const QHash<Word, Tlv>& list() const;
 
-		/* remove specified tlv from the chain */
-		void removeTlv(Word type);
+        /* remove specified tlv from the chain */
+        void removeTlv(Word type);
 
-		TlvChain& operator=(const Buffer& buffer);
-		TlvChain& operator=(const QByteArray& data);
-		TlvChain& operator<<(const Tlv& tlv);
-		TlvChain& operator<<(const QByteArray& data);
-		TlvChain& operator<<(const TlvChain& other);
-	private:
-		QHash<Word, Tlv> m_tlvList;
+        TlvChain& operator=(const Buffer& buffer);
+        TlvChain& operator=(const QByteArray& data);
+        TlvChain& operator<<(const Tlv& tlv);
+        TlvChain& operator<<(const QByteArray& data);
+        TlvChain& operator<<(const TlvChain& other);
+    private:
+        QHash<Word, Tlv> m_tlvList;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQTLVCHAIN_H_ */

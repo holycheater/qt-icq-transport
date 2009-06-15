@@ -43,92 +43,92 @@ class UserInfo;
 
 class Session : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		enum ConnectionStatus { Disconnected, Connecting, Connected };
-		enum OnlineStatus { Online, FreeForChat, Away, NotAvailable, Occupied, DoNotDisturb, Offline };
+    public:
+        enum ConnectionStatus { Disconnected, Connecting, Connected };
+        enum OnlineStatus { Online, FreeForChat, Away, NotAvailable, Occupied, DoNotDisturb, Offline };
 
-		Session(QObject *parent = 0);
-		virtual ~Session();
+        Session(QObject *parent = 0);
+        virtual ~Session();
 
-		void connect();
-		void disconnect();
+        void connect();
+        void disconnect();
 
-		void contactAdd(const QString& uin);
-		void contactDel(const QString& uin);
+        void contactAdd(const QString& uin);
+        void contactDel(const QString& uin);
 
-		void authGrant(const QString& toUin);
-		void authDeny(const QString& fromUin);
+        void authGrant(const QString& toUin);
+        void authDeny(const QString& fromUin);
 
-		QString contactName(const QString& uin) const;
+        QString contactName(const QString& uin) const;
 
-		void setCodecForMessages(QTextCodec *codec);
-		void sendMessage(const QString& recipient, const QString& message);
+        void setCodecForMessages(QTextCodec *codec);
+        void sendMessage(const QString& recipient, const QString& message);
 
-		ConnectionStatus connectionStatus() const;
-		QStringList contactList() const;
-		OnlineStatus onlineStatus() const;
-		OnlineStatus onlineStatus(const QString& uin) const;
-		QString password() const;
-		QString serverHost() const;
-		quint16 serverPort() const;
-		QString uin() const;
+        ConnectionStatus connectionStatus() const;
+        QStringList contactList() const;
+        OnlineStatus onlineStatus() const;
+        OnlineStatus onlineStatus(const QString& uin) const;
+        QString password() const;
+        QString serverHost() const;
+        quint16 serverPort() const;
+        QString uin() const;
 
-		void setUin(const QString& uin);
-		void setPassword(const QString& password);
-		void setServerHost(const QString& server);
-		void setServerPort(quint16 port);
-		void setOnlineStatus(OnlineStatus status);
+        void setUin(const QString& uin);
+        void setPassword(const QString& password);
+        void setServerHost(const QString& server);
+        void setServerPort(quint16 port);
+        void setOnlineStatus(OnlineStatus status);
 
-		void requestOwnUserDetails();
-		void requestUserDetails(const QString& uin);
-		void requestShortUserDetails(const QString& uin);
+        void requestOwnUserDetails();
+        void requestUserDetails(const QString& uin);
+        void requestShortUserDetails(const QString& uin);
 
-		ShortUserDetails shortUserDetails(const QString& uin) const;
-		UserDetails userDetails(const QString& uin) const;
-		UserInfo userInfo(const QString& uin) const;
+        ShortUserDetails shortUserDetails(const QString& uin) const;
+        UserDetails userDetails(const QString& uin) const;
+        UserInfo userInfo(const QString& uin) const;
 
-		void removeUserDetails(const QString& uin);
-		void removeShortUserDetails(const QString& uin);
-	signals:
-		void connected();
-		void disconnected();
-		void error(const QString& errorString);
-		void rosterAvailable();
+        void removeUserDetails(const QString& uin);
+        void removeShortUserDetails(const QString& uin);
+    signals:
+        void connected();
+        void disconnected();
+        void error(const QString& errorString);
+        void rosterAvailable();
 
-		void statusChanged(int onlineStatus);
+        void statusChanged(int onlineStatus);
 
-		void userOnline(const QString& uin, int status);
-		void userOffline(const QString& uin);
+        void userOnline(const QString& uin, int status);
+        void userOffline(const QString& uin);
 
-		void authGranted(const QString& fromUin);
-		void authDenied(const QString& fromUin);
-		void authRequest(const QString& fromUin);
+        void authGranted(const QString& fromUin);
+        void authDenied(const QString& fromUin);
+        void authRequest(const QString& fromUin);
 
-		void incomingMessage(const QString& uin, const QString& msg);
-		void incomingMessage(const QString& uin, const QString& msg, const QDateTime& timestamp);
+        void incomingMessage(const QString& uin, const QString& msg);
+        void incomingMessage(const QString& uin, const QString& msg, const QDateTime& timestamp);
 
-		void shortUserDetailsAvailable(const QString& uin);
-		void userDetailsAvailable(const QString& uin);
-	private slots:
-		void processLookupTimeout();
-		void processLookupResult(const QHostInfo& result);
-		void processConnectionTimeout();
-		void processServerAvailable(const QString& host, quint16 port);
-		void processRatesRequest();
-		void processSsiRequest();
-		void processLoginDone();
-		void processSnac(SnacBuffer& snac);
-		void processFlap(FlapBuffer& flap);
-		void processIncomingMessage(const Message& msg);
-		void processUserStatus(const QString& uin, int status);
-		void processStatusChanged(int status);
-		void sendKeepAlive();
-	private:
-		Q_DISABLE_COPY(Session);
-		class Private;
-		Private *d;
+        void shortUserDetailsAvailable(const QString& uin);
+        void userDetailsAvailable(const QString& uin);
+    private slots:
+        void processLookupTimeout();
+        void processLookupResult(const QHostInfo& result);
+        void processConnectionTimeout();
+        void processServerAvailable(const QString& host, quint16 port);
+        void processRatesRequest();
+        void processSsiRequest();
+        void processLoginDone();
+        void processSnac(SnacBuffer& snac);
+        void processFlap(FlapBuffer& flap);
+        void processIncomingMessage(const Message& msg);
+        void processUserStatus(const QString& uin, int status);
+        void processStatusChanged(int status);
+        void sendKeepAlive();
+    private:
+        Q_DISABLE_COPY(Session);
+        class Private;
+        Private *d;
 };
 
 

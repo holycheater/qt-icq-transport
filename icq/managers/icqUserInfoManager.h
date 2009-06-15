@@ -40,42 +40,42 @@ class UserDetails;
 
 class UserInfoManager : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		UserInfoManager(Socket *socket, QObject *parent = 0);
-		~UserInfoManager();
+    public:
+        UserInfoManager(Socket *socket, QObject *parent = 0);
+        ~UserInfoManager();
 
-		void setTextCodec(QTextCodec *codec);
+        void setTextCodec(QTextCodec *codec);
 
-		UserInfo getUserInfo(const QString& uin);
-		quint16 getUserStatus(const QString& uin) const;
+        UserInfo getUserInfo(const QString& uin);
+        quint16 getUserStatus(const QString& uin) const;
 
-		void requestOwnUserDetails(const QString& uin);
-		void requestUserDetails(const QString& uin);
-		void requestShortDetails(const QString& uin);
+        void requestOwnUserDetails(const QString& uin);
+        void requestUserDetails(const QString& uin);
+        void requestShortDetails(const QString& uin);
 
-		ShortUserDetails shorUserDetails(const QString& uin) const;
-		UserDetails userDetails(const QString& uin) const;
+        ShortUserDetails shorUserDetails(const QString& uin) const;
+        UserDetails userDetails(const QString& uin) const;
 
-		void clearShortUserDetails(const QString& uin);
-		void clearUserDetails(const QString& uin);
-	signals:
-		void statusChanged(int status);
-		void userOnline(QString userId, int status);
-		void userOffline(QString userId);
+        void clearShortUserDetails(const QString& uin);
+        void clearUserDetails(const QString& uin);
+    signals:
+        void statusChanged(int status);
+        void userOnline(QString userId, int status);
+        void userOffline(QString userId);
 
-		void shortUserDetailsAvailable(const QString& uin);
-		void userDetailsAvailable(const QString& uin);
-	private slots:
-		void incomingMetaInfo(Word type, Buffer& data);
-		void incomingSnac(SnacBuffer& snac);
-	private:
-		class Private;
-		Private *d;
+        void shortUserDetailsAvailable(const QString& uin);
+        void userDetailsAvailable(const QString& uin);
+    private slots:
+        void incomingMetaInfo(Word type, Buffer& data);
+        void incomingSnac(SnacBuffer& snac);
+    private:
+        class Private;
+        Private *d;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQUSERINFOMANAGER_H_ */

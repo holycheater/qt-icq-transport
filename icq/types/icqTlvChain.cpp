@@ -30,117 +30,117 @@ TlvChain::TlvChain()
 
 TlvChain::TlvChain(const Buffer& data)
 {
-	*this = data;
+    *this = data;
 }
 
 TlvChain::TlvChain(const QByteArray& data)
 {
-	*this = Buffer(data);
+    *this = Buffer(data);
 }
 
 TlvChain& TlvChain::addTlv(const Tlv& tlv)
 {
-	if ( m_tlvList.contains( tlv.type() ) ) {
-		m_tlvList.remove( tlv.type() );
-	}
-	m_tlvList.insert(tlv.type(), tlv);
-	return *this;
+    if ( m_tlvList.contains( tlv.type() ) ) {
+        m_tlvList.remove( tlv.type() );
+    }
+    m_tlvList.insert(tlv.type(), tlv);
+    return *this;
 }
 
 TlvChain& TlvChain::addTlv(Word type, const QByteArray& data)
 {
-	if ( m_tlvList.contains(type) ) {
-		m_tlvList.remove(type);
-	}
-	m_tlvList.insert(type, Tlv(type, data) );
-	return *this;
+    if ( m_tlvList.contains(type) ) {
+        m_tlvList.remove(type);
+    }
+    m_tlvList.insert(type, Tlv(type, data) );
+    return *this;
 }
 
 Tlv& TlvChain::addTlv(Word type)
 {
-	if ( m_tlvList.contains(type) ) {
-		m_tlvList.remove(type);
-	}
-	return *(m_tlvList.insert( type, Tlv(type) ));
+    if ( m_tlvList.contains(type) ) {
+        m_tlvList.remove(type);
+    }
+    return *(m_tlvList.insert( type, Tlv(type) ));
 }
 
 QByteArray TlvChain::data() const
 {
-	QByteArray tlvChain;
-	QHash<Word, Tlv>::const_iterator it = m_tlvList.constBegin();
-	while ( it != m_tlvList.constEnd() ) {
-		tlvChain += it->data();
-		it++;
-	}
-	return tlvChain;
+    QByteArray tlvChain;
+    QHash<Word, Tlv>::const_iterator it = m_tlvList.constBegin();
+    while ( it != m_tlvList.constEnd() ) {
+        tlvChain += it->data();
+        it++;
+    }
+    return tlvChain;
 }
 
 Tlv TlvChain::getTlv(Word type) const
 {
-	return m_tlvList.value(type);
+    return m_tlvList.value(type);
 }
 
 QByteArray TlvChain::getTlvData(Word type) const
 {
-	return getTlv(type).m_Buffer.data();
+    return getTlv(type).m_Buffer.data();
 }
 
 bool TlvChain::hasTlv(Word type) const
 {
-	return m_tlvList.contains(type);
+    return m_tlvList.contains(type);
 }
 
 const QHash<Word, Tlv>& TlvChain::list() const
 {
-	return m_tlvList;
+    return m_tlvList;
 }
 
 void TlvChain::removeTlv(Word type)
 {
-	m_tlvList.remove(type);
+    m_tlvList.remove(type);
 }
 
 TlvChain& TlvChain::operator=(const Buffer& buffer)
 {
-	Buffer tmpBuffer = buffer;
-	while ( tmpBuffer.bytesAvailable() > 0 ) {
-		Word type = tmpBuffer.getWord();
-		Word length = tmpBuffer.getWord();
-		Tlv tlv( type, tmpBuffer.read(length) );
-		m_tlvList.insert(type, tlv);
-	}
-	return *this;
+    Buffer tmpBuffer = buffer;
+    while ( tmpBuffer.bytesAvailable() > 0 ) {
+        Word type = tmpBuffer.getWord();
+        Word length = tmpBuffer.getWord();
+        Tlv tlv( type, tmpBuffer.read(length) );
+        m_tlvList.insert(type, tlv);
+    }
+    return *this;
 }
 
 TlvChain& TlvChain::operator=(const QByteArray& data)
 {
-	operator=( Buffer(data) );
-	return *this;
+    operator=( Buffer(data) );
+    return *this;
 }
 
 TlvChain& TlvChain::operator<<(const Tlv& tlv)
 {
-	addTlv(tlv);
-	return *this;
+    addTlv(tlv);
+    return *this;
 }
 
 TlvChain& TlvChain::operator<<(const QByteArray& data)
 {
-	*this << Tlv(data);
-	return *this;
+    *this << Tlv(data);
+    return *this;
 }
 
 TlvChain& TlvChain::operator<<(const TlvChain& other)
 {
-	QHash<Word, Tlv>::const_iterator it = other.m_tlvList.constBegin(), itEnd = other.m_tlvList.constEnd();
-	while ( it != itEnd ) {
-		*this << *it;
-		++it;
-	}
-	return *this;
+    QHash<Word, Tlv>::const_iterator it = other.m_tlvList.constBegin(), itEnd = other.m_tlvList.constEnd();
+    while ( it != itEnd ) {
+        *this << *it;
+        ++it;
+    }
+    return *this;
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

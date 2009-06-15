@@ -35,113 +35,113 @@ namespace XMPP
 
 class DataForm
 {
-	public:
-		enum Type { Invalid, Form, Submit, Cancel, Result };
+    public:
+        enum Type { Invalid, Form, Submit, Cancel, Result };
 
-		class Field;
-		class Item;
+        class Field;
+        class Item;
 
-		DataForm();
-		DataForm(const DataForm& other);
-		virtual ~DataForm();
-		DataForm& operator=(const DataForm& other);
+        DataForm();
+        DataForm(const DataForm& other);
+        virtual ~DataForm();
+        DataForm& operator=(const DataForm& other);
 
-		bool isEmpty() const;
-		bool isValid() const;
+        bool isEmpty() const;
+        bool isValid() const;
 
-		static DataForm fromDomElement(const QDomElement& form);
-		void toDomElement(QDomElement& element) const;
+        static DataForm fromDomElement(const QDomElement& form);
+        void toDomElement(QDomElement& element) const;
 
-		void addField(const Field& field);
-		void addItem(const Item& item);
+        void addField(const Field& field);
+        void addItem(const Item& item);
 
-		DataForm& operator<<(const Field& field);
-		DataForm& operator<<(const Item& item);
+        DataForm& operator<<(const Field& field);
+        DataForm& operator<<(const Item& item);
 
-		QList<Field> fields() const;
-		QList<Item> items() const;
+        QList<Field> fields() const;
+        QList<Item> items() const;
 
-		QList<Field> reportedFields() const;
-		void addReportedField(const Field& field);
-		void setReportedFields(const QList<Field>& reported);
-		void setReportedFields(const Field& field);
+        QList<Field> reportedFields() const;
+        void addReportedField(const Field& field);
+        void setReportedFields(const QList<Field>& reported);
+        void setReportedFields(const Field& field);
 
-		Type type() const;
-		QString title() const;
-		QString instructions() const;
+        Type type() const;
+        QString title() const;
+        QString instructions() const;
 
-		void setType(Type type);
-		void setTitle(const QString& title);
-		void setInstructions(const QString& instructions);
+        void setType(Type type);
+        void setTitle(const QString& title);
+        void setInstructions(const QString& instructions);
 
-		Field fieldByName(const QString& name);
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        Field fieldByName(const QString& name);
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 class DataForm::Field
 {
-	public:
-		enum FieldType { Invalid, Boolean, Fixed, Hidden, JidMulti, JidSingle, ListMulti, ListSingle, TextMulti, TextPrivate, TextSingle };
+    public:
+        enum FieldType { Invalid, Boolean, Fixed, Hidden, JidMulti, JidSingle, ListMulti, ListSingle, TextMulti, TextPrivate, TextSingle };
 
-		Field();
-		Field(const Field& other);
-		Field(const QString& name, FieldType type = TextSingle);
-		Field(const QString& name, const QString& label, FieldType type = TextSingle);
-		virtual ~Field();
+        Field();
+        Field(const Field& other);
+        Field(const QString& name, FieldType type = TextSingle);
+        Field(const QString& name, const QString& label, FieldType type = TextSingle);
+        virtual ~Field();
 
-		static Field fromNameValue(const QString& name, const QString& value, FieldType type = TextSingle);
-		static Field fromNameLabelValue(const QString& name, const QString& label, const QString& value, FieldType type = TextSingle);
+        static Field fromNameValue(const QString& name, const QString& value, FieldType type = TextSingle);
+        static Field fromNameLabelValue(const QString& name, const QString& label, const QString& value, FieldType type = TextSingle);
 
-		static Field fromDomElement(const QDomElement& field);
-		void toDomElement(QDomElement& element) const;
+        static Field fromDomElement(const QDomElement& field);
+        void toDomElement(QDomElement& element) const;
 
-		void addOption(const QString& optionLabel, const QString& value);
-		void addValue(const QString& value);
+        void addOption(const QString& optionLabel, const QString& value);
+        void addValue(const QString& value);
 
-		QStringList values() const;
+        QStringList values() const;
 
-		FieldType type() const;
-		void setType(FieldType type);
+        FieldType type() const;
+        void setType(FieldType type);
 
-		bool isRequred() const;
-		void setRequired(bool required = true);
+        bool isRequred() const;
+        void setRequired(bool required = true);
 
-		QString label() const;
-		void setLabel(const QString& label);
+        QString label() const;
+        void setLabel(const QString& label);
 
-		QString name() const;
-		void setName(const QString& name);
+        QString name() const;
+        void setName(const QString& name);
 
-		QString desc() const;
-		void setDesc(const QString& desc);
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        QString desc() const;
+        void setDesc(const QString& desc);
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 class DataForm::Item
 {
-	public:
-		Item();
-		Item(const Item& other);
-		virtual ~Item();
+    public:
+        Item();
+        Item(const Item& other);
+        virtual ~Item();
 
-		static Item fromDomElement(const QDomElement& item);
-		void toDomElement(QDomElement& element) const;
+        static Item fromDomElement(const QDomElement& item);
+        void toDomElement(QDomElement& element) const;
 
-		void addField(const Field& field);
-		Item& operator<<(const Field& field);
-		QList<Field> fields() const;
-		void setFields(const QList<Field>& flist);
-	private:
-		class Private;
-		QSharedDataPointer<Private> d;
+        void addField(const Field& field);
+        Item& operator<<(const Field& field);
+        QList<Field> fields() const;
+        void setFields(const QList<Field>& flist);
+    private:
+        class Private;
+        QSharedDataPointer<Private> d;
 };
 
 
 }
 
-// vim:ts=4:sw=4:nowrap:noet
+// vim:ts=4:sw=4:nowrap:et
 #endif /* XMPP_DATA_FORM_H_ */

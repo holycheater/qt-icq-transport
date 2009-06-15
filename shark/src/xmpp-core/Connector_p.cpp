@@ -23,14 +23,14 @@
 using namespace XMPP;
 
 Connector::Private::Private(Connector *parent)
-	: QObject(parent)
+    : QObject(parent)
 {
-	q = parent;
+    q = parent;
 
-	lookupTimeout = LOOKUP_TIMEOUT;
-	connectionTimeout = CONNECT_TIMEOUT;
+    lookupTimeout = LOOKUP_TIMEOUT;
+    connectionTimeout = CONNECT_TIMEOUT;
 
-	reset();
+    reset();
 }
 
 Connector::Private::~Private()
@@ -39,62 +39,62 @@ Connector::Private::~Private()
 
 void Connector::Private::beginConnect()
 {
-	delete socket; socket = 0;
+    delete socket; socket = 0;
 
-	connectTimer = new QTimer(q);
-	QObject::connect(connectTimer, SIGNAL( timeout() ), SLOT( processConnectionTimeout() ) );
-	connectTimer->setSingleShot(true);
-	connectTimer->start(connectionTimeout);
+    connectTimer = new QTimer(q);
+    QObject::connect(connectTimer, SIGNAL( timeout() ), SLOT( processConnectionTimeout() ) );
+    connectTimer->setSingleShot(true);
+    connectTimer->start(connectionTimeout);
 
-	socket = new QTcpSocket(q);
-	QObject::connect( socket, SIGNAL( connected() ), q, SIGNAL( connected() ) );
-	QObject::connect( socket, SIGNAL( connected() ), connectTimer, SLOT( deleteLater() ) );
-	QObject::connect( socket, SIGNAL( error(QAbstractSocket::SocketError) ), SLOT( processSocketError(QAbstractSocket::SocketError) ) );
+    socket = new QTcpSocket(q);
+    QObject::connect( socket, SIGNAL( connected() ), q, SIGNAL( connected() ) );
+    QObject::connect( socket, SIGNAL( connected() ), connectTimer, SLOT( deleteLater() ) );
+    QObject::connect( socket, SIGNAL( error(QAbstractSocket::SocketError) ), SLOT( processSocketError(QAbstractSocket::SocketError) ) );
 
-	socket->connectToHost(addr, port);
+    socket->connectToHost(addr, port);
 }
 
 void Connector::Private::reset()
 {
-	mode = Idle;
-	addr.clear();
+    mode = Idle;
+    addr.clear();
 
-	delete socket; socket = 0;
+    delete socket; socket = 0;
 }
 
 void Connector::Private::processLookupResult(const QHostInfo& host)
 {
-	delete lookupTimer;
+    delete lookupTimer;
 
-	if ( host.error() != QHostInfo::NoError ) {
-		emit q->error(EHostLookupFailed);
-		return;
-	}
-	addr = host.addresses().value(0);
-	qWarning( "[XMPP::Connector] Found address: %s", qPrintable(addr.toString()) );
+    if ( host.error() != QHostInfo::NoError ) {
+        emit q->error(EHostLookupFailed);
+        return;
+    }
+    addr = host.addresses().value(0);
+    qWarning( "[XMPP::Connector] Found address: %s", qPrintable(addr.toString()) );
 
-	beginConnect();
+    beginConnect();
 }
 
 void Connector::Private::processLookupTimeout()
 {
-	reset();
-	lookupTimer->deleteLater();
-	QHostInfo::abortHostLookup(lookupID);
-	emit q->error(EHostLookupTimeout);
+    reset();
+    lookupTimer->deleteLater();
+    QHostInfo::abortHostLookup(lookupID);
+    emit q->error(EHostLookupTimeout);
 }
 
 void Connector::Private::processConnectionTimeout()
 {
-	reset();
-	connectTimer->deleteLater();
-	emit q->error(EConnectionTimeout);
+    reset();
+    connectTimer->deleteLater();
+    emit q->error(EConnectionTimeout);
 }
 
 void Connector::Private::processSocketError(QAbstractSocket::SocketError errcode)
 {
-	Q_UNUSED(errcode)
-	emit q->error(ESocketError);
+    Q_UNUSED(errcode)
+    emit q->error(ESocketError);
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

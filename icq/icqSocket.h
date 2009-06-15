@@ -38,45 +38,45 @@ class MetaInfoManager;
 
 class Socket : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		Socket(QObject *parent = 0);
-		virtual ~Socket();
+    public:
+        Socket(QObject *parent = 0);
+        virtual ~Socket();
 
-		int connectionStatus() const;
+        int connectionStatus() const;
 
-		void connectToHost(const QHostAddress& host, quint16 port);
-		void disconnectFromHost();
+        void connectToHost(const QHostAddress& host, quint16 port);
+        void disconnectFromHost();
 
-		void setRateManager(RateManager *ptr);
-		void setMetaManager(MetaInfoManager *ptr);
+        void setRateManager(RateManager *ptr);
+        void setMetaManager(MetaInfoManager *ptr);
 
-		void snacRequest(Word family, Word subtype);
+        void snacRequest(Word family, Word subtype);
 
-		void sendMetaRequest(Word type);
-		void sendMetaRequest(Word type, Buffer& data);
+        void sendMetaRequest(Word type);
+        void sendMetaRequest(Word type, Buffer& data);
 
-		void write(const FlapBuffer& flap);
-		void write(const SnacBuffer& snac);
+        void write(const FlapBuffer& flap);
+        void write(const SnacBuffer& snac);
 
-		void writeForced(FlapBuffer* flap);
-		void writeForced(SnacBuffer* snac);
-	signals:
-		void incomingFlap(FlapBuffer& flap);
-		void incomingSnac(SnacBuffer& snac);
+        void writeForced(FlapBuffer* flap);
+        void writeForced(SnacBuffer* snac);
+    signals:
+        void incomingFlap(FlapBuffer& flap);
+        void incomingSnac(SnacBuffer& snac);
 
-		void readyRead();
-	private slots:
-		void processIncomingData();
-	private:
-		Q_DISABLE_COPY(Socket)
-		class Private;
-		Private *d;
+        void readyRead();
+    private slots:
+        void processIncomingData();
+    private:
+        Q_DISABLE_COPY(Socket)
+        class Private;
+        Private *d;
 };
 
 
 } /* end of namespace ICQ */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQ_SOCKET_H_ */

@@ -26,81 +26,81 @@ namespace ICQ
 
 Tlv::Tlv()
 {
-	m_type = 0x0;
-	m_Buffer.open(QBuffer::ReadWrite);
+    m_type = 0x0;
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 Tlv::Tlv(Word type)
 {
-	m_type = type;
-	m_Buffer.open(QBuffer::ReadWrite);
+    m_type = type;
+    m_Buffer.open(QBuffer::ReadWrite);
 }
 
 Tlv::Tlv(Word type, const QByteArray& data)
 {
-	m_type = type;
-	setData(data);
+    m_type = type;
+    setData(data);
 }
 
 Tlv::Tlv(const QByteArray& data)
 {
-	operator=( Buffer(data) );
+    operator=( Buffer(data) );
 }
 
 QByteArray Tlv::data() const
 {
-	Buffer tlvData;
+    Buffer tlvData;
 
-	tlvData.addWord(m_type);
-	tlvData.addWord( m_Buffer.size() );
-	tlvData.addData( m_Buffer.data() );
+    tlvData.addWord(m_type);
+    tlvData.addWord( m_Buffer.size() );
+    tlvData.addData( m_Buffer.data() );
 
-	return tlvData;
+    return tlvData;
 }
 
 Tlv Tlv::fromBuffer(Buffer& buffer)
 {
-	Word type = buffer.getWord();
-	Word len = buffer.getWord();
-	QByteArray data = buffer.read(len);
-	return Tlv(type, data);
+    Word type = buffer.getWord();
+    Word len = buffer.getWord();
+    QByteArray data = buffer.read(len);
+    return Tlv(type, data);
 }
 
 void Tlv::setType(Word type)
 {
-	m_type = type;
+    m_type = type;
 }
 
 Word Tlv::type() const
 {
-	return m_type;
+    return m_type;
 }
 
 Tlv& Tlv::operator=(const Tlv& buffer)
 {
-	m_type = buffer.type();
-	setData( buffer.m_Buffer.data() );
+    m_type = buffer.type();
+    setData( buffer.m_Buffer.data() );
 
-	return *this;
+    return *this;
 }
 
 Tlv& Tlv::operator=(const Buffer& buffer)
 {
-	Buffer tmpBuf(buffer);
-	m_type = tmpBuf.getWord();
-	Word size = tmpBuf.getWord();
+    Buffer tmpBuf(buffer);
+    m_type = tmpBuf.getWord();
+    Word size = tmpBuf.getWord();
 
-	setData( tmpBuf.read(size) );
+    setData( tmpBuf.read(size) );
 
-	return *this;
+    return *this;
 }
 
 Tlv& Tlv::operator=(const QByteArray& data)
 {
-	return *this = Buffer(data);
+    return *this = Buffer(data);
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

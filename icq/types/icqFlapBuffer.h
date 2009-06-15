@@ -32,54 +32,54 @@ namespace ICQ
 
 class FlapBuffer: public Buffer
 {
-	public:
-		enum ChannelType { AuthChannel = 0x1, DataChannel, ErrorChannel, CloseChannel, KeepAliveChannel };
-		/* data = flap data + flap header */
-		FlapBuffer(const Buffer& data);
-		FlapBuffer(Byte channel = DataChannel);
-		/* data is FLAP data, it doesn't include a header */
-		FlapBuffer(const QByteArray& data, Byte channel = DataChannel);
+    public:
+        enum ChannelType { AuthChannel = 0x1, DataChannel, ErrorChannel, CloseChannel, KeepAliveChannel };
+        /* data = flap data + flap header */
+        FlapBuffer(const Buffer& data);
+        FlapBuffer(Byte channel = DataChannel);
+        /* data is FLAP data, it doesn't include a header */
+        FlapBuffer(const QByteArray& data, Byte channel = DataChannel);
 
-		/* append tlv to the flap */
-		FlapBuffer& addTlv(Tlv tlv);
-		FlapBuffer& addTlv(Buffer tlv);
-		FlapBuffer& addTlv(Word type, const QByteArray& data);
-		FlapBuffer& addTlv(Word type, const QString& data);
+        /* append tlv to the flap */
+        FlapBuffer& addTlv(Tlv tlv);
+        FlapBuffer& addTlv(Buffer tlv);
+        FlapBuffer& addTlv(Word type, const QByteArray& data);
+        FlapBuffer& addTlv(Word type, const QString& data);
 
-		/* append tlv chain to the flap */
-		FlapBuffer& addTlvChain(TlvChain tlvChain);
+        /* append tlv chain to the flap */
+        FlapBuffer& addTlvChain(TlvChain tlvChain);
 
-		/* get flap channel */
-		Byte channel() const;
+        /* get flap channel */
+        Byte channel() const;
 
-		/* get flap packet (header + data) */
-		virtual QByteArray data() const;
+        /* get flap packet (header + data) */
+        virtual QByteArray data() const;
 
-		/* return flap data size as described by header */
-		Word flapDataSize() const;
+        /* return flap data size as described by header */
+        Word flapDataSize() const;
 
-		/* get header data (6 bytes) */
-		QByteArray flapHeader() const;
+        /* get header data (6 bytes) */
+        QByteArray flapHeader() const;
 
-		/* construct flap from raw data. This data includes a header (6 bytes from the beginning) */
-		static FlapBuffer fromRawData(const QByteArray& data);
-		static FlapBuffer fromRawData(const char *data, Word datalen);
+        /* construct flap from raw data. This data includes a header (6 bytes from the beginning) */
+        static FlapBuffer fromRawData(const QByteArray& data);
+        static FlapBuffer fromRawData(const char *data, Word datalen);
 
-		void setChannel(Byte channel);
-		void setSequence(Word sequence);
+        void setChannel(Byte channel);
+        void setSequence(Word sequence);
 
-		Word sequence() const;
+        Word sequence() const;
 
-		FlapBuffer& operator=(const Buffer& other);
-		FlapBuffer& operator=(const QByteArray& data);
-	private:
-		Byte m_channel;
-		Word m_sequence;
-		/* flap size as described by length */
-		Word m_flapSize;
+        FlapBuffer& operator=(const Buffer& other);
+        FlapBuffer& operator=(const QByteArray& data);
+    private:
+        Byte m_channel;
+        Word m_sequence;
+        /* flap size as described by length */
+        Word m_flapSize;
 };
 
 }
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap
 #endif /* ICQFLAPBUFFER_H_ */

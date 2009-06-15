@@ -32,7 +32,7 @@ namespace ICQ
  */
 Guid::Guid()
 {
-	m_data = QByteArray(GUID_SIZE, '\0');
+    m_data = QByteArray(GUID_SIZE, '\0');
 }
 
 /**
@@ -40,13 +40,13 @@ Guid::Guid()
  */
 Guid Guid::fromRawData(const char* raw)
 {
-	QByteArray ba;
-	ba.resize(GUID_SIZE);
-	qMemCopy(ba.data(), raw, GUID_SIZE);
+    QByteArray ba;
+    ba.resize(GUID_SIZE);
+    qMemCopy(ba.data(), raw, GUID_SIZE);
 
-	Guid guid;
-	guid.m_data = ba;
-	return guid;
+    Guid guid;
+    guid.m_data = ba;
+    return guid;
 }
 
 /**
@@ -54,10 +54,10 @@ Guid Guid::fromRawData(const char* raw)
  */
 Guid Guid::fromRawData(const QByteArray& raw)
 {
-	Guid guid;
-	guid.m_data = raw;
+    Guid guid;
+    guid.m_data = raw;
 
-	return guid;
+    return guid;
 }
 
 /**
@@ -65,18 +65,18 @@ Guid Guid::fromRawData(const QByteArray& raw)
  */
 Guid Guid::fromString(const QString& guidstr)
 {
-	Guid guid;
+    Guid guid;
 
-	QString d(guidstr);
-	/* strip dashes */
-	d.remove('-');
+    QString d(guidstr);
+    /* strip dashes */
+    d.remove('-');
 
-	guid.m_data.clear();
-	for ( int i = 0; i < 32; i += 2 ) {
-		guid.m_data += d.mid(i, 2).toShort(NULL, GUID_SIZE);
-	}
+    guid.m_data.clear();
+    for ( int i = 0; i < 32; i += 2 ) {
+        guid.m_data += d.mid(i, 2).toShort(NULL, GUID_SIZE);
+    }
 
-	return guid;
+    return guid;
 }
 
 /**
@@ -84,7 +84,7 @@ Guid Guid::fromString(const QString& guidstr)
  */
 QByteArray Guid::data() const
 {
-	return m_data;
+    return m_data;
 }
 
 /**
@@ -92,10 +92,10 @@ QByteArray Guid::data() const
  */
 bool Guid::isEqual(const Guid& rhs, int n) const
 {
-	if( n > GUID_SIZE ) {
-		n = GUID_SIZE;
-	}
-	return m_data.left(n) == rhs.m_data.left(n);
+    if( n > GUID_SIZE ) {
+        n = GUID_SIZE;
+    }
+    return m_data.left(n) == rhs.m_data.left(n);
 }
 
 /**
@@ -103,7 +103,7 @@ bool Guid::isEqual(const Guid& rhs, int n) const
  */
 bool Guid::isValid() const
 {
-	return m_data.size() == GUID_SIZE;
+    return m_data.size() == GUID_SIZE;
 }
 
 /**
@@ -111,12 +111,12 @@ bool Guid::isValid() const
  */
 bool Guid::isZero() const
 {
-	for (int i = 0; i < m_data.length(); i++) {
-		if ( m_data.at(i) != '\0' ) {
-			return false;
-		}
-	}
-	return true;
+    for (int i = 0; i < m_data.length(); i++) {
+        if ( m_data.at(i) != '\0' ) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
@@ -124,7 +124,7 @@ bool Guid::isZero() const
  */
 void Guid::setData(const QByteArray& data)
 {
-	m_data = data;
+    m_data = data;
 }
 
 /**
@@ -132,14 +132,14 @@ void Guid::setData(const QByteArray& data)
  */
 QString Guid::toString() const
 {
-	QString uuid = m_data.toHex().toUpper();
+    QString uuid = m_data.toHex().toUpper();
 
-	uuid.insert(20, '-');
-	uuid.insert(16, '-');
-	uuid.insert(12, '-');
-	uuid.insert(8, '-');
+    uuid.insert(20, '-');
+    uuid.insert(16, '-');
+    uuid.insert(12, '-');
+    uuid.insert(8, '-');
 
-	return uuid;
+    return uuid;
 }
 
 /**
@@ -147,8 +147,8 @@ QString Guid::toString() const
  */
 Guid& Guid::operator=(const QByteArray& data)
 {
-	m_data = data;
-	return *this;
+    m_data = data;
+    return *this;
 }
 
 /**
@@ -156,7 +156,7 @@ Guid& Guid::operator=(const QByteArray& data)
  */
 bool Guid::operator==(const Guid& rhs) const
 {
-	return m_data == rhs.m_data;
+    return m_data == rhs.m_data;
 }
 
 /**
@@ -166,10 +166,10 @@ bool Guid::operator==(const Guid& rhs) const
  */
 Guid::operator QByteArray() const
 {
-	return m_data;
+    return m_data;
 }
 
 
 } /* end of namespace ICQ */
 
-// vim:sw=4:ts=4:noet:nowrap
+// vim:sw=4:ts=4:et:nowrap

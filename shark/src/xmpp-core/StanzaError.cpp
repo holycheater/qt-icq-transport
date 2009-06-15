@@ -48,40 +48,40 @@ namespace XMPP {
 
 class Stanza::Error::Private : public QSharedData
 {
-	public:
-		Private();
-		~Private();
+    public:
+        Private();
+        ~Private();
 
-		static QString conditionToString(int condition);
-		static QString typeToString(int type);
-		static int typeForCondition(int condition);
-		static int stringToCondition(const QString& condition);
-		static int stringToType(const QString& type);
+        static QString conditionToString(int condition);
+        static QString typeToString(int type);
+        static int typeForCondition(int condition);
+        static int stringToCondition(const QString& condition);
+        static int stringToType(const QString& type);
 
-		typedef struct {
-			int num;
-			const char* str;
-		} IntStringPair;
+        typedef struct {
+            int num;
+            const char* str;
+        } IntStringPair;
 
-		typedef struct {
-			int first;
-			int second;
-		} IntPair;
+        typedef struct {
+            int first;
+            int second;
+        } IntPair;
 
-		static IntStringPair errorTypeTable[];
-		static IntStringPair errorCondTable[];
-		static IntPair typeCondTable[];
+        static IntStringPair errorTypeTable[];
+        static IntStringPair errorCondTable[];
+        static IntPair typeCondTable[];
 
-		Condition condition;
-		Type type;
+        Condition condition;
+        Type type;
 
-		QString appCondition;
-		QString appConditionNS;
-		QString text;
+        QString appCondition;
+        QString appConditionNS;
+        QString text;
 };
 
 Stanza::Error::Private::Private()
-	: QSharedData()
+    : QSharedData()
 {
 }
 
@@ -90,122 +90,122 @@ Stanza::Error::Private::~Private()
 }
 
 Stanza::Error::Private::IntStringPair Stanza::Error::Private::errorTypeTable[] = {
-		{ Cancel	, "cancel" },
-		{ Continue	, "continue" },
-		{ Modify	, "modify" },
-		{ Auth		, "auth" },
-		{ Wait		, "wait" },
-		{ 0, 0 }
+        { Cancel    , "cancel" },
+        { Continue  , "continue" },
+        { Modify    , "modify" },
+        { Auth      , "auth" },
+        { Wait      , "wait" },
+        { 0, 0 }
 };
 
 Stanza::Error::Private::IntStringPair Stanza::Error::Private::errorCondTable[] = {
-		{ BadRequest			, "bad-request" },
-		{ Conflict				, "conflict" },
-		{ FeatureNotImplemented	, "feature-not-implemented" },
-		{ Forbidden				, "forbidden" },
-		{ Gone					, "gone" },
-		{ InternalServerError	, "internal-server-error" },
-		{ ItemNotFound			, "item-not-found" },
-		{ JidMalformed			, "jid-malformed" },
-		{ NotAcceptable			, "not-acceptable" },
-		{ NotAllowed			, "not-allowed" },
-		{ NotAuthorized			, "not-authorized" },
-		{ PaymentRequired		, "payment-required" },
-		{ RecipientUnavailable	, "recipient-unavailable" },
-		{ Redirect				, "redirect" },
-		{ RegistrationRequired	, "registration-required" },
-		{ RemoteServerNotFound	, "remote-server-not-found" },
-		{ RemoteServerTimeout	, "remote-server-timeout" },
-		{ ResourceConstraint	, "resource-constraint" },
-		{ ServiceUnavailable	, "service-unavailable" },
-		{ SubscriptionRequired	, "subscription-required" },
-		{ UndefinedCondition	, "undefined-condition" },
-		{ UnexpectedRequest		, "unexpected-request" },
-		{ 0, 0 }
+        { BadRequest            , "bad-request" },
+        { Conflict              , "conflict" },
+        { FeatureNotImplemented , "feature-not-implemented" },
+        { Forbidden             , "forbidden" },
+        { Gone                  , "gone" },
+        { InternalServerError   , "internal-server-error" },
+        { ItemNotFound          , "item-not-found" },
+        { JidMalformed          , "jid-malformed" },
+        { NotAcceptable         , "not-acceptable" },
+        { NotAllowed            , "not-allowed" },
+        { NotAuthorized         , "not-authorized" },
+        { PaymentRequired       , "payment-required" },
+        { RecipientUnavailable  , "recipient-unavailable" },
+        { Redirect              , "redirect" },
+        { RegistrationRequired  , "registration-required" },
+        { RemoteServerNotFound  , "remote-server-not-found" },
+        { RemoteServerTimeout   , "remote-server-timeout" },
+        { ResourceConstraint    , "resource-constraint" },
+        { ServiceUnavailable    , "service-unavailable" },
+        { SubscriptionRequired  , "subscription-required" },
+        { UndefinedCondition    , "undefined-condition" },
+        { UnexpectedRequest     , "unexpected-request" },
+        { 0, 0 }
 
 };
 
 Stanza::Error::Private::IntPair Stanza::Error::Private::typeCondTable[] = {
-		{ BadRequest			, Modify },
-		{ Conflict				, Cancel },
-		{ FeatureNotImplemented	, Cancel },
-		{ Forbidden				, Auth },
-		{ Gone					, Modify },
-		{ InternalServerError	, Wait },
-		{ ItemNotFound			, Cancel },
-		{ JidMalformed			, Modify },
-		{ NotAcceptable			, Modify },
-		{ NotAllowed			, Cancel },
-		{ NotAuthorized			, Auth },
-		{ PaymentRequired		, Auth },
-		{ RecipientUnavailable	, Wait },
-		{ Redirect				, Modify },
-		{ RegistrationRequired	, Auth },
-		{ RemoteServerNotFound	, Cancel },
-		{ RemoteServerTimeout	, Wait },
-		{ ResourceConstraint	, Wait },
-		{ ServiceUnavailable	, Cancel },
-		{ SubscriptionRequired	, Auth },
-		{ UndefinedCondition	, Wait },
-		{ UnexpectedRequest		, Wait },
-		{ 0, 0 }
+        { BadRequest            , Modify },
+        { Conflict              , Cancel },
+        { FeatureNotImplemented , Cancel },
+        { Forbidden             , Auth },
+        { Gone                  , Modify },
+        { InternalServerError   , Wait },
+        { ItemNotFound          , Cancel },
+        { JidMalformed          , Modify },
+        { NotAcceptable         , Modify },
+        { NotAllowed            , Cancel },
+        { NotAuthorized         , Auth },
+        { PaymentRequired       , Auth },
+        { RecipientUnavailable  , Wait },
+        { Redirect              , Modify },
+        { RegistrationRequired  , Auth },
+        { RemoteServerNotFound  , Cancel },
+        { RemoteServerTimeout   , Wait },
+        { ResourceConstraint    , Wait },
+        { ServiceUnavailable    , Cancel },
+        { SubscriptionRequired  , Auth },
+        { UndefinedCondition    , Wait },
+        { UnexpectedRequest     , Wait },
+        { 0, 0 }
 };
 
 QString Stanza::Error::Private::conditionToString(int condition)
 {
-	for (int i = 0; errorCondTable[i].str; ++i) {
-		if (errorCondTable[i].num == condition) {
-			return errorCondTable[i].str;
-		}
-	}
-	return "undefined-condition";
+    for (int i = 0; errorCondTable[i].str; ++i) {
+        if (errorCondTable[i].num == condition) {
+            return errorCondTable[i].str;
+        }
+    }
+    return "undefined-condition";
 }
 
 QString Stanza::Error::Private::typeToString(int type)
 {
-	for (int i = 0; errorTypeTable[i].str; ++i) {
-		if (errorTypeTable[i].num == type) {
-			return errorTypeTable[i].str;
-		}
-	}
-	return "cancel";
+    for (int i = 0; errorTypeTable[i].str; ++i) {
+        if (errorTypeTable[i].num == type) {
+            return errorTypeTable[i].str;
+        }
+    }
+    return "cancel";
 }
 
 int Stanza::Error::Private::typeForCondition(int condition)
 {
-	for (int i = 0; typeCondTable[i].first; ++i) {
-		if ( typeCondTable[i].first == condition ) {
-			return typeCondTable[i].second;
-		}
-	}
-	return -1;
+    for (int i = 0; typeCondTable[i].first; ++i) {
+        if ( typeCondTable[i].first == condition ) {
+            return typeCondTable[i].second;
+        }
+    }
+    return -1;
 }
 
 int Stanza::Error::Private::stringToCondition(const QString& condition)
 {
-	for (int i = 0; errorCondTable[i].str; ++i) {
-		if (errorCondTable[i].str == condition) {
-			return errorCondTable[i].num;
-		}
-	}
-	return UndefinedCondition;
+    for (int i = 0; errorCondTable[i].str; ++i) {
+        if (errorCondTable[i].str == condition) {
+            return errorCondTable[i].num;
+        }
+    }
+    return UndefinedCondition;
 }
 
 int Stanza::Error::Private::stringToType(const QString& type)
 {
-	for (int i = 0; errorTypeTable[i].str; ++i) {
-		if (errorTypeTable[i].str == type) {
-			return errorTypeTable[i].num;
-		}
-	}
-	return Cancel;
+    for (int i = 0; errorTypeTable[i].str; ++i) {
+        if (errorTypeTable[i].str == type) {
+            return errorTypeTable[i].num;
+        }
+    }
+    return Cancel;
 }
 
 /**
  * Default constructor for stanza-error object. It does not set any data.
  */
 Stanza::Error::Error()
-	: d(new Private)
+    : d(new Private)
 {
 }
 
@@ -213,7 +213,7 @@ Stanza::Error::Error()
  * Constructs a deep copy of @a other
  */
 Stanza::Error::Error(const Error& other)
-	: d(other.d)
+    : d(other.d)
 {
 }
 
@@ -221,39 +221,39 @@ Stanza::Error::Error(const Error& other)
  * Constructs stanza-error with given @a condition and (optionally) @a text.
  */
 Stanza::Error::Error(Condition condition, const QString& text)
-	: d(new Private)
+    : d(new Private)
 {
-	setCondition(condition);
-	d->text = text;
+    setCondition(condition);
+    d->text = text;
 }
 
 /**
  * Constructs stanza-error with given @a type, @a condition and (optionally) @a text
  */
 Stanza::Error::Error(Type type, Condition condition, const QString& text)
-	: d(new Private)
+    : d(new Private)
 {
-	d->type = type;
-	d->condition = condition;
-	d->text = text;
+    d->type = type;
+    d->condition = condition;
+    d->text = text;
 }
 
 /**
  * Constructs stanza-error with given type, condition, application-specific condition and (optionally) text.
- * @param type				error type
- * @param condition			error condition
- * @param appConditionNS	application namespace
- * @param appCondition		application-specific error condition
- * @param text				optional description text
+ * @param type              error type
+ * @param condition         error condition
+ * @param appConditionNS    application namespace
+ * @param appCondition      application-specific error condition
+ * @param text              optional description text
  */
 Stanza::Error::Error(Type type, Condition condition, const QString& appConditionNS, const QString& appCondition, const QString& text)
-	: d(new Private)
+    : d(new Private)
 {
-	d->type = type;
-	d->condition = condition;
-	d->appConditionNS = appConditionNS;
-	d->appCondition = appCondition;
-	d->text = text;
+    d->type = type;
+    d->condition = condition;
+    d->appConditionNS = appConditionNS;
+    d->appCondition = appCondition;
+    d->text = text;
 }
 
 /**
@@ -261,40 +261,40 @@ Stanza::Error::Error(Type type, Condition condition, const QString& appCondition
  */
 Stanza::Error Stanza::Error::fromStanza(const Stanza& stanza)
 {
-	QDomElement eError = stanza.doc()->documentElement().firstChildElement("error");
-	if ( eError.isNull() ) {
-		return Error();
-	}
+    QDomElement eError = stanza.doc()->documentElement().firstChildElement("error");
+    if ( eError.isNull() ) {
+        return Error();
+    }
 
-	Error error;
-	error.d->type = (Type)Private::stringToType( eError.attribute("type") );
+    Error error;
+    error.d->type = (Type)Private::stringToType( eError.attribute("type") );
 
-	QDomNodeList childs = eError.childNodes();
-	for ( int i = 0; i < childs.count(); ++i ) {
-		QDomElement element = childs.item(i).toElement();
-		if ( element.namespaceURI() == NS_STANZAS) {
-			int condition = Private::stringToCondition(element.tagName() );
-			if ( condition != -1 ) {
-				error.d->condition = (Condition)condition;
-				break;
-			}
-		}
-	}
+    QDomNodeList childs = eError.childNodes();
+    for ( int i = 0; i < childs.count(); ++i ) {
+        QDomElement element = childs.item(i).toElement();
+        if ( element.namespaceURI() == NS_STANZAS) {
+            int condition = Private::stringToCondition(element.tagName() );
+            if ( condition != -1 ) {
+                error.d->condition = (Condition)condition;
+                break;
+            }
+        }
+    }
 
-	QDomElement eText = eError.firstChildElement("text");
-	if ( eText.namespaceURI() == NS_STANZAS && !eText.text().isNull() ) {
-		error.d->text = eText.text().trimmed();
-	}
+    QDomElement eText = eError.firstChildElement("text");
+    if ( eText.namespaceURI() == NS_STANZAS && !eText.text().isNull() ) {
+        error.d->text = eText.text().trimmed();
+    }
 
-	for ( int i = 0; i < childs.count(); ++i ) {
-		QDomElement element = childs.item(i).toElement();
-		/* first element outside NS_STANZAS ns will be an app-specific error condition */
-		if ( element.namespaceURI() != NS_STANZAS) {
-			error.d->appConditionNS = element.namespaceURI();
-			error.d->appCondition = element.tagName();
-		}
-	}
-	return error;
+    for ( int i = 0; i < childs.count(); ++i ) {
+        QDomElement element = childs.item(i).toElement();
+        /* first element outside NS_STANZAS ns will be an app-specific error condition */
+        if ( element.namespaceURI() != NS_STANZAS) {
+            error.d->appConditionNS = element.namespaceURI();
+            error.d->appCondition = element.tagName();
+        }
+    }
+    return error;
 }
 
 /**
@@ -309,7 +309,7 @@ Stanza::Error::~Error()
  */
 QString Stanza::Error::appCondition() const
 {
-	return d->appCondition;
+    return d->appCondition;
 }
 
 /**
@@ -317,7 +317,7 @@ QString Stanza::Error::appCondition() const
  */
 QString Stanza::Error::appConditionNS() const
 {
-	return d->appConditionNS;
+    return d->appConditionNS;
 }
 
 /**
@@ -327,7 +327,7 @@ QString Stanza::Error::appConditionNS() const
  */
 Stanza::Error::Condition Stanza::Error::condition() const
 {
-	return d->condition;
+    return d->condition;
 }
 
 /**
@@ -335,7 +335,7 @@ Stanza::Error::Condition Stanza::Error::condition() const
  */
 QString Stanza::Error::text() const
 {
-	return d->text;
+    return d->text;
 }
 
 /**
@@ -345,19 +345,19 @@ QString Stanza::Error::text() const
  */
 Stanza::Error::Type Stanza::Error::type() const
 {
-	return d->type;
+    return d->type;
 }
 
 /**
  * Sets application-specific error condition within application namespace.
  *
- * @param appConditionNS	Application namespace.
- * @param appCondition		Application-specific error condition.
+ * @param appConditionNS    Application namespace.
+ * @param appCondition      Application-specific error condition.
  */
 void Stanza::Error::setAppCondition(const QString& appConditionNS, const QString& appCondition)
 {
-	d->appCondition = appCondition;
-	d->appConditionNS = appConditionNS;
+    d->appCondition = appCondition;
+    d->appConditionNS = appConditionNS;
 }
 
 /**
@@ -365,11 +365,11 @@ void Stanza::Error::setAppCondition(const QString& appConditionNS, const QString
  */
 void Stanza::Error::setCondition(Condition condition)
 {
-	d->condition = condition;
-	int type = Private::typeForCondition(condition);
-	if (type != -1) {
-		d->type = (Type)type;
-	}
+    d->condition = condition;
+    int type = Private::typeForCondition(condition);
+    if (type != -1) {
+        d->type = (Type)type;
+    }
 }
 
 /**
@@ -377,7 +377,7 @@ void Stanza::Error::setCondition(Condition condition)
  */
 void Stanza::Error::setText(const QString& text)
 {
-	d->text = text;
+    d->text = text;
 }
 
 /**
@@ -385,7 +385,7 @@ void Stanza::Error::setText(const QString& text)
  */
 void Stanza::Error::setType(Type type)
 {
-	d->type = type;
+    d->type = type;
 }
 
 /**
@@ -395,26 +395,26 @@ void Stanza::Error::setType(Type type)
  */
 void Stanza::Error::pushToDomElement(QDomElement element) const
 {
-	QDomElement eError = element.ownerDocument().createElement("error");
-	eError.setAttribute( "type", Private::typeToString(d->type) );
+    QDomElement eError = element.ownerDocument().createElement("error");
+    eError.setAttribute( "type", Private::typeToString(d->type) );
 
-	QDomElement eCondition = element.ownerDocument().createElementNS( NS_STANZAS, Private::conditionToString(d->condition) );
-	eError.appendChild(eCondition);
+    QDomElement eCondition = element.ownerDocument().createElementNS( NS_STANZAS, Private::conditionToString(d->condition) );
+    eError.appendChild(eCondition);
 
-	if ( !d->text.isEmpty() ) {
-		QDomElement eText = element.ownerDocument().createElementNS(NS_STANZAS, "text");
-		eError.appendChild(eText);
+    if ( !d->text.isEmpty() ) {
+        QDomElement eText = element.ownerDocument().createElementNS(NS_STANZAS, "text");
+        eError.appendChild(eText);
 
-		QDomText tText = element.ownerDocument().createTextNode(d->text);
-		eText.appendChild(tText);
-	}
+        QDomText tText = element.ownerDocument().createTextNode(d->text);
+        eText.appendChild(tText);
+    }
 
-	if ( !d->appConditionNS.isEmpty() && !d->appCondition.isEmpty() ) {
-		QDomElement eAppCond = element.ownerDocument().createElementNS(d->appConditionNS, d->appCondition);
-		eError.appendChild(eAppCond);
-	}
+    if ( !d->appConditionNS.isEmpty() && !d->appCondition.isEmpty() ) {
+        QDomElement eAppCond = element.ownerDocument().createElementNS(d->appConditionNS, d->appCondition);
+        eError.appendChild(eAppCond);
+    }
 
-	element.appendChild(eError);
+    element.appendChild(eError);
 }
 
 /**
@@ -602,4 +602,4 @@ void Stanza::Error::pushToDomElement(QDomElement element) const
 
 } /* end of namespace XMPP */
 
-// vim:ts=4:sw=4:noet:nowrap
+// vim:ts=4:sw=4:et:nowrap

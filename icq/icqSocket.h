@@ -58,9 +58,9 @@ class Socket : public QObject
         void sendMetaRequest(Word type, Buffer& data);
 
         void write(const FlapBuffer& flap);
+        void write(FlapBuffer* flap);
         void write(const SnacBuffer& snac);
 
-        void writeForced(FlapBuffer* flap);
         void writeForced(SnacBuffer* snac);
     signals:
         void incomingFlap(FlapBuffer& flap);

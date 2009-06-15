@@ -90,6 +90,9 @@ Socket::~Socket()
     delete d;
 }
 
+/**
+ * Establish TCP link with @a host at port @a port.
+ */
 void Socket::connectToHost(const QHostAddress& host, quint16 port)
 {
     d->socket = new QTcpSocket(this);
@@ -97,6 +100,9 @@ void Socket::connectToHost(const QHostAddress& host, quint16 port)
     d->socket->connectToHost(host, port);
 }
 
+/**
+ * Closes TCP socket.
+ */
 void Socket::disconnectFromHost()
 {
     if ( !d->socket ) {
@@ -107,16 +113,27 @@ void Socket::disconnectFromHost()
     d->socket = 0;
 }
 
+/**
+ * Sets ICQ::RateManager object for this connection.
+ */
 void Socket::setRateManager(RateManager *ptr)
 {
     d->rateManager = ptr;
 }
 
+/**
+ * Sets ICQ::MetaManager object for this connection.
+ */
 void Socket::setMetaManager(MetaInfoManager *ptr)
 {
     d->metaManager = ptr;
 }
 
+/**
+ * Sends empty SNAC packet to the server.
+ * @param family    SNAC family
+ * @param subtype   SNAC subtype
+ */
 void Socket::snacRequest(Word family, Word subtype)
 {
     write( SnacBuffer(family, subtype) );
@@ -138,11 +155,30 @@ void Socket::sendMetaRequest(Word type, Buffer& data)
     d->metaManager->sendMetaRequest(type, data);
 }
 
+/**
+ * Sends FLAP packet to the server.
+ */
 void Socket::write(const FlapBuffer& flap)
 {
-    writeForced( const_cast<FlapBuffer*>(&flap) );
+    write( const_cast<FlapBuffer*>(&flap) );
 }
 
+/**
+ * Sends FLAP packet to the server.
+ * @overload
+ */
+void Socket::write(FlapBuffer* flap)
+{
+    flap->setSequence( d->flapID() );
+
+    // qDebug() << "[ICQ:Socket] >> flap channel" << flap->channel() << "len" << flap->size() << "sequence" << QByteArray::number(flap->sequence(), 16);
+    // qDebug() << "[ICQ:Socket] >> flap data" << flap->data().toHex().toUpper();
+    d->socket->write( flap->data() );
+}
+
+/**
+ * Sends SNAC packet to the server.
+ */
 void Socket::write(const SnacBuffer& snac)
 {
     if ( d->rateManager && !d->rateManager->canSend(snac) ) {
@@ -152,20 +188,14 @@ void Socket::write(const SnacBuffer& snac)
     }
 }
 
-void Socket::writeForced(FlapBuffer* flap)
-{
-    flap->setSequence( d->flapID() );
-
-    // qDebug() << "[ICQ:Socket] >> flap channel" << flap->channel() << "len" << flap->size() << "sequence" << QByteArray::number(flap->sequence(), 16);
-    // qDebug() << "[ICQ:Socket] >> flap data" << flap->data().toHex().toUpper();
-    d->socket->write( flap->data() );
-}
-
+/**
+ * Forcibly sends SNAC packet to the server without going through rate manager.
+ */
 void Socket::writeForced(SnacBuffer* snac)
 {
     snac->setRequestId( d->snacID() );
 
-    writeForced( dynamic_cast<FlapBuffer*>(snac) );
+    write( dynamic_cast<FlapBuffer*>(snac) );
 
     /*qDebug() << "[ICQ:Socket] >>"
         << "snac head: family"

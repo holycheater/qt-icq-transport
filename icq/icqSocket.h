@@ -65,8 +65,6 @@ class Socket : public QObject
     signals:
         void incomingFlap(FlapBuffer& flap);
         void incomingSnac(SnacBuffer& snac);
-
-        void readyRead();
     private slots:
         void processIncomingData();
     private:

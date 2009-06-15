@@ -278,6 +278,21 @@ void Socket::processIncomingData()
     }
 }
 
+/**
+ * @fn void incomingFlap(FlapBuffer& flap)
+ *
+ * This signal is emitted when the socket receives a FLAP packet.
+ * @param flap  FLAP packet.
+ */
+
+/**
+ * @fn void incomingSnac(SnacBuffer& snac)
+ *
+ * This signal is emitted when the socket receives a SNAC packet.
+ * @note incomingFlap is emitted before this signal.
+ * @param snac  SNAC packet.
+ */
+
 
 } /* end of namespace ICQ */
 

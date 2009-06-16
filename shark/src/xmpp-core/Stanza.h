@@ -67,9 +67,10 @@ class Stanza
         /* XEP-0172: User Nickname */
         QString nick() const;
         void setNick(const QString& nick);
-    protected:
+
         QDomDocument* doc();
         QDomDocument* doc() const;
+    protected:
         void setProperty(const QString& name, const QString& value);
     private:
         QDomDocument m_doc;

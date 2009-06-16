@@ -17,6 +17,7 @@ Description
   - XEP-0054 (vcard-temp)
   - XEP-0077 (In-Band Registration)
   - XEP-0114 (Jabber Component Protocol)
+  - XEP-0144 (Roster Item Exchange)
   - XEP-0172 (User Nickname)
 
 Build requirements

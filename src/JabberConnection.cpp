@@ -522,12 +522,14 @@ void JabberConnection::Private::processDiscoItems(const IQ& iq)
     if ( iq.childElement().attribute("node").isEmpty() || iq.childElement().attribute("node") == NS_QUERY_ADHOC ) {
         DiscoItems items;
 
-        QHashIterator<QString,DiscoItem> ci(commands);
-        while ( ci.hasNext() ) {
-            ci.next();
-            items << ci.value();
+        if ( UserManager::instance()->isRegistered(iq.from().bare()) ) {
+            QHashIterator<QString,DiscoItem> ci(commands);
+            while ( ci.hasNext() ) {
+                ci.next();
+                items << ci.value();
+            }
+            items.pushToDomElement( reply.childElement() );
         }
-        items.pushToDomElement( reply.childElement() );
     }
 
     stream->sendStanza(reply);

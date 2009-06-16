@@ -32,6 +32,7 @@
 #include "xmpp-ext/ServiceDiscovery.h"
 #include "xmpp-ext/Registration.h"
 #include "xmpp-ext/vCard.h"
+#include "xmpp-ext/rosterx.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -103,7 +104,8 @@ JabberConnection::JabberConnection(QObject *parent)
     d->stream = new ComponentStream(d->connector);
 
     d->disco << DiscoInfo::Identity("gateway", "icq", "ICQ Transport");
-    d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP << NS_IQ_GATEWAY;
+    d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP << NS_IQ_GATEWAY
+            << NS_ROSTERX;
 
     d->vcard.setFullName("ICQ Transport");
     d->vcard.setDescription("Qt ICQ Transport");

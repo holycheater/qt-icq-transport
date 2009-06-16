@@ -348,8 +348,10 @@ Message MessageManager::handle_channel_2_msg(TlvChain& chain)
         msgBlock.seekForward( sizeof(DWord) ); // bg color
         DWord guidStrLen = msgBlock.getLEDWord();
         QByteArray guidStr = msgBlock.read(guidStrLen);
+        if ( qstrncmp(guidStr.constData(), "{0946134E-4C7F-11D1-8222-444553540000}", guidStrLen) == 0 ) {
+            msg.setEncoding(Message::Utf8);
+        }
     }
-    msg.setEncoding(Message::Utf8);
 
     return msg;
 }

@@ -79,6 +79,13 @@ DWord Socket::Private::snacID()
     return ++m_snacID;
 }
 
+/**
+ * @class Socket
+ * @brief ICQ Socket class.
+ * The purpose of this class is to establish TCP connection with server
+ * and provide a way to send/receive FLAP and SNAC packets.
+ */
+
 Socket::Socket(QObject *parent)
     : QObject(parent)
 {

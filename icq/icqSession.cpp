@@ -169,6 +169,15 @@ void Session::Private::processSnacError(SnacBuffer& snac)
     emit q->error(text);
 }
 
+/**
+ * @class Session
+ * @brief Represents icq session
+ *
+ * First, you need to set UIN and password with @a setUin() and @a setPassword()
+ * Then, you can all @a connect to establish a session with server.
+ * After success session emits @a connected() signal.
+ */
+
 Session::Session(QObject *parent)
     : QObject(parent)
 {
@@ -180,6 +189,10 @@ Session::~Session()
     delete d;
 }
 
+/**
+ * Starts session with ICQ server.
+ * @sa setUin(), setPassword()
+ */
 void Session::connect()
 {
     if ( d->connectionStatus != Disconnected ) {
@@ -201,6 +214,9 @@ void Session::connect()
     }
 }
 
+/**
+ * Closes the session with ICQ server.
+ */
 void Session::disconnect()
 {
     if ( d->connectionStatus == Disconnected ) {
@@ -236,6 +252,10 @@ void Session::disconnect()
     emit disconnected();
 }
 
+/**
+ * Add @a uin to contact list.
+ * @note If user requires authorization the request is sent automatically.
+ */
 void Session::contactAdd(const QString& uin)
 {
     if (!d->ssiManager) {
@@ -258,6 +278,9 @@ void Session::contactAdd(const QString& uin)
     }
 }
 
+/**
+ * Delete @a uin from contact list.
+ */
 void Session::contactDel(const QString& uin)
 {
     if (!d->ssiManager) {
@@ -271,6 +294,9 @@ void Session::contactDel(const QString& uin)
     }
 }
 
+/**
+ * Grant authorization to @a toUin
+ */
 void Session::authGrant(const QString& toUin)
 {
     if (!d->ssiManager) {
@@ -279,6 +305,9 @@ void Session::authGrant(const QString& toUin)
     d->ssiManager->grantAuthorization(toUin);
 }
 
+/**
+ * Deny authorization to @a toUin
+ */
 void Session::authDeny(const QString& toUin)
 {
     if (!d->ssiManager) {
@@ -288,7 +317,7 @@ void Session::authDeny(const QString& toUin)
 }
 
 /**
- * Get contact name from ssi-list
+ * Get contact's display name from ssi-list
  */
 QString Session::contactName(const QString& uin) const
 {
@@ -302,11 +331,17 @@ QString Session::contactName(const QString& uin) const
     return contact.displayName();
 }
 
+/**
+ * Sets codec used for messages.
+ */
 void Session::setCodecForMessages(QTextCodec *codec)
 {
     d->codec = codec;
 }
 
+/**
+ * Sends @a message to @a recipient.
+ */
 void Session::sendMessage(const QString& recipient, const QString& message)
 {
     if (!d->msgManager || !d->userInfoManager) {
@@ -331,11 +366,18 @@ void Session::sendMessage(const QString& recipient, const QString& message)
     d->msgManager->sendMessage(msg);
 }
 
+/**
+ * Returns current connection status of the session.
+ * @sa ConnectionStatus
+ */
 Session::ConnectionStatus Session::connectionStatus() const
 {
     return d->connectionStatus;
 }
 
+/**
+ * Returns list of UINs contained in contact list.
+ */
 QStringList Session::contactList() const
 {
     if ( !d->ssiManager || d->connectionStatus != Connected ) {
@@ -353,7 +395,8 @@ QStringList Session::contactList() const
 }
 
 /**
- * Request own online status
+ * Returns user's online status.
+ * @sa OnlineStatus
  */
 Session::OnlineStatus Session::onlineStatus() const
 {
@@ -396,46 +439,87 @@ Session::OnlineStatus Session::onlineStatus(const QString& uin) const
     return singleStatus;
 }
 
-QString Session::password() const
-{
-    return d->password;
-}
-
+/**
+ * Returns server's hostname for this session.
+ */
 QString Session::serverHost() const
 {
     return d->server;
 }
 
+/**
+ * Returns server's port for this session.
+ */
 quint16 Session::serverPort() const
 {
     return d->port;
 }
 
+/**
+ * Returns user's UIN.
+ */
 QString Session::uin() const
 {
     return d->uin;
 }
 
+/**
+ * Sets user's UIN.
+ * @note this method does nothing if user is connecting/connected.
+ * @sa setPassword(), setServerHost(), setServerPort()
+ */
 void Session::setUin(const QString& uin)
 {
+    if ( connectionStatus() != Disconnected ) {
+        return;
+    }
     d->uin = uin;
 }
 
+/**
+ * Sets user's password.
+ * @note this method does nothing if user is connecting/connected.
+ * @sa setUin(), setServerHost(), setServerPort()
+ */
 void Session::setPassword(const QString& password)
 {
+    if ( connectionStatus() != Disconnected ) {
+        return;
+    }
     d->password = password;
 }
 
+/**
+ * Sets ICQ server hostname/IP.
+ * @note this method does nothing if user is connecting/connected.
+ * @sa setUin(), setPassword(), setServerPort()
+ */
 void Session::setServerHost(const QString& server)
 {
+    if ( connectionStatus() != Disconnected ) {
+        return;
+    }
     d->server = server;
 }
 
+/**
+ * Sets ICQ server port.
+ * @note this method does nothing if user is connecting/connected.
+ * @sa setUin(), setPassword(), setServerHost()
+ */
 void Session::setServerPort(quint16 port)
 {
+    if ( connectionStatus() != Disconnected ) {
+        return;
+    }
     d->port = port;
 }
 
+/**
+ * Sets user's online status.
+ * @note this method does nothing if user is not connected.
+ * @sa OnlineStatus
+ */
 void Session::setOnlineStatus(OnlineStatus status)
 {
     if ( d->onlineStatus == status ) {
@@ -494,6 +578,10 @@ void Session::setOnlineStatus(OnlineStatus status)
     d->socket->write(reqSetStatus);
 }
 
+/**
+ * Sends request for own user details to the server.
+ * @note this method does nothing if user is not connected to the server.
+ */
 void Session::requestOwnUserDetails()
 {
     if ( !d->userInfoManager ) {
@@ -502,6 +590,11 @@ void Session::requestOwnUserDetails()
     d->userInfoManager->requestOwnUserDetails(d->uin);
 }
 
+/**
+ * Requests details for @a uin from server.
+ * @note this method does nothing if user is not connected to the server.
+ * @sa requestShortUserDetails(), shortUserDetails(), userDetails()
+ */
 void Session::requestUserDetails(const QString& uin)
 {
     if ( !d->userInfoManager ) {
@@ -510,6 +603,11 @@ void Session::requestUserDetails(const QString& uin)
     d->userInfoManager->requestUserDetails(uin);
 }
 
+/**
+ * Request short user details for @a uin from server.
+ * @note this method does nothing if user is not connected to the server
+ * @sa requestUserDetails(), userDetails(), shortUserDetails()
+ */
 void Session::requestShortUserDetails(const QString& uin)
 {
     if ( !d->userInfoManager ) {
@@ -518,6 +616,12 @@ void Session::requestShortUserDetails(const QString& uin)
     d->userInfoManager->requestShortDetails(uin);
 }
 
+/**
+ * Returns short user details for @a uin
+ * @note this method returns empty details if user is not connected or
+ * details were not previously requested with @a requestShortUserDetails()
+ * @sa userDetails(), requestShortUserDetails(), requestUserDetails(), ShortUserDetails
+ */
 ShortUserDetails Session::shortUserDetails(const QString& uin) const
 {
     if ( !d->userInfoManager ) {
@@ -526,6 +630,12 @@ ShortUserDetails Session::shortUserDetails(const QString& uin) const
     return d->userInfoManager->shorUserDetails(uin);
 }
 
+/**
+ * Returns user details for @a uin
+ * @note this method returns empty details if user is not connected or
+ * details were not previously requested with @a requestUserDetails()
+ * @sa shortUserDetails(), requestShortUserDetails(), requestUserDetails(), UserDetails
+ */
 UserDetails Session::userDetails(const QString& uin) const
 {
     if ( !d->userInfoManager ) {
@@ -534,6 +644,11 @@ UserDetails Session::userDetails(const QString& uin) const
     return d->userInfoManager->userDetails(uin);
 }
 
+/**
+ * Return's connection information for @a uin.
+ * @note this method returns empty UserInfo if user is not connected
+ * or doesn't have @a uin in the contact list.
+ */
 UserInfo Session::userInfo(const QString& uin) const
 {
     if ( !d->userInfoManager ) {
@@ -542,6 +657,10 @@ UserInfo Session::userInfo(const QString& uin) const
     return d->userInfoManager->getUserInfo(uin);
 }
 
+/**
+ * Removes user details for @a uin from cache.
+ * This is neccesary to request new user details for @a uin.
+ */
 void Session::removeUserDetails(const QString& uin)
 {
     if ( !d->userInfoManager ) {
@@ -549,6 +668,11 @@ void Session::removeUserDetails(const QString& uin)
     }
     d->userInfoManager->clearUserDetails(uin);
 }
+
+/**
+ * Removes short user details for @a uin from cache.
+ * This is neccesary to request new short user details for @a uin.
+ */
 void Session::removeShortUserDetails(const QString& uin)
 {
     if ( !d->userInfoManager ) {
@@ -683,7 +807,6 @@ void Session::processIncomingMessage(const Message& msg)
     if ( !d->codec ) {
         d->codec = QTextCodec::codecForName("Windows-1251");
     }
-    Q_ASSERT(d->codec != 0);
 
     if ( msg.channel() == 0x04 ) {
         if ( msg.type() == Message::AuthRequest ) {
@@ -794,6 +917,81 @@ QString Session::Private::errDescForCode(Word errorCode)
     }
     return tr("Unknown error");
 }
+
+/**
+ * @fn void Session::connected()
+ * This signal is emitted when user successfully logs on.
+ */
+
+/**
+ * @fn void Session::disconnected()
+ * This signal is emitted when user disconnects or the connection is lost.
+ */
+
+/**
+ * @fn void Session::error(const QString& errorString)
+ * This signal is emitted when session receives SNAC subtype 0x01 or error happens
+ * during logging in.
+ */
+
+/**
+ * @fn void Session::rosterAvailable()
+ * This signal is emitted when session receives contact list from server during logging in.
+ */
+
+/**
+ * @fn void Session::statusChanged(int onlineStatus)
+ * This signal is emitted when server verifies that user's status changed.
+ */
+
+/**
+ * @fn void Session::userOnline(const QString& uin, int status)
+ * This signal is emitted when @a uin goes online or changes status.
+ * @sa OnlineStatus
+ */
+
+/**
+ * @fn void Session::userOffline(const QString& uin)
+ * This signal is emitted when @a uin goes offline.
+ */
+
+/**
+ * @fn void Session::authGranted(const QString& fromUin)
+ * This signal is emitted when @a fromUin grants authorization to the user.
+ */
+
+/**
+ * @fn void Session::authDenied(const QString& fromUin)
+ * This signal is emitted when @a fromUin denies authorization to the user.
+ */
+
+/**
+ * @fn void Session::authRequest(const QString& fromUin)
+ * This signal is emitted when @a fromUin requests authorization from the user.
+ */
+
+/**
+ * @fn void Session::incomingMessage(const QString& uin, const QString& msg)
+ * This signal is emitted when the user receives a message from @a uin.
+ */
+
+/**
+ * @fn void Session::incomingMessage(const QString& uin, const QString& msg, const QDateTime& timestamp)
+ * This signal is emitted when the user receives an offline message from @a uin sent at @a timestamp
+ */
+
+/**
+ * @fn void Session::shortUserDetailsAvailable(const QString& uin)
+ * This signal is emitted when the user receives previously requested short user details
+ * for @a uin
+ * @sa shortUserDetails(), requestShortUserDetails(), ShortUserDetails
+ */
+
+/**
+ * @fn void Session::userDetailsAvailable(const QString& uin)
+ * This signal is emitted when the user receives previosly requested user details for @a uin.
+ * @sa userDetails(), requestUserDetails(), UserDetails
+ */
 
 
 } /* end of namespace ICQ */

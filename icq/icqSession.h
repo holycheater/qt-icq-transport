@@ -59,7 +59,7 @@ class Session : public QObject
         void contactDel(const QString& uin);
 
         void authGrant(const QString& toUin);
-        void authDeny(const QString& fromUin);
+        void authDeny(const QString& toUin);
 
         QString contactName(const QString& uin) const;
 
@@ -70,7 +70,6 @@ class Session : public QObject
         QStringList contactList() const;
         OnlineStatus onlineStatus() const;
         OnlineStatus onlineStatus(const QString& uin) const;
-        QString password() const;
         QString serverHost() const;
         quint16 serverPort() const;
         QString uin() const;

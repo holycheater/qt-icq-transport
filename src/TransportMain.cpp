@@ -33,6 +33,7 @@
 #include <QProcess>
 #include <QSqlDatabase>
 #include <QStringList>
+#include <QTextCodec>
 #include <QTextStream>
 #include <QTimer>
 
@@ -358,7 +359,9 @@ void TransportMain::loghandler(QtMsgType type, const char *msg)
     QFile *logfile = app->m_logfile;
     Q_CHECK_PTR(logfile);
 
-    QTextStream(logfile) << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << msgType << " " << msg << "\n";
+    QTextStream s(logfile);
+    s.setCodec("LATIN1");
+    s << "[" << QDateTime::currentDateTime().toString(Qt::ISODate) << "] " << msgType << " " << msg << "\n";
     if ( type == QtFatalMsg ) {
         abort();
     }

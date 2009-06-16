@@ -19,9 +19,11 @@
  */
 
 #include "TransportMain.h"
+#include <QTextCodec>
 
 int main(int argc, char **argv)
 {
+    QTextCodec::setCodecForCStrings( QTextCodec::codecForName("UTF-8") );
     TransportMain app(argc, argv);
     return app.exec();
 }

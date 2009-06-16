@@ -81,7 +81,8 @@ DWord Socket::Private::snacID()
 
 /**
  * @class Socket
- * @brief ICQ Socket class.
+ * @brief represents icq flap/snac transfer socket.
+ *
  * The purpose of this class is to establish TCP connection with server
  * and provide a way to send/receive FLAP and SNAC packets.
  */
@@ -286,14 +287,14 @@ void Socket::processIncomingData()
 }
 
 /**
- * @fn void incomingFlap(FlapBuffer& flap)
+ * @fn void Socket::incomingFlap(FlapBuffer& flap)
  *
  * This signal is emitted when the socket receives a FLAP packet.
  * @param flap  FLAP packet.
  */
 
 /**
- * @fn void incomingSnac(SnacBuffer& snac)
+ * @fn void Socket::incomingSnac(SnacBuffer& snac)
  *
  * This signal is emitted when the socket receives a SNAC packet.
  * @note incomingFlap is emitted before this signal.

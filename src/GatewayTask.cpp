@@ -357,16 +357,21 @@ void GatewayTask::processVCardRequest(const Jid& user, const QString& uin, const
  */
 void GatewayTask::processCmd_RosterRequest(const Jid& user)
 {
-    ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
-    if ( !conn ) {
+    ICQ::Session *session = d->jidIcqTable.value( user.bare() );
+    if ( !session ) {
         return;
     }
 
-    QStringList contacts = conn->contactList();
-    QStringListIterator ci(contacts);
-    while ( ci.hasNext() ) {
-        emit subscriptionRequest( user, ci.next() );
+    QStringList contacts = session->contactList();
+    QStringListIterator i(contacts);
+    QList<XMPP::RosterXItem> items;
+    while ( i.hasNext() ) {
+        QString uin = i.next();
+        QString name = session->contactName(uin);
+        XMPP::RosterXItem item(uin, XMPP::RosterXItem::Add, name);
+        items << item;
     }
+    emit rosterAdd(user, items);
 }
 
 /**

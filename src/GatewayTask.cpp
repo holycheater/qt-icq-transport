@@ -67,6 +67,29 @@ class GatewayTask::Private
         QHash<QString, int> reconnects;
 };
 
+static ICQ::Session::OnlineStatus xmmpToIcqStatus(XMPP::Presence::Show status)
+{
+    ICQ::Session::OnlineStatus icqStatus;
+    switch ( status ) {
+    case XMPP::Presence::None:
+        icqStatus = ICQ::Session::Online;
+        break;
+    case XMPP::Presence::Chat:
+        icqStatus = ICQ::Session::FreeForChat;
+        break;
+    case XMPP::Presence::Away:
+        icqStatus = ICQ::Session::Away;
+        break;
+    case XMPP::Presence::NotAvailable:
+        icqStatus = ICQ::Session::NotAvailable;
+        break;
+    case XMPP::Presence::DoNotDisturb:
+        icqStatus = ICQ::Session::DoNotDisturb;
+        break;
+    }
+    return icqStatus;
+}
+
 GatewayTask::Private::Private(GatewayTask *parent)
 {
     q = parent;
@@ -129,24 +152,7 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
         qCritical("[GT] processLogin: icq host and/or port values are not set. Aborting...");
         return;
     }
-    ICQ::Session::OnlineStatus icqStatus;
-    switch ( showStatus ) {
-        case XMPP::Presence::None:
-            icqStatus = ICQ::Session::Online;
-            break;
-        case XMPP::Presence::Chat:
-            icqStatus = ICQ::Session::FreeForChat;
-            break;
-        case XMPP::Presence::Away:
-            icqStatus = ICQ::Session::Away;
-            break;
-        case XMPP::Presence::NotAvailable:
-            icqStatus = ICQ::Session::NotAvailable;
-            break;
-        case XMPP::Presence::DoNotDisturb:
-            icqStatus = ICQ::Session::DoNotDisturb;
-            break;
-    }
+    ICQ::Session::OnlineStatus icqStatus = xmmpToIcqStatus(XMPP::Presence::Show(showStatus));
 
     if ( d->jidIcqTable.contains( user.bare() ) ) {
         ICQ::Session *conn = d->jidIcqTable.value( user.bare() );

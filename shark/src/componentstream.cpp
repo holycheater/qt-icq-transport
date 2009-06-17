@@ -1,5 +1,5 @@
 /*
- * ComponentStream.cpp - Jabber component stream (jabber:component:accept)
+ * componentstream.cpp - Jabber component stream (jabber:component:accept)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or

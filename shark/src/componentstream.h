@@ -40,6 +40,7 @@ class Stanza;
 class IQ;
 class Message;
 class Presence;
+class StreamError;
 
 
 class ComponentStream : public QObject
@@ -54,10 +55,8 @@ class ComponentStream : public QObject
         ComponentStream(Connector *connector, QObject *parent = 0);
         ~ComponentStream();
 
-        class Error;
-
         QString lastErrorString() const;
-        Error lastStreamError() const;
+        StreamError lastStreamError() const;
 
         QString baseNS() const;
 
@@ -90,39 +89,6 @@ class ComponentStream : public QObject
     private:
         class Private;
         Private *d;
-};
-
-class ComponentStream::Error
-{
-    public:
-        enum Condition {
-            BadFormat, BadNamespacePrefix, Conflict, ConnectionTimeout, HostGone,
-            HostUnknown, ImproperAddressing, InternalServerError, InvalidFrom,
-            InvalidId, InvalidNamespace, InvalidXml, NotAuthorized, PolicyViolation,
-            RemoteConnectionFailed, ResourceConstraint, RestrictedXml, SeeOtherHost,
-            SystemShutdown, UndefinedCondition, UnsupportedEncoding, UnsupportedStanzaType,
-            UnsupportedVersion, XmlNotWellFormed
-        };
-
-        Error();
-        Error(const Error& other);
-        Error(const QDomDocument& document);
-        Error(const QDomElement& element);
-        ~Error();
-        Error& operator=(const Error& other);
-
-        QString appSpec() const;
-        QString appSpecNS() const;
-        Condition condition() const;
-        QString conditionString() const;
-        QString text() const;
-
-        void setAppSpec(const QString& ns, const QString& spec);
-        void setCondition(Condition type);
-        void setText(const QString& text);
-    private:
-        class Private;
-        QSharedDataPointer<Private> d;
 };
 
 

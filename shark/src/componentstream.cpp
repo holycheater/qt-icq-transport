@@ -24,7 +24,8 @@
 #include <QTcpSocket>
 #include <QXmlAttributes>
 
-#include "ComponentStream.h"
+#include "componentstream.h"
+#include "streamerror.h"
 
 #include "xmpp-core/IQ.h"
 #include "xmpp-core/Jid.h"
@@ -61,7 +62,7 @@ class ComponentStream::Private
         int connectionStatus;
 
         QString lastErrorString;
-        Error lastStreamError;
+        StreamError lastStreamError;
 
         QQueue<QString> stanzaCache;
 };
@@ -108,7 +109,7 @@ QString ComponentStream::lastErrorString() const
 /**
  * Returns last (and the only possible) stream error (if any).
  */
-ComponentStream::Error ComponentStream::lastStreamError() const
+StreamError ComponentStream::lastStreamError() const
 {
     return d->lastStreamError;
 }
@@ -165,7 +166,7 @@ void ComponentStream::handleStreamError(const Parser::Event& event)
         qDebug( "[XMPP:Stream] Cache: %s", qPrintable(i.next()) );
     }
 
-    d->lastStreamError = Error( event.element() );
+    d->lastStreamError = StreamError( event.element() );
     emit error(EStreamError);
     close();
 }

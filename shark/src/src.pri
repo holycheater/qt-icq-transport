@@ -4,7 +4,8 @@ include($$PWD/xmpp-ext/xmpp-ext.pri)
 INCLUDEPATH += $$PWD
 
 HEADERS += \
-	$$PWD/ComponentStream.h
+	$$PWD/componentstream.h \
+        $$PWD/streamerror.h
 SOURCES += \
-	$$PWD/ComponentStream.cpp \
-	$$PWD/StreamError.cpp
+	$$PWD/componentstream.cpp \
+	$$PWD/streamerror.cpp

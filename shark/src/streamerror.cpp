@@ -1,5 +1,5 @@
 /*
- * StreamError.cpp - Stream::Error implementation
+ * streamerror.cpp - Stream-level errors (RFC 3920)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -19,15 +19,18 @@
  */
 
 #include <QDomDocument>
+#include <QDomElement>
 #include <QPair>
 #include <QSharedData>
+#include <QString>
 
-#include "ComponentStream.h"
+#include "streamerror.h"
+#include "componentstream.h"
 
 namespace XMPP {
 
 /**
- * @class ComponentStream::Error
+ * @class StreamError
  * @brief Describes stream-level error.
  *
  * The following rules apply to stream-level errors:
@@ -51,7 +54,7 @@ namespace XMPP {
  * of the "RFC-3920 - Extensible Message and Presence Protocol (XMPP): Core" document.
  */
 
-class ComponentStream::Error::Private : public QSharedData
+class StreamError::Private : public QSharedData
 {
     public:
         Private();
@@ -70,49 +73,49 @@ class ComponentStream::Error::Private : public QSharedData
         QDomElement appSpec;
 };
 
-ComponentStream::Error::Private::Private()
+StreamError::Private::Private()
     : QSharedData()
 {
 }
 
-ComponentStream::Error::Private::Private(const Private& other)
+StreamError::Private::Private(const Private& other)
     : QSharedData(other)
 {
 }
 
-ComponentStream::Error::Private::~Private()
+StreamError::Private::~Private()
 {
 }
 
-ComponentStream::Error::Private::ErrorEnumStringPair ComponentStream::Error::Private::errorConditionTable[] = {
-        ErrorEnumStringPair(BadFormat               , "bad-format"),
-        ErrorEnumStringPair(BadNamespacePrefix      , "bad-namespace-prefix"),
-        ErrorEnumStringPair(Conflict                , "conflict"),
-        ErrorEnumStringPair(ConnectionTimeout       , "connection-timeout"),
-        ErrorEnumStringPair(HostGone                , "host-gone"),
-        ErrorEnumStringPair(HostUnknown             , "host-unknown"),
-        ErrorEnumStringPair(ImproperAddressing      , "improper-addressing"),
-        ErrorEnumStringPair(InternalServerError     , "internal-server-error"),
-        ErrorEnumStringPair(InvalidFrom             , "invalid-from"),
-        ErrorEnumStringPair(InvalidId               , "invalid-id"),
-        ErrorEnumStringPair(InvalidNamespace        , "invalid-namespace"),
-        ErrorEnumStringPair(InvalidXml              , "invalid-xml"),
-        ErrorEnumStringPair(NotAuthorized           , "not-authorized"),
-        ErrorEnumStringPair(PolicyViolation         , "policy-violation"),
-        ErrorEnumStringPair(RemoteConnectionFailed  , "remote-connection-failed"),
-        ErrorEnumStringPair(ResourceConstraint      , "resource-constraint"),
-        ErrorEnumStringPair(RestrictedXml           , "restricted-xml"),
-        ErrorEnumStringPair(SeeOtherHost            , "see-other-host"),
-        ErrorEnumStringPair(SystemShutdown          , "system-shutdown"),
-        ErrorEnumStringPair(UndefinedCondition      , "undefined-condition"),
-        ErrorEnumStringPair(UnsupportedEncoding     , "unsupported-encoding"),
-        ErrorEnumStringPair(UnsupportedStanzaType   , "unsupported-stanza-type"),
-        ErrorEnumStringPair(UnsupportedVersion      , "unsupported-version"),
-        ErrorEnumStringPair(XmlNotWellFormed        , "xml-not-well-formed"),
-        ErrorEnumStringPair(0, 0)
+StreamError::Private::ErrorEnumStringPair StreamError::Private::errorConditionTable[] = {
+    ErrorEnumStringPair(BadFormat               , "bad-format"),
+    ErrorEnumStringPair(BadNamespacePrefix      , "bad-namespace-prefix"),
+    ErrorEnumStringPair(Conflict                , "conflict"),
+    ErrorEnumStringPair(ConnectionTimeout       , "connection-timeout"),
+    ErrorEnumStringPair(HostGone                , "host-gone"),
+    ErrorEnumStringPair(HostUnknown             , "host-unknown"),
+    ErrorEnumStringPair(ImproperAddressing      , "improper-addressing"),
+    ErrorEnumStringPair(InternalServerError     , "internal-server-error"),
+    ErrorEnumStringPair(InvalidFrom             , "invalid-from"),
+    ErrorEnumStringPair(InvalidId               , "invalid-id"),
+    ErrorEnumStringPair(InvalidNamespace        , "invalid-namespace"),
+    ErrorEnumStringPair(InvalidXml              , "invalid-xml"),
+    ErrorEnumStringPair(NotAuthorized           , "not-authorized"),
+    ErrorEnumStringPair(PolicyViolation         , "policy-violation"),
+    ErrorEnumStringPair(RemoteConnectionFailed  , "remote-connection-failed"),
+    ErrorEnumStringPair(ResourceConstraint      , "resource-constraint"),
+    ErrorEnumStringPair(RestrictedXml           , "restricted-xml"),
+    ErrorEnumStringPair(SeeOtherHost            , "see-other-host"),
+    ErrorEnumStringPair(SystemShutdown          , "system-shutdown"),
+    ErrorEnumStringPair(UndefinedCondition      , "undefined-condition"),
+    ErrorEnumStringPair(UnsupportedEncoding     , "unsupported-encoding"),
+    ErrorEnumStringPair(UnsupportedStanzaType   , "unsupported-stanza-type"),
+    ErrorEnumStringPair(UnsupportedVersion      , "unsupported-version"),
+    ErrorEnumStringPair(XmlNotWellFormed        , "xml-not-well-formed"),
+    ErrorEnumStringPair(0, 0)
 };
 
-QString ComponentStream::Error::Private::conditionToString(Condition condition)
+QString StreamError::Private::conditionToString(Condition condition)
 {
     for (int i = 0; errorConditionTable[i].second; ++i) {
         if (errorConditionTable[i].first == condition) {
@@ -122,7 +125,7 @@ QString ComponentStream::Error::Private::conditionToString(Condition condition)
     return "undefined-condition";
 }
 
-int ComponentStream::Error::Private::stringToCondition(const QString& condition)
+int StreamError::Private::stringToCondition(const QString& condition)
 {
     for (int i = 0; errorConditionTable[i].second; ++i) {
         if (errorConditionTable[i].second == condition) {
@@ -135,7 +138,7 @@ int ComponentStream::Error::Private::stringToCondition(const QString& condition)
 /**
  * Constructs stream-error object.
  */
-ComponentStream::Error::Error()
+StreamError::StreamError()
     : d(new Private)
 {
     QDomElement element = d->doc.createElement("stream:error");
@@ -145,7 +148,7 @@ ComponentStream::Error::Error()
 /**
  * Constructs a deep copy of @a other
  */
-ComponentStream::Error::Error(const Error& other)
+StreamError::StreamError(const StreamError& other)
     : d(other.d)
 {
 }
@@ -155,7 +158,7 @@ ComponentStream::Error::Error(const Error& other)
  *
  * @param element   \<stream:error/\> DOM element.
  */
-ComponentStream::Error::Error(const QDomElement& element)
+StreamError::StreamError(const QDomElement& element)
     : d(new Private)
 {
     QDomNode root = d->doc.importNode(element, true);
@@ -190,11 +193,11 @@ ComponentStream::Error::Error(const QDomElement& element)
 /**
  * Destroys stream-error object.
  */
-ComponentStream::Error::~Error()
+StreamError::~StreamError()
 {
 }
 
-ComponentStream::Error& ComponentStream::Error::operator=(const Error& other)
+StreamError& StreamError::operator=(const StreamError& other)
 {
     d = other.d;
     return *this;
@@ -205,7 +208,7 @@ ComponentStream::Error& ComponentStream::Error::operator=(const Error& other)
  *
  * @sa appSpecNS(), condition(), text()
  */
-QString ComponentStream::Error::appSpec() const
+QString StreamError::appSpec() const
 {
     return d->appSpec.tagName();
 }
@@ -215,7 +218,7 @@ QString ComponentStream::Error::appSpec() const
  *
  * @sa appSpec(), condition(), text()
  */
-QString ComponentStream::Error::appSpecNS() const
+QString StreamError::appSpecNS() const
 {
     return d->appSpec.namespaceURI();
 }
@@ -225,7 +228,7 @@ QString ComponentStream::Error::appSpecNS() const
  *
  * @sa appSpec(), appSpecNS(), text(), Condition
  */
-ComponentStream::Error::Condition ComponentStream::Error::condition() const
+StreamError::Condition StreamError::condition() const
 {
     int condition = Private::stringToCondition( d->errorCondition.tagName() );
     if ( condition != -1 ) {
@@ -234,7 +237,7 @@ ComponentStream::Error::Condition ComponentStream::Error::condition() const
     return UndefinedCondition;
 }
 
-QString ComponentStream::Error::conditionString() const
+QString StreamError::conditionString() const
 {
     return d->errorCondition.tagName();
 }
@@ -244,7 +247,7 @@ QString ComponentStream::Error::conditionString() const
  *
  * @sa appSpec(), appSpecNS(), condition()
  */
-QString ComponentStream::Error::text() const
+QString StreamError::text() const
 {
     return d->text.text();
 }
@@ -256,7 +259,7 @@ QString ComponentStream::Error::text() const
  * @param spec  application-specific error condition
  * @sa setText(), setCondition()
  */
-void ComponentStream::Error::setAppSpec(const QString& ns, const QString& spec)
+void StreamError::setAppSpec(const QString& ns, const QString& spec)
 {
     d->doc.documentElement().removeChild(d->appSpec);
     d->appSpec = d->doc.createElementNS(ns, spec);
@@ -268,7 +271,7 @@ void ComponentStream::Error::setAppSpec(const QString& ns, const QString& spec)
  *
  * @sa setAppSpec(), setText(), Condition
  */
-void ComponentStream::Error::setCondition(Condition condition)
+void StreamError::setCondition(Condition condition)
 {
     d->doc.documentElement().removeChild(d->errorCondition);
     d->errorCondition = d->doc.createElementNS( NS_STREAMS, Private::conditionToString(condition) );
@@ -280,7 +283,7 @@ void ComponentStream::Error::setCondition(Condition condition)
  *
  * @sa setAppSpec(), setCondition()
  */
-void ComponentStream::Error::setText(const QString& text)
+void StreamError::setText(const QString& text)
 {
     d->doc.documentElement().removeChild(d->text);
     d->text = d->doc.createElementNS(NS_STREAMS, "text");
@@ -291,127 +294,127 @@ void ComponentStream::Error::setText(const QString& text)
 }
 
 /**
- * @enum ComponentStream::Error::Type
+ * @enum StreamError::Type
  * List of error conditions as defined in RFC-3920.
  */
 
 /**
- * @var ComponentStream::Error::BadFormat
+ * @var StreamError::BadFormat
  * The entity has sent XML that cannot be processed.
  */
 
 /**
- * @var ComponentStream::Error::BadNamespacePrefix
+ * @var StreamError::BadNamespacePrefix
  * The entity has sent a namespace prefix that is unsupported, or has sent no namespace prefix on an element that requires such a prefix.
  */
 
 /**
- * @var ComponentStream::Error::Conflict
+ * @var StreamError::Conflict
  * The server is closing the active stream for this entity because a new stream has been initiated that conflicts with the existing stream.
  */
 
 /**
- * @var ComponentStream::Error::ConnectionTimeout
+ * @var StreamError::ConnectionTimeout
  * The entity has not generated any traffic over the stream for some period of time (configurable according to a local service policy).
  */
 
 /**
- * @var ComponentStream::Error::HostGone
+ * @var StreamError::HostGone
  * The value of the 'to' attribute provided by the initiating entity in the stream header corresponds to a hostname that is no longer hosted by the server.
  */
 
 /**
- * @var ComponentStream::Error::HostUnknown
+ * @var StreamError::HostUnknown
  * The value of the 'to' attribute provided by the initiating entity in the stream header does not correspond to a hostname that is hosted by the server.
  */
 
 /**
- * @var ComponentStream::Error::ImproperAddressing
+ * @var StreamError::ImproperAddressing
  * A stanza sent between two servers lacks a 'to' or 'from' attribute (or the attribute has no value).
  */
 
 /**
- * @var ComponentStream::Error::InternalServerError
+ * @var StreamError::InternalServerError
  * The server has experienced a misconfiguration or an otherwise-undefined internal error that prevents it from servicing the stream.
  */
 
 /**
- * @var ComponentStream::Error::InvalidFrom
+ * @var StreamError::InvalidFrom
  * The JID or hostname provided in a 'from' address does not match an authorized JID or validated domain negotiated between servers via SASL or dialback, or between a client and a server via authentication and resource binding.
  */
 
 /**
- * @var ComponentStream::Error::InvalidId
+ * @var StreamError::InvalidId
  * The stream ID or dialback ID is invalid or does not match an ID previously provided.
  */
 
 /**
- * @var ComponentStream::Error::InvalidNamespace
+ * @var StreamError::InvalidNamespace
  * The streams namespace name is something other than "http://etherx.jabber.org/streams" or the dialback namespace name is something other than "jabber:server:dialback".
  */
 
 /**
- * @var ComponentStream::Error::InvalidXml
+ * @var StreamError::InvalidXml
  * The entity has sent invalid XML over the stream to a server that performs validation.
  */
 
 /**
- * @var ComponentStream::Error::NotAuthorized
+ * @var StreamError::NotAuthorized
  * The entity has attempted to send data before the stream has been authenticated, or otherwise is not authorized to perform an action related to stream negotiation; the receiving entity MUST NOT process the offending stanza before sending the stream error
  */
 
 /**
- * @var ComponentStream::Error::PolicyViolation
+ * @var StreamError::PolicyViolation
  * The entity has violated some local service policy; the server MAY choose to specify the policy in the \<text/\> element or an application-specific condition element
  */
 
 /**
- * @var ComponentStream::Error::RemoteConnectionFailed
+ * @var StreamError::RemoteConnectionFailed
  * The server is unable to properly connect to a remote entity that is required for authentication or authorization
  */
 
 /**
- * @var ComponentStream::Error::ResourceConstraint
+ * @var StreamError::ResourceConstraint
  * The server lacks the system resources necessary to service the stream
  */
 
 /**
- * @var ComponentStream::Error::RestrictedXml
+ * @var StreamError::RestrictedXml
  * The entity has attempted to send restricted XML features such as a comment, processing instruction, DTD, entity reference, or unescaped character
  */
 
 /**
- * @var ComponentStream::Error::SeeOtherHost
+ * @var StreamError::SeeOtherHost
  * The server will not provide service to the initiating entity but is redirecting traffic to another host; the server SHOULD specify the alternate hostname or IP address (which MUST be a valid domain identifier) as the XML character data of the <see-other-host/> element
  */
 
 /**
- * @var ComponentStream::Error::SystemShutdown
+ * @var StreamError::SystemShutdown
  * The server is being shut down and all active streams are being closed
  */
 
 /**
- * @var ComponentStream::Error::UndefinedCondition
+ * @var StreamError::UndefinedCondition
  * The error condition is not one of those defined by the other conditions in this list; this error condition SHOULD be used only in conjunction with an application-specific condition
  */
 
 /**
- * @var ComponentStream::Error::UnsupportedEncoding
+ * @var StreamError::UnsupportedEncoding
  * The initiating entity has encoded the stream in an encoding that is not supported by the server
  */
 
 /**
- * @var ComponentStream::Error::UnsupportedStanzaType
+ * @var StreamError::UnsupportedStanzaType
  * The initiating entity has sent a first-level child of the stream that is not supported by the server
  */
 
 /**
- * @var ComponentStream::Error::UnsupportedVersion
+ * @var StreamError::UnsupportedVersion
  * The value of the 'version' attribute provided by the initiating entity in the stream header specifies a version of XMPP that is not supported by the server; the server MAY specify the version(s) it supports in the \<text/\> element
  */
 
 /**
- * @var ComponentStream::Error::XmlNotWellFormed
+ * @var StreamError::XmlNotWellFormed
  * The initiating entity has sent XML that is not well-formed as defined by XML specification.
  */
 

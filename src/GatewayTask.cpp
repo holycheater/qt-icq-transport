@@ -620,7 +620,7 @@ void GatewayTask::processShortUserDetails(const QString& uin)
     QString user_bare = d->icqJidTable.value(session);
     Jid user = d->jidResources.value(user_bare);
 
-    QString key = QString(user)+"-"+uin;
+    QString key = QString(user_bare)+"-"+uin;
 
     if ( !d->vCardRequests.contains(key) ) {
         // qDebug() << "[GT]" << "Request was not logged";

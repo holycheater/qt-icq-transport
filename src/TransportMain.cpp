@@ -273,10 +273,10 @@ void TransportMain::connect_signals()
 {
     QObject::connect( m_connection, SIGNAL( connected() ),
                       m_gateway, SLOT( processGatewayOnline() ) );
-    QObject::connect( m_connection, SIGNAL( userRegistered(QString,QString,QString) ),
-                      m_gateway, SLOT( processRegister(QString,QString,QString) ) );
-    QObject::connect( m_connection, SIGNAL( userUnregistered(QString) ),
-                      m_gateway, SLOT( processUnregister(QString) ) );
+    QObject::connect( m_connection, SIGNAL( userRegistered(Jid,QString,QString) ),
+                      m_gateway, SLOT( processRegister(Jid,QString,QString) ) );
+    QObject::connect( m_connection, SIGNAL( userUnregistered(Jid) ),
+                      m_gateway, SLOT( processUnregister(Jid) ) );
     QObject::connect( m_connection, SIGNAL( userOnline(Jid,int,bool) ),
                       m_gateway, SLOT( processUserOnline(Jid,int,bool) ) );
     QObject::connect( m_connection, SIGNAL( userOffline(Jid) ),

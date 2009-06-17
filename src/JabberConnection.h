@@ -79,8 +79,8 @@ class JabberConnection : public QObject
 
         void slotRosterAdd(const Jid& user, const QList<RosterXItem>& items);
     signals:
-        void userUnregistered(const QString& jid);
-        void userRegistered(const QString& jid, const QString& uin, const QString& password);
+        void userUnregistered(const Jid& jid);
+        void userRegistered(const Jid& jid, const QString& uin, const QString& password);
         void userOnline(const Jid& jid, int showStatus, bool first_login);
         void userOffline(const Jid& jid);
         void userOnlineStatusRequest(const Jid& jid);

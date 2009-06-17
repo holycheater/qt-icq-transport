@@ -610,7 +610,7 @@ void JabberConnection::Private::processRegisterForm(const Registration& iq)
         stream->sendStanza(logout);
 
         /* send unregister signal, slot should remove the user from the database */
-        emit q->userUnregistered( iq.from().bare() );
+        emit q->userUnregistered( iq.from() );
         return;
     }
     if ( iq.getField(Registration::Username).isEmpty() || iq.getField(Registration::Password).isEmpty() ) {
@@ -633,7 +633,7 @@ void JabberConnection::Private::processRegisterForm(const Registration& iq)
     subscribe.setType(Presence::Subscribe);
     stream->sendStanza(subscribe);
 
-    emit q->userRegistered( iq.from().bare(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
+    emit q->userRegistered( iq.from(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
 
     Presence presence;
     presence.setFrom(jid);
@@ -641,7 +641,7 @@ void JabberConnection::Private::processRegisterForm(const Registration& iq)
     stream->sendStanza(presence);
 
     /* execute log-in case */
-    emit q->userOnline(iq.from().bare(), Presence::None, true);
+    emit q->userOnline(iq.from(), Presence::None, true);
 }
 
 void JabberConnection::Private::processPromptRequest(const IQ& iq)

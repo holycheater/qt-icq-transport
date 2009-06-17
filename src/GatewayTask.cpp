@@ -46,10 +46,15 @@ class GatewayTask::Private
         Private(GatewayTask *parent);
         ~Private();
 
-        /* Jabber-ID-to-ICQ-Connection hash-table. */
-        QHash<QString, ICQ::Session*> jidIcqTable;
-        /* Connection & Jabber-ID hash-table */
-        QHash<ICQ::Session*, QString> icqJidTable;
+        typedef QHash<QString, Jid> HashJidBareFull;
+        typedef QHash<QString, ICQ::Session*> HashJidIcq;
+        typedef QHash<ICQ::Session*, QString> HashIcqJid;
+
+        /* Jabber-ID-to-ICQ-Connection hash-table. (JID is bare) */
+        HashJidIcq jidIcqTable;
+        /* Connection & Jabber-ID hash-table (JID is bare) */
+        HashIcqJid icqJidTable;
+        HashJidBareFull jidResources;
 
 
         struct vCardRequestInfo {
@@ -120,29 +125,31 @@ void GatewayTask::setIcqServer(const QString& host, quint16 port)
     d->icqPort = port;
 }
 
-void GatewayTask::processRegister(const QString& user, const QString& uin, const QString& password)
+void GatewayTask::processRegister(const Jid& user, const QString& uin, const QString& password)
 {
-    if ( d->jidIcqTable.contains(user) ) {
-        ICQ::Session *conn = d->jidIcqTable.value(user);
-        d->jidIcqTable.remove(user);
+    if ( d->jidIcqTable.contains(user.bare()) ) {
+        ICQ::Session *conn = d->jidIcqTable.value(user.bare());
+        d->jidIcqTable.remove(user.bare());
+        d->jidResources.remove(user.bare());
         d->icqJidTable.remove(conn);
 
         delete conn;
     }
 
-    UserManager::instance()->add(user, uin, password);
+    UserManager::instance()->add(user.bare(), uin, password);
     emit gatewayMessage( user, tr("You have been successfully registered") );
 }
 
 /**
  * Process unregister actions with database and close the legacy connection.
  */
-void GatewayTask::processUnregister(const QString& user)
+void GatewayTask::processUnregister(const Jid& user)
 {
-    ICQ::Session *conn = d->jidIcqTable.value(user);
+    ICQ::Session *conn = d->jidIcqTable.value(user.bare());
     if ( conn ) {
         d->icqJidTable.remove(conn);
-        d->jidIcqTable.remove(user);
+        d->jidIcqTable.remove(user.bare());
+        d->jidResources.remove(user.bare());
         delete conn;
     }
     UserManager::instance()->del(user);
@@ -159,6 +166,7 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
     if ( d->jidIcqTable.contains( user.bare() ) ) {
         ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
         conn->setOnlineStatus(icqStatus);
+        d->jidResources[user.bare()] = user;
         return;
     }
 
@@ -202,8 +210,9 @@ void GatewayTask::processUserOnline(const Jid& user, int showStatus, bool first_
             QObject::connect( conn, SIGNAL( rosterAvailable() ), SLOT( processIcqFirstLogin() ) );
         }
 
-        d->jidIcqTable.insert( user.bare(), conn );
-        d->icqJidTable.insert( conn, user.bare() );
+        d->jidIcqTable.insert(user.bare(), conn);
+        d->icqJidTable.insert(conn, user.bare());
+        d->jidResources.insert(user.bare(), user);
 
         QTextCodec *codec;
         if ( UserManager::instance()->hasOption(user.bare(), "encoding") ) {
@@ -238,6 +247,7 @@ void GatewayTask::processUserOffline(const Jid& user)
 
     d->jidIcqTable.remove( user.bare() );
     d->icqJidTable.remove(conn);
+    d->jidResources.remove( user.bare() );
     conn->disconnect();
     conn->deleteLater();
 }
@@ -400,6 +410,7 @@ void GatewayTask::processShutdown()
 
             d->jidIcqTable.remove(user);
             d->icqJidTable.remove(session);
+            d->jidResources.remove(user);
 
             session->disconnect();
             session->deleteLater();
@@ -411,7 +422,8 @@ void GatewayTask::processShutdown()
 void GatewayTask::processIcqError(const QString& desc)
 {
     ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(conn);
+    QString user_bare = d->icqJidTable.value(conn);
+    Jid user = d->jidResources.value(user_bare);
 
     emit gatewayMessage(user, desc);
 }
@@ -419,7 +431,8 @@ void GatewayTask::processIcqError(const QString& desc)
 void GatewayTask::processIcqSignOn()
 {
     ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(conn);
+    QString user_bare = d->icqJidTable.value(conn);
+    Jid user = d->jidResources.value(user_bare);
 
     emit onlineNotifyFor(user, XMPP::Presence::None);
 
@@ -437,21 +450,23 @@ void GatewayTask::processIcqSignOff()
         return;
     }
 
-    Jid user = d->icqJidTable.value(conn);
+    QString user_bare = d->icqJidTable.value(conn);
+    Jid user = d->jidResources.value(user_bare);
     emit offlineNotifyFor(user);
 
     d->icqJidTable.remove(conn);
-    d->jidIcqTable.remove(user);
+    d->jidIcqTable.remove(user_bare);
+    d->jidResources.remove(user_bare);
     conn->deleteLater();
 
-    bool reconnect = UserManager::instance()->getOption(user.bare(), "auto-reconnect").toBool();
+    bool reconnect = UserManager::instance()->getOption(user_bare, "auto-reconnect").toBool();
     if ( reconnect ) {
-        int rCount = d->reconnects.value( user.bare() );
+        int rCount = d->reconnects.value(user_bare);
         if ( rCount >= 3 ) { // limit number of reconnects to 3.
             emit gatewayMessage(user, "Tried to reconnect 3 times, but no result. Stopping reconnects.");
             return;
         }
-        d->reconnects.insert(user.bare(), ++rCount);
+        d->reconnects.insert(user_bare, ++rCount);
         // qDebug() << "[GT]" << "Processing auto-reconnect for user" << user;
         emit probeRequest(user);
     }
@@ -460,7 +475,8 @@ void GatewayTask::processIcqSignOff()
 void GatewayTask::processIcqStatus(int status)
 {
     ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(conn);
+    QString user_bare = d->icqJidTable.value(conn);
+    Jid user = d->jidResources.value(user_bare);
 
     int show;
     switch ( status ) {
@@ -486,7 +502,8 @@ void GatewayTask::processIcqStatus(int status)
 void GatewayTask::processIcqFirstLogin()
 {
     ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(session);
+    QString user_bare = d->icqJidTable.value(session);
+    Jid user = d->jidResources.value(user_bare);
 
     QStringList contacts = session->contactList();
     QStringListIterator i(contacts);
@@ -503,7 +520,8 @@ void GatewayTask::processIcqFirstLogin()
 void GatewayTask::processContactOnline(const QString& uin, int status)
 {
     ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(session);
+    QString user_bare = d->icqJidTable.value(session);
+    Jid user = d->jidResources.value(user_bare);
 
     int showStatus;
     switch ( status ) {
@@ -533,14 +551,16 @@ void GatewayTask::processContactOffline(const QString& uin)
     if ( !conn || !d->icqJidTable.contains(conn) ) {
         return;
     }
-    Jid user = d->icqJidTable.value(conn);
+    QString user_bare = d->icqJidTable.value(conn);
+    Jid user = d->jidResources.value(user_bare);
     emit contactOffline(user, uin);
 }
 
 void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message)
 {
     ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(session);
+    QString user_bare = d->icqJidTable.value(session);
+    Jid user = d->jidResources.value(user_bare);
     QString msg = QString(message).replace('\r', "");
     emit incomingMessage(user, senderUin, msg, session->contactName(senderUin));
 }
@@ -548,7 +568,8 @@ void GatewayTask::processIncomingMessage(const QString& senderUin, const QString
 void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message, const QDateTime& timestamp)
 {
     ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(session);
+    QString user_bare = d->icqJidTable.value(session);
+    Jid user = d->jidResources.value(user_bare);
     QString msg = QString(message).replace('\r', "");
     emit incomingMessage(user, senderUin, msg, session->contactName(senderUin), timestamp.toUTC());
 }
@@ -582,8 +603,8 @@ void GatewayTask::processAuthDenied(const QString& uin)
  */
 void GatewayTask::processAuthRequest(const QString& uin)
 {
-    ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(conn);
+    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+    Jid user = d->icqJidTable.value(session);
 
     emit subscriptionRequest(user, uin);
 }
@@ -591,7 +612,8 @@ void GatewayTask::processAuthRequest(const QString& uin)
 void GatewayTask::processShortUserDetails(const QString& uin)
 {
     ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    Jid user = d->icqJidTable.value(session);
+    QString user_bare = d->icqJidTable.value(session);
+    Jid user = d->jidResources.value(user_bare);
 
     QString key = QString(user)+"-"+uin;
 

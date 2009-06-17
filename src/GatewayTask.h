@@ -47,8 +47,8 @@ class GatewayTask : public QObject
 
         void setIcqServer(const QString& host, quint16 port);
     public slots:
-        void processRegister(const QString& user, const QString& uin, const QString& password);
-        void processUnregister(const QString& user);
+        void processRegister(const Jid& user, const QString& uin, const QString& password);
+        void processUnregister(const Jid& user);
         void processUserOnline(const Jid& user, int showStatus, bool first_login);
         void processUserOffline(const Jid& user);
         void processUserStatusRequest(const Jid& user);

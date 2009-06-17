@@ -23,6 +23,7 @@
 
 #include "xmpp-core/Jid.h"
 #include "xmpp-core/Presence.h"
+#include "xmpp-ext/rosterxitem.h"
 #include "xmpp-ext/vCard.h"
 
 #include "icqSession.h"
@@ -31,6 +32,7 @@
 
 #include <QDateTime>
 #include <QHash>
+#include <QList>
 #include <QStringList>
 #include <QSqlError>
 #include <QTextCodec>
@@ -488,9 +490,14 @@ void GatewayTask::processIcqFirstLogin()
 
     QStringList contacts = session->contactList();
     QStringListIterator i(contacts);
+    QList<XMPP::RosterXItem> items;
     while ( i.hasNext() ) {
-        emit subscriptionRequest( user, i.next() );
+        QString uin = i.next();
+        QString name = session->contactName(uin);
+        XMPP::RosterXItem item(uin, XMPP::RosterXItem::Add, name);
+        items << item;
     }
+    emit rosterAdd(user, items);
 }
 
 void GatewayTask::processContactOnline(const QString& uin, int status)

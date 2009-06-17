@@ -22,9 +22,11 @@
 #define GATEWAYTASK_H_
 
 #include <QObject>
+#include <QList>
 
 namespace XMPP {
     class Jid;
+    class RosterXItem;
     class vCard;
 }
 
@@ -36,6 +38,7 @@ class GatewayTask : public QObject
     Q_OBJECT
 
     typedef XMPP::Jid Jid;
+    typedef XMPP::RosterXItem RosterXItem;
     typedef XMPP::vCard vCard;
 
     public:
@@ -61,6 +64,7 @@ class GatewayTask : public QObject
 
         void processGatewayOnline();
         void processShutdown();
+
     signals:
         void subscriptionReceived(const Jid& user, const QString& uin, const QString& nick);
         void subscriptionRemoved(const Jid& user, const QString& uin);
@@ -78,6 +82,8 @@ class GatewayTask : public QObject
         void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick);
         void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick, const QDateTime& timestamp);
         void gatewayMessage(const Jid& user, const QString& text);
+
+        void rosterAdd(const Jid& user, const QList<RosterXItem>& items);
     private slots:
         void processIcqError(const QString& desc);
         void processIcqSignOn();

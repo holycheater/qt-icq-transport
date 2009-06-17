@@ -322,6 +322,8 @@ void TransportMain::connect_signals()
                           m_connection, SLOT( sendMessage(Jid,QString,QString,QString,QDateTime) ) );
     QObject::connect( m_gateway, SIGNAL( gatewayMessage(Jid,QString) ),
                       m_connection, SLOT( sendMessage(Jid,QString) ) );
+    QObject::connect( m_gateway, SIGNAL(rosterAdd(Jid,QList<RosterXItem>)),
+                      m_connection, SLOT(slotRosterAdd(Jid,QList<RosterXItem>)) );
 }
 
 void TransportMain::sighandler(int param)

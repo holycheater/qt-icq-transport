@@ -343,6 +343,27 @@ void JabberConnection::sendVCard(const Jid& recipient, const QString& uin, const
     d->stream->sendStanza(reply);
 }
 
+void JabberConnection::slotRosterAdd(const Jid& user, const QList<XMPP::RosterXItem>& items)
+{
+    QList<RosterXItem> copy = items;
+    QList<RosterXItem>::iterator it;
+    QList<RosterXItem>::iterator itEnd = copy.end();
+    for ( it = copy.begin(); it != itEnd; ++it ) {
+        (*it).setJid( d->jid.withNode((*it).jid()) );
+    }
+
+    IQ contacts;
+    contacts.setFrom(d->jid);
+    contacts.setTo(user);
+    contacts.setType(IQ::Set);
+
+    RosterX x;
+    x.setItems(copy);
+    x.toIQ(contacts);
+
+    d->stream->sendStanza(contacts);
+}
+
 void JabberConnection::Private::processAdHoc(const IQ& iq)
 {
     AdHoc cmd = AdHoc::fromIQ(iq);
@@ -728,6 +749,9 @@ void JabberConnection::stream_iq(const IQ& iq)
     if ( iq.childElement().tagName() == "command" && iq.type() == "set" && iq.childElement().namespaceURI() == NS_QUERY_ADHOC ) {
         d->processAdHoc(iq);
         return;
+    }
+    if ( iq.childElement().tagName() == "x" && iq.type() == "result" && iq.childElement().namespaceURI() == NS_ROSTERX ) {
+        qDebug("Roster update success for '%s'", qPrintable(QString(iq.from())));
     }
 
     if ( iq.type() == "error" ) {

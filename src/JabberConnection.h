@@ -22,6 +22,7 @@
 #define JABBERCONNECTION_H_
 
 #include <QObject>
+#include <QList>
 
 #include "ComponentStream.h"
 
@@ -30,6 +31,7 @@ class QDateTime;
 namespace XMPP {
     class Jid;
     class Registration;
+    class RosterXItem;
     class vCard;
 }
 
@@ -43,6 +45,7 @@ class JabberConnection : public QObject
     typedef XMPP::Presence Presence;
     typedef XMPP::ComponentStream ComponentStream;
     typedef XMPP::Registration Registration;
+    typedef XMPP::RosterXItem RosterXItem;
     typedef XMPP::Jid Jid;
     typedef XMPP::vCard vCard;
 
@@ -73,6 +76,8 @@ class JabberConnection : public QObject
         void sendMessage(const Jid& recipient, const QString& message);
 
         void sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard);
+
+        void slotRosterAdd(const Jid& user, const QList<RosterXItem>& items);
     signals:
         void userUnregistered(const QString& jid);
         void userRegistered(const QString& jid, const QString& uin, const QString& password);

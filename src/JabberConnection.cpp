@@ -27,6 +27,7 @@
 #include "xmpp-core/Message.h"
 #include "xmpp-core/Presence.h"
 
+#include "streamerror.h"
 #include "xmpp-ext/AdHoc.h"
 #include "xmpp-ext/DataForm.h"
 #include "xmpp-ext/ServiceDiscovery.h"

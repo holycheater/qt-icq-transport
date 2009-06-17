@@ -24,7 +24,7 @@
 #include <QObject>
 #include <QList>
 
-#include "ComponentStream.h"
+#include "componentstream.h"
 
 class QDateTime;
 

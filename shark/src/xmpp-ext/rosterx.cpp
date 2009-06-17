@@ -107,6 +107,9 @@ void RosterX::toStanza(Stanza& s)
         x = s.doc()->createElementNS(NS_ROSTERX, "x");
         e.appendChild(x);
     }
+
+    e.removeChild(e.firstChildElement("query"));
+
     QListIterator<RosterXItem> it(m_items);
     while (it.hasNext()) {
         RosterXItem item = it.next();

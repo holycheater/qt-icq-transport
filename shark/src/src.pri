@@ -5,7 +5,9 @@ INCLUDEPATH += $$PWD
 
 HEADERS += \
 	$$PWD/componentstream.h \
+	$$PWD/stream.h \
         $$PWD/streamerror.h
 SOURCES += \
 	$$PWD/componentstream.cpp \
+	$$PWD/stream.cpp \
 	$$PWD/streamerror.cpp

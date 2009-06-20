@@ -112,12 +112,16 @@ JabberConnection::JabberConnection(QObject *parent)
     d->vcard.setDescription("Qt ICQ Transport");
     d->vcard.setUrl( QUrl("http://github.com/holycheater/qt-icq-transport") );
 
-    QObject::connect( d->stream, SIGNAL( stanzaIQ(IQ) ), SLOT( stream_iq(IQ) ) );
-    QObject::connect( d->stream, SIGNAL( stanzaMessage(Message) ), SLOT( stream_message(Message) ) );
-    QObject::connect( d->stream, SIGNAL( stanzaPresence(Presence) ), SLOT( stream_presence(Presence) ) );
-    QObject::connect( d->stream, SIGNAL( error(ComponentStream::ErrorType) ), SLOT( stream_error(ComponentStream::ErrorType) ) );
-    QObject::connect( d->stream, SIGNAL( connected() ), SLOT( stream_connected() ) );
-    QObject::connect( d->stream, SIGNAL( connected() ), SIGNAL( connected() ) );
+    QObject::connect( d->stream, SIGNAL(stanzaIQ(IQ)),
+            SLOT(stream_iq(IQ)) );
+    QObject::connect( d->stream, SIGNAL(stanzaMessage(Message)),
+            SLOT(stream_message(Message)) );
+    QObject::connect( d->stream, SIGNAL(stanzaPresence(Presence)),
+            SLOT(stream_presence(Presence)) );
+    QObject::connect( d->stream, SIGNAL(connected()),
+            SLOT(stream_connected()) );
+    QObject::connect( d->stream, SIGNAL(connected()),
+            SIGNAL(connected()) );
 }
 
 /**

@@ -232,12 +232,12 @@ void TransportMain::startForkedTransport()
 
     Q_ASSERT( m_transport == 0);
     m_transport = new QProcess(this);
-    QObject::connect( m_transport, SIGNAL( error(QProcess::ProcessError) ),
-                      SLOT( processTransportError(QProcess::ProcessError) ) );
-    QObject::connect( m_transport, SIGNAL( finished(int,QProcess::ExitStatus) ),
-                      SLOT( processTransportFinished(int,QProcess::ExitStatus) ) );
-    QObject::connect( m_transport, SIGNAL( started() ),
-                      SLOT( processTransportStarted() ) );
+    QObject::connect( m_transport, SIGNAL(error(QProcess::ProcessError)),
+                      SLOT(processTransportError(QProcess::ProcessError)) );
+    QObject::connect( m_transport, SIGNAL(finished(int,QProcess::ExitStatus)),
+                      SLOT(processTransportFinished(int,QProcess::ExitStatus)) );
+    QObject::connect( m_transport, SIGNAL(started()),
+                      SLOT(processTransportStarted()) );
 
     m_transport->start(appFile, args);
 }
@@ -271,57 +271,57 @@ void TransportMain::setup_transport()
 
 void TransportMain::connect_signals()
 {
-    QObject::connect( m_connection, SIGNAL( connected() ),
-                      m_gateway, SLOT( processGatewayOnline() ) );
-    QObject::connect( m_connection, SIGNAL( userRegistered(Jid,QString,QString) ),
-                      m_gateway, SLOT( processRegister(Jid,QString,QString) ) );
-    QObject::connect( m_connection, SIGNAL( userUnregistered(Jid) ),
-                      m_gateway, SLOT( processUnregister(Jid) ) );
-    QObject::connect( m_connection, SIGNAL( userOnline(Jid,int,bool) ),
-                      m_gateway, SLOT( processUserOnline(Jid,int,bool) ) );
-    QObject::connect( m_connection, SIGNAL( userOffline(Jid) ),
-                      m_gateway, SLOT( processUserOffline(Jid) ) );
-    QObject::connect( m_connection, SIGNAL( userOnlineStatusRequest(Jid) ),
-                      m_gateway, SLOT( processUserStatusRequest(Jid) ) );
-    QObject::connect( m_connection, SIGNAL( userAdd(Jid,QString) ),
-                      m_gateway, SLOT( processSubscribeRequest(Jid,QString) ) );
-    QObject::connect( m_connection, SIGNAL( userDel(Jid,QString) ),
-                      m_gateway, SLOT( processUnsubscribeRequest(Jid,QString) ) );
-    QObject::connect( m_connection, SIGNAL( userAuthGrant(Jid,QString) ),
-                      m_gateway, SLOT( processAuthGrant(Jid,QString) ) );
-    QObject::connect( m_connection, SIGNAL( userAuthDeny(Jid,QString) ),
-                      m_gateway, SLOT( processAuthDeny(Jid,QString) ) );
-    QObject::connect( m_connection, SIGNAL( vCardRequest(Jid,QString,QString) ),
-                      m_gateway, SLOT( processVCardRequest(Jid,QString,QString) ) );
-    QObject::connect( m_connection, SIGNAL( outgoingMessage(Jid,QString,QString) ),
-                      m_gateway, SLOT( processSendMessage(Jid,QString,QString) ) );
-    QObject::connect( m_connection, SIGNAL( cmd_RosterRequest(Jid) ),
-                      m_gateway, SLOT( processCmd_RosterRequest(Jid) ) );
+    QObject::connect( m_connection, SIGNAL(connected()),
+                      m_gateway, SLOT(processGatewayOnline()) );
+    QObject::connect( m_connection, SIGNAL(userRegistered(Jid,QString,QString)),
+                      m_gateway, SLOT(processRegister(Jid,QString,QString)) );
+    QObject::connect( m_connection, SIGNAL(userUnregistered(Jid)),
+                      m_gateway, SLOT(processUnregister(Jid)) );
+    QObject::connect( m_connection, SIGNAL(userOnline(Jid,int,bool)),
+                      m_gateway, SLOT(processUserOnline(Jid,int,bool)) );
+    QObject::connect( m_connection, SIGNAL(userOffline(Jid)),
+                      m_gateway, SLOT(processUserOffline(Jid)) );
+    QObject::connect( m_connection, SIGNAL(userOnlineStatusRequest(Jid)),
+                      m_gateway, SLOT(processUserStatusRequest(Jid)) );
+    QObject::connect( m_connection, SIGNAL(userAdd(Jid,QString)),
+                      m_gateway, SLOT(processSubscribeRequest(Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(userDel(Jid,QString)),
+                      m_gateway, SLOT(processUnsubscribeRequest(Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(userAuthGrant(Jid,QString)),
+                      m_gateway, SLOT(processAuthGrant(Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(userAuthDeny(Jid,QString)),
+                      m_gateway, SLOT(processAuthDeny(Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(vCardRequest(Jid,QString,QString)),
+                      m_gateway, SLOT(processVCardRequest(Jid,QString,QString)) );
+    QObject::connect( m_connection, SIGNAL(outgoingMessage(Jid,QString,QString)),
+                      m_gateway, SLOT(processSendMessage(Jid,QString,QString)) );
+    QObject::connect( m_connection, SIGNAL(cmd_RosterRequest(Jid)),
+                      m_gateway, SLOT(processCmd_RosterRequest(Jid)) );
 
-    QObject::connect( m_gateway, SIGNAL( subscriptionReceived(Jid,QString,QString) ),
-                      m_connection, SLOT( sendSubscribed(Jid,QString,QString) ) );
-    QObject::connect( m_gateway, SIGNAL( subscriptionRemoved(Jid,QString) ),
-                      m_connection, SLOT( sendUnsubscribed(Jid,QString) ) );
-    QObject::connect( m_gateway, SIGNAL( subscriptionRequest(Jid,QString) ),
-                      m_connection, SLOT( sendSubscribe(Jid,QString) ) );
-    QObject::connect( m_gateway, SIGNAL( contactOnline(Jid,QString,int,QString) ),
-                      m_connection, SLOT( sendOnlinePresence(Jid,QString, int,QString) ) );
-    QObject::connect( m_gateway, SIGNAL( contactOffline(Jid,QString) ),
-                      m_connection, SLOT( sendOfflinePresence(Jid,QString) ) );
-    QObject::connect( m_gateway, SIGNAL( onlineNotifyFor(Jid,int) ),
-                      m_connection, SLOT( sendOnlinePresence(Jid,int) ) );
-    QObject::connect( m_gateway, SIGNAL( offlineNotifyFor(Jid) ),
-                      m_connection, SLOT( sendOfflinePresence(Jid) ) );
-    QObject::connect( m_gateway, SIGNAL( probeRequest(Jid) ),
-                      m_connection, SLOT( sendPresenceProbe(Jid) )  );
-    QObject::connect( m_gateway, SIGNAL( incomingVCard(Jid,QString,QString,vCard) ),
-                      m_connection, SLOT( sendVCard(Jid,QString,QString,vCard) ) );
-    QObject::connect( m_gateway, SIGNAL( incomingMessage(Jid,QString,QString,QString) ),
-                          m_connection, SLOT( sendMessage(Jid,QString,QString,QString) ) );
-    QObject::connect( m_gateway, SIGNAL( incomingMessage(Jid,QString,QString,QString,QDateTime) ),
-                          m_connection, SLOT( sendMessage(Jid,QString,QString,QString,QDateTime) ) );
-    QObject::connect( m_gateway, SIGNAL( gatewayMessage(Jid,QString) ),
-                      m_connection, SLOT( sendMessage(Jid,QString) ) );
+    QObject::connect( m_gateway, SIGNAL(subscriptionReceived(Jid,QString,QString)),
+                      m_connection, SLOT(sendSubscribed(Jid,QString,QString)) );
+    QObject::connect( m_gateway, SIGNAL(subscriptionRemoved(Jid,QString)),
+                      m_connection, SLOT(sendUnsubscribed(Jid,QString)) );
+    QObject::connect( m_gateway, SIGNAL(subscriptionRequest(Jid,QString)),
+                      m_connection, SLOT(sendSubscribe(Jid,QString)) );
+    QObject::connect( m_gateway, SIGNAL(contactOnline(Jid,QString,int,QString)),
+                      m_connection, SLOT(sendOnlinePresence(Jid,QString, int,QString)) );
+    QObject::connect( m_gateway, SIGNAL(contactOffline(Jid,QString)),
+                      m_connection, SLOT(sendOfflinePresence(Jid,QString)) );
+    QObject::connect( m_gateway, SIGNAL(onlineNotifyFor(Jid,int)),
+                      m_connection, SLOT(sendOnlinePresence(Jid,int)) );
+    QObject::connect( m_gateway, SIGNAL(offlineNotifyFor(Jid)),
+                      m_connection, SLOT(sendOfflinePresence(Jid)) );
+    QObject::connect( m_gateway, SIGNAL(probeRequest(Jid)),
+                      m_connection, SLOT(sendPresenceProbe(Jid) )  );
+    QObject::connect( m_gateway, SIGNAL(incomingVCard(Jid,QString,QString,vCard)),
+                      m_connection, SLOT(sendVCard(Jid,QString,QString,vCard)) );
+    QObject::connect( m_gateway, SIGNAL(incomingMessage(Jid,QString,QString,QString)),
+                          m_connection, SLOT(sendMessage(Jid,QString,QString,QString)) );
+    QObject::connect( m_gateway, SIGNAL(incomingMessage(Jid,QString,QString,QString,QDateTime)),
+                          m_connection, SLOT(sendMessage(Jid,QString,QString,QString,QDateTime)) );
+    QObject::connect( m_gateway, SIGNAL(gatewayMessage(Jid,QString)),
+                      m_connection, SLOT(sendMessage(Jid,QString)) );
     QObject::connect( m_gateway, SIGNAL(rosterAdd(Jid,QList<RosterXItem>)),
                       m_connection, SLOT(slotRosterAdd(Jid,QList<RosterXItem>)) );
 }
@@ -333,7 +333,7 @@ void TransportMain::sighandler(int param)
     TransportMain *app = qobject_cast<TransportMain*>(instance());
     Q_ASSERT( app != 0 );
 
-    QTimer::singleShot( 0, app, SLOT( shutdown() ) );
+    QTimer::singleShot( 0, app, SLOT(shutdown()) );
     processEvents(QEventLoop::AllEvents, 60000);
     ::exit(0);
 }
@@ -384,7 +384,7 @@ void TransportMain::processTransportFinished(int exitCode, QProcess::ExitStatus 
 
     if ( exitStatus != QProcess::NormalExit || exitCode != 0 ) {
         qDebug("Sandbox: Crashed transport will be restarted in 30 seconds");
-        QTimer::singleShot( 30000, this, SLOT( startForkedTransport() ) );
+        QTimer::singleShot( 30000, this, SLOT(startForkedTransport()) );
     }
 }
 

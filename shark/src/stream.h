@@ -62,6 +62,7 @@ class Stream : public QObject
         void streamOpened();
         void streamClosed();
         void streamError();
+        void streamReady();
 
         void stanzaIQ(const IQ&);
         void stanzaMessage(const Message&);

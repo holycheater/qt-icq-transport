@@ -212,7 +212,36 @@ void Stream::bsClosing()
 {
     qDebug("[XMPP::Stream] Bytestream is about to close");
     d->state = Closed;
+    emit streamClosed();
 }
+
+/**
+ * @fn void Stream::streamOpened()
+ *
+ * This signal is emitted when the stream receives \<stream:stream\> tag
+ * from the remote entity
+ */
+
+/**
+ * @fn void Stream::streamClosed()
+ *
+ * This signal is emitted when the stream receives stream closing tag or
+ * when the stream IODevice is about to close
+ */
+
+/**
+ * @fn void Stream::streamError()
+ *
+ * This signal is emitted when there's an incoming \<stream:error\> element.
+ *
+ * @sa lastStreamError()
+ */
+
+/**
+ * @fn void Stream::streamReady()
+ *
+ * This signal should be emitted when the stream is ready to accept stanzas
+ */
 
 
 } /* end of namespace XMPP */

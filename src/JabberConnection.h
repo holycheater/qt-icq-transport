@@ -40,9 +40,6 @@ class JabberConnection : public QObject
     Q_OBJECT
 
     /* typedefs for slots */
-    typedef XMPP::IQ IQ;
-    typedef XMPP::Message Message;
-    typedef XMPP::Presence Presence;
     typedef XMPP::ComponentStream ComponentStream;
     typedef XMPP::Registration Registration;
     typedef XMPP::RosterXItem RosterXItem;
@@ -97,9 +94,9 @@ class JabberConnection : public QObject
 
         void cmd_RosterRequest(const Jid& user);
     private slots:
-        void stream_iq(const IQ&);
-        void stream_message(const Message&);
-        void stream_presence(const Presence&);
+        void stream_iq(const XMPP::IQ&);
+        void stream_message(const XMPP::Message&);
+        void stream_presence(const XMPP::Presence&);
 
         void slotStreamReady();
         void slotStreamError();

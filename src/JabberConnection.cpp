@@ -112,12 +112,12 @@ JabberConnection::JabberConnection(QObject *parent)
     d->vcard.setDescription("Qt ICQ Transport");
     d->vcard.setUrl( QUrl("http://github.com/holycheater/qt-icq-transport") );
 
-    QObject::connect( d->stream, SIGNAL(stanzaIQ(IQ)),
-            SLOT(stream_iq(IQ)) );
-    QObject::connect( d->stream, SIGNAL(stanzaMessage(Message)),
-            SLOT(stream_message(Message)) );
-    QObject::connect( d->stream, SIGNAL(stanzaPresence(Presence)),
-            SLOT(stream_presence(Presence)) );
+    QObject::connect( d->stream, SIGNAL(stanzaIQ(XMPP::IQ)),
+            SLOT(stream_iq(XMPP::IQ)) );
+    QObject::connect( d->stream, SIGNAL(stanzaMessage(XMPP::Message)),
+            SLOT(stream_message(XMPP::Message)) );
+    QObject::connect( d->stream, SIGNAL(stanzaPresence(XMPP::Presence)),
+            SLOT(stream_presence(XMPP::Presence)) );
 
     QObject::connect( d->stream, SIGNAL(streamReady()),
             SLOT(slotStreamReady()) );
@@ -697,7 +697,7 @@ void JabberConnection::Private::processPrompt(const IQ& iq)
     stream->sendStanza(reply);
 }
 
-void JabberConnection::stream_iq(const IQ& iq)
+void JabberConnection::stream_iq(const XMPP::IQ& iq)
 {
     if ( iq.childElement().tagName() == "query" && iq.type() == "get" ) {
         if ( iq.childElement().namespaceURI() == NS_QUERY_DISCO_INFO ) {
@@ -771,7 +771,7 @@ void JabberConnection::stream_iq(const IQ& iq)
     qWarning("[JC] Unhandled IQ from %s type:%s, tag:%s, nsuri:%s", qPrintable(iq.from().full()), qPrintable(iq.type()), qPrintable(iq.childElement().tagName()), qPrintable(iq.childElement().namespaceURI()) );
 }
 
-void JabberConnection::stream_message(const Message& msg)
+void JabberConnection::stream_message(const XMPP::Message& msg)
 {
     /* message for legacy user */
     if ( !msg.to().node().isEmpty() ) {
@@ -779,7 +779,7 @@ void JabberConnection::stream_message(const Message& msg)
     }
 }
 
-void JabberConnection::stream_presence(const Presence& presence)
+void JabberConnection::stream_presence(const XMPP::Presence& presence)
 {
     /* approve subscription to gateway */
     if (presence.type() == Presence::Subscribe && presence.to() == d->jid) {

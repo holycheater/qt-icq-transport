@@ -1,5 +1,5 @@
 /*
- * StanzaError.cpp - XMPP stanza error (RFC-3920).
+ * stanzaerror.cpp - XMPP stanza error (RFC-3920).
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@
 #include <QSharedData>
 #include <QString>
 
-#include "Stanza.h"
+#include "stanza.h"
 
 namespace XMPP {
 

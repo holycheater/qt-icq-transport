@@ -20,8 +20,8 @@
 
 #include "rosterx.h"
 #include "rosterxitem.h"
-#include "xmpp-core/IQ.h"
-#include "xmpp-core/Message.h"
+#include "xmpp-core/iq.h"
+#include "xmpp-core/message.h"
 
 #include <QDomDocument>
 #include <QDomElement>

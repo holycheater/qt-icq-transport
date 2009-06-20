@@ -1,5 +1,5 @@
 /*
- * Parser.cpp - parse an XMPP "document"
+ * parser.cpp - parse an XMPP "document"
  * Copyright (C) 2003  Justin Karneges
  *
  * This library is free software; you can redistribute it and/or
@@ -53,7 +53,7 @@
 #include <QSharedData>
 #include <QXmlAttributes>
 
-#include "Parser.h"
+#include "parser.h"
 
 using namespace XMPP;
 

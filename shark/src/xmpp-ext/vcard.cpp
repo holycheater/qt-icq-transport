@@ -1,5 +1,5 @@
 /*
- * vCard.cpp - vcard-temp (XEP-0054)
+ * vcard.cpp - vcard-temp (XEP-0054)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -18,9 +18,9 @@
  *
  */
 
-#include "vCard.h"
-#include "xmpp-core/Jid.h"
-#include "xmpp-core/IQ.h"
+#include "vcard.h"
+#include "xmpp-core/jid.h"
+#include "xmpp-core/iq.h"
 
 #include <QDate>
 #include <QDomElement>

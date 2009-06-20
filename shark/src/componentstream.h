@@ -25,8 +25,8 @@
 
 #include "stream.h"
 
-#include "xmpp-core/Parser.h"
-#include "xmpp-core/Connector.h"
+#include "xmpp-core/parser.h"
+#include "xmpp-core/connector.h"
 
 class QDomDocument;
 

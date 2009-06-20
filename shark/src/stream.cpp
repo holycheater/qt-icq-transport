@@ -26,10 +26,10 @@
 #include "stream_p.h"
 #include "streamerror.h"
 
-#include "xmpp-core/IQ.h"
-#include "xmpp-core/Jid.h"
-#include "xmpp-core/Message.h"
-#include "xmpp-core/Presence.h"
+#include "xmpp-core/jid.h"
+#include "xmpp-core/iq.h"
+#include "xmpp-core/message.h"
+#include "xmpp-core/presence.h"
 
 namespace XMPP {
 

@@ -1,20 +1,20 @@
 HEADERS += \
-	$$PWD/Connector.h \
-	$$PWD/Connector_p.h \
-	$$PWD/IQ.h \
-	$$PWD/Jid.h \
-	$$PWD/Message.h \
-	$$PWD/Parser.h \
-	$$PWD/Presence.h \
-	$$PWD/Stanza.h
+	$$PWD/connector.h \
+	$$PWD/connector_p.h \
+	$$PWD/iq.h \
+	$$PWD/jid.h \
+	$$PWD/message.h \
+	$$PWD/parser.h \
+	$$PWD/presence.h \
+	$$PWD/stanza.h
 
 SOURCES += \
-	$$PWD/Connector.cpp \
-	$$PWD/Connector_p.cpp \
-	$$PWD/IQ.cpp \
-	$$PWD/Jid.cpp \
-	$$PWD/Message.cpp \
-	$$PWD/Parser.cpp \
-	$$PWD/Presence.cpp \
-	$$PWD/Stanza.cpp \
-	$$PWD/StanzaError.cpp
+	$$PWD/connector.cpp \
+	$$PWD/connector_p.cpp \
+	$$PWD/iq.cpp \
+	$$PWD/jid.cpp \
+	$$PWD/message.cpp \
+	$$PWD/parser.cpp \
+	$$PWD/presence.cpp \
+	$$PWD/stanza.cpp \
+	$$PWD/stanzaerror.cpp

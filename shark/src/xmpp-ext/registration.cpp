@@ -1,5 +1,5 @@
 /*
- * Registration.cpp - In-Band Registration (XEP-0077)
+ * registration.cpp - In-Band Registration (XEP-0077)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@
 
 #include <QList>
 
-#include "Registration.h"
+#include "registration.h"
 
 namespace XMPP {
 

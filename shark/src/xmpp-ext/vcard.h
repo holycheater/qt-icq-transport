@@ -1,5 +1,5 @@
 /*
- * vCard.h - vcard-temp (XEP-0054)
+ * vcard.h - vcard-temp (XEP-0054)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or

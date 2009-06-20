@@ -1,5 +1,5 @@
 /*
- * ServiceDiscovery.cpp - XMPP Service Discovery (XEP-0030)
+ * servicediscovery.cpp - XMPP Service Discovery (XEP-0030)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -23,8 +23,8 @@
 #include <QSharedData>
 #include <QStringList>
 
-#include "xmpp-core/Jid.h"
-#include "ServiceDiscovery.h"
+#include "xmpp-core/jid.h"
+#include "servicediscovery.h"
 
 namespace XMPP
 {

@@ -1,5 +1,5 @@
 /*
- * ServiceDiscovery.h - XMPP Service Discovery (XEP-0030)
+ * servicediscovery.h - XMPP Service Discovery (XEP-0030)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or

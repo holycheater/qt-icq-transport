@@ -1,5 +1,5 @@
 /*
- * Connector_p.cpp - establish a connection to an XMPP server (Private implementation)
+ * connector_p.cpp - establish a connection to an XMPP server (Private implementation)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@
  *
  */
 
-#include "Connector_p.h"
+#include "connector_p.h"
 
 using namespace XMPP;
 

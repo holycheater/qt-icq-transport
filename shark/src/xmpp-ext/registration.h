@@ -1,5 +1,5 @@
 /*
- * Registration.h - In-Band Registration (XEP-0077)
+ * registration.h - In-Band Registration (XEP-0077)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
 
 #define NS_IQ_REGISTER "jabber:iq:register"
 
-#include "xmpp-core/IQ.h"
+#include "xmpp-core/iq.h"
 
 namespace XMPP {
 

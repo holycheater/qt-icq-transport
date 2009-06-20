@@ -1,5 +1,5 @@
 /*
- * Connector_p.h - establish a connection to an XMPP server (Private implementation)
+ * connector_p.h - establish a connection to an XMPP server (Private implementation)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 #ifndef XMPP_CORE_CONNECTOR_P_H_
 #define XMPP_CORE_CONNECTOR_P_H_
 
-#include "Connector.h"
+#include "connector.h"
 
 #include <QObject>
 #include <QHostAddress>

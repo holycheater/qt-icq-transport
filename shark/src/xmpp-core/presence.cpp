@@ -1,5 +1,5 @@
 /*
- * Presence.cpp - XMPP Presence Stanza
+ * presence.cpp - XMPP Presence Stanza
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -20,7 +20,7 @@
 
 #include <QDomDocument>
 
-#include "Presence.h"
+#include "presence.h"
 
 namespace XMPP {
 

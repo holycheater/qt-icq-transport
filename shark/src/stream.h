@@ -26,7 +26,7 @@
 
 #include <QObject>
 #include "streamerror.h"
-#include "xmpp-core/Parser.h"
+#include "xmpp-core/parser.h"
 
 class QIODevice;
 

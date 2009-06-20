@@ -1,5 +1,5 @@
 /*
- * IQ.cpp - XMPP Info/Query stanza
+ * iq.cpp - XMPP Info/Query stanza
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@
  *
  */
 
-#include "IQ.h"
+#include "iq.h"
 
 namespace XMPP {
 

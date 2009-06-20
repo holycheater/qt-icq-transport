@@ -1,5 +1,5 @@
 /*
- * Message.h - XMPP Message Stanza
+ * message.h - XMPP Message Stanza
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 #include <QDateTime>
 #include <QDomDocument>
 
-#include "Message.h"
+#include "message.h"
 
 namespace XMPP {
 

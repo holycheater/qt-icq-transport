@@ -1,5 +1,5 @@
 /*
- * DataForm.cpp - Data Forms (XEP-0004)
+ * dataform.cpp - Data Forms (XEP-0004)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@
  *
  */
 
-#include "DataForm.h"
+#include "dataform.h"
 
 #include <QDomElement>
 #include <QHash>

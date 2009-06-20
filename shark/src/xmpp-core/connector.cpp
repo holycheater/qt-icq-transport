@@ -1,5 +1,5 @@
 /*
- * Connector.cpp - establish a connection to an XMPP server
+ * connector.cpp - establish a connection to an XMPP server
  * Copyright (C) 2003  Justin Karneges
  * Copyright (C) 2008  Alexander Saltykov
  *
@@ -19,8 +19,8 @@
  *
  */
 
-#include "Connector.h"
-#include "Connector_p.h"
+#include "connector.h"
+#include "connector_p.h"
 
 using namespace XMPP;
 

@@ -1,5 +1,5 @@
 /*
- * Stanza.cpp - XMPP Stanza
+ * stanza.cpp - XMPP Stanza
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -18,8 +18,8 @@
  *
  */
 
-#include "Stanza.h"
-#include "Jid.h"
+#include "stanza.h"
+#include "jid.h"
 
 namespace XMPP {
 

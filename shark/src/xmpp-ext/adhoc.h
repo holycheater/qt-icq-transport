@@ -1,5 +1,5 @@
 /*
- * AdHoc.h - Ad-hoc command (XEP-0050)
+ * adhoc.h - Ad-hoc command (XEP-0050)
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or

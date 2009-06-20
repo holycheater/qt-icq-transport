@@ -1,5 +1,5 @@
 /*
- * IQ.h - XMPP Info/Query stanza
+ * presence.h - XMPP Presence Stanza
  * Copyright (C) 2008  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
@@ -18,51 +18,43 @@
  *
  */
 
-#ifndef XMPP_STANZA_IQ_H_
-#define XMPP_STANZA_IQ_H_
+#ifndef XMPP_STANZA_PRESENCE_H_
+#define XMPP_STANZA_PRESENCE_H_
 
-#include "Stanza.h"
+#include "stanza.h"
 
 namespace XMPP {
 
 
-class IQ : public Stanza
+class Presence : public Stanza
 {
     public:
-        enum Type { Get, Set, Result, Error };
+        enum Type { Available, Unavailable, Subscribe, Subscribed, Unsubscribe, Unsubscribed, Probe, Error };
+        enum Show { None, Chat, Away, NotAvailable, DoNotDisturb };
 
-        IQ();
-        IQ(const IQ& other);
-        IQ(const QDomDocument& document);
-        IQ(const QDomElement& element);
-        ~IQ();
+        Presence();
+        Presence(const Presence& other);
+        Presence(const QDomDocument& document);
+        Presence(const QDomElement& element);
+        ~Presence();
 
-        static IQ createReply(const IQ& iq, Type type = Result);
+        int priority() const;
+        Show show() const;
+        QString status() const;
+        Type type() const;
 
-        QDomElement& childElement();
-        const QDomElement& childElement() const;
-
-        void clearChild();
-
-        void setChildElement(const QString& name, const QString& ns);
-
+        void setPriority(int priority);
+        void setShow(Show showState);
+        void setStatus(const QString& status);
         using Stanza::setType;
         void setType(Type type);
     private:
-        /* XEP-0172: User Nickname */
-        QString nick() const;
-        void setNick(const QString& nick);
-
         static QString typeToString(Type type);
-        static int stringToType(const QString& type);
-
-        static int m_id;
-
-        QDomElement m_element;
+        static Type stringToType(const QString& type);
+        static Show stringToShow(const QString& show);
 };
 
-
-} /* end of namespace XMPP */
+}
 
 // vim:ts=4:sw=4:et:nowrap
-#endif /* XMPP_STANZA_IQ_H_ */
+#endif /* XMPP_STANZA_PRESENCE_H_ */

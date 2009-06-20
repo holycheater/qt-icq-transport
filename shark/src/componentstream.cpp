@@ -26,7 +26,7 @@
 #include "componentstream.h"
 #include "streamerror.h"
 
-#include "xmpp-core/Jid.h"
+#include "xmpp-core/jid.h"
 
 namespace XMPP {
 

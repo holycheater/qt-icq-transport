@@ -113,6 +113,17 @@ void Stream::setRemoteEntity(const Jid& entity)
 }
 
 /**
+ * This method handles first-level elements which are not
+ * defined in RFC-3920.
+ *
+ * @return Method must return true if element was handled, false otherwise.
+ */
+bool Stream::handleUnknownElement(const Parser::Event& e)
+{
+    return false;
+}
+
+/**
  * Handles stream erorrs (\<stream:error/\> element).
  */
 void Stream::handleStreamError(const Parser::Event& event)
@@ -161,6 +172,10 @@ void Stream::processStanza(const Parser::Event& event)
         emit stanzaIQ(event.element());
     } else if ( event.qualifiedName() == "presence" ) {
         emit stanzaPresence(event.element());
+    } else {
+        if (!handleUnknownElement(event))
+            qDebug("[XMPP::Stream] Unhandled first-level element: %s",
+                    qPrintable(event.qualifiedName()));
     }
 }
 

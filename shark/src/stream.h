@@ -69,6 +69,7 @@ class Stream : public QObject
     protected:
         void setByteStream(QIODevice *bs);
         void setRemoteEntity(const Jid& entity);
+        virtual bool handleUnknownElement(const Parser::Event& e);
     private:
         void handleStreamError(const Parser::Event& event);
         void processEvent(const Parser::Event& event);

@@ -79,7 +79,6 @@ class Stream : public QObject
         void handleStreamError(const Parser::Event& event);
         void processEvent(const Parser::Event& event);
         void processStanza(const Parser::Event& event);
-        void recv_stream_open(const Parser::Event& event);
     private slots:
         void bsReadyRead();
         void bsClosing();

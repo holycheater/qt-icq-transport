@@ -21,11 +21,9 @@
 #ifndef XMPP_COMPONENTSTREAM_H_
 #define XMPP_COMPONENTSTREAM_H_
 
-#define NS_ETHERX "http://etherx.jabber.org/streams"
 #define NS_COMPONENT "jabber:component:accept"
-#define NS_STREAMS "urn:ietf:params:xml:ns:xmpp-streams"
 
-#include <QObject>
+#include "stream.h"
 
 #include "xmpp-core/Parser.h"
 #include "xmpp-core/Connector.h"
@@ -36,56 +34,23 @@ namespace XMPP {
 
 class Connector;
 class Jid;
-class Stanza;
-class IQ;
-class Message;
-class Presence;
-class StreamError;
-
 
 class ComponentStream : public QObject
 {
     Q_OBJECT
 
-    enum ConnectionStatus { Disconnected, InitIncomingStream, RecvHandshakeReply, Connected };
-
     public:
-        enum ErrorType { EStreamError, EHandshakeFailed, EConnectorError };
-
         ComponentStream(Connector *connector, QObject *parent = 0);
         ~ComponentStream();
-
-        QString lastErrorString() const;
-        StreamError lastStreamError() const;
 
         QString baseNS() const;
 
         void connectToServer(const Jid& jid, const QString& secret);
-        void close();
-
-        void sendStanza(const Stanza& stanza);
-    signals:
-        void connected();
-        void disconnected();
-        void error(ComponentStream::ErrorType errType);
-        void stanzaIQ(const IQ&);
-        void stanzaMessage(const Message&);
-        void stanzaPresence(const Presence&);
     private:
-        void handleStreamError(const Parser::Event& event);
-        void processEvent(const Parser::Event& event);
-        void processStanza(const Parser::Event& event);
-        void recv_stream_open(const Parser::Event& event);
-        void recv_handshake_reply(const Parser::Event& event);
-        void send_stream_open();
-        void send_handshake();
-        void write(const QByteArray& data);
+        void handleStreamOpen(const Parser::Event& e);
+        bool handleUnknownElement(const Parser::Event& e);
     private slots:
-        void bs_readyRead();
-        void bs_closed();
-        void cr_connected();
-        void cr_error(Connector::ErrorType errcode);
-        void send_keepalive();
+        void slotConnectorConnected();
     private:
         class Private;
         Private *d;

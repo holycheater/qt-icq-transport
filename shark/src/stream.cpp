@@ -23,6 +23,7 @@
 #include <QXmlAttributes>
 
 #include "stream.h"
+#include "stream_p.h"
 #include "streamerror.h"
 
 #include "xmpp-core/IQ.h"
@@ -32,19 +33,6 @@
 
 namespace XMPP {
 
-
-class Stream::Private
-{
-    public:
-        /* incoming data parser object */
-        Parser parser;
-        State state;
-
-        StreamError lastStreamError;
-        QIODevice *bytestream;
-
-        Jid remoteEntity;
-};
 
 Stream::Stream(QObject *parent)
     : QObject(parent), d(new Private)

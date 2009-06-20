@@ -21,18 +21,18 @@
 #include "JabberConnection.h"
 #include "UserManager.h"
 
-#include "xmpp-core/Connector.h"
-#include "xmpp-core/IQ.h"
-#include "xmpp-core/Jid.h"
-#include "xmpp-core/Message.h"
-#include "xmpp-core/Presence.h"
+#include "xmpp-core/connector.h"
+#include "xmpp-core/iq.h"
+#include "xmpp-core/jid.h"
+#include "xmpp-core/message.h"
+#include "xmpp-core/presence.h"
 
 #include "streamerror.h"
-#include "xmpp-ext/AdHoc.h"
-#include "xmpp-ext/DataForm.h"
-#include "xmpp-ext/ServiceDiscovery.h"
-#include "xmpp-ext/Registration.h"
-#include "xmpp-ext/vCard.h"
+#include "xmpp-ext/adhoc.h"
+#include "xmpp-ext/dataform.h"
+#include "xmpp-ext/servicediscovery.h"
+#include "xmpp-ext/registration.h"
+#include "xmpp-ext/vcard.h"
 #include "xmpp-ext/rosterx.h"
 
 #include <QCoreApplication>

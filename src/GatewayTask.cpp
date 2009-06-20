@@ -21,10 +21,10 @@
 #include "GatewayTask.h"
 #include "UserManager.h"
 
-#include "xmpp-core/Jid.h"
-#include "xmpp-core/Presence.h"
+#include "xmpp-core/jid.h"
+#include "xmpp-core/presence.h"
 #include "xmpp-ext/rosterxitem.h"
-#include "xmpp-ext/vCard.h"
+#include "xmpp-ext/vcard.h"
 
 #include "icqSession.h"
 #include "types/icqShortUserDetails.h"

@@ -118,10 +118,15 @@ JabberConnection::JabberConnection(QObject *parent)
             SLOT(stream_message(Message)) );
     QObject::connect( d->stream, SIGNAL(stanzaPresence(Presence)),
             SLOT(stream_presence(Presence)) );
-    QObject::connect( d->stream, SIGNAL(connected()),
-            SLOT(stream_connected()) );
-    QObject::connect( d->stream, SIGNAL(connected()),
+
+    QObject::connect( d->stream, SIGNAL(streamReady()),
+            SLOT(slotStreamReady()) );
+    QObject::connect( d->stream, SIGNAL(streamReady()),
             SIGNAL(connected()) );
+    QObject::connect( d->stream, SIGNAL(streamClosed()),
+            SLOT(slotStreamClosed()) );
+    QObject::connect( d->stream, SIGNAL(streamError()),
+            SLOT(slotStreamError()) );
 }
 
 /**
@@ -819,30 +824,22 @@ void JabberConnection::stream_presence(const Presence& presence)
     }
 }
 
-void JabberConnection::stream_connected()
+void JabberConnection::slotStreamReady()
 {
     d->startTime = QDateTime::currentDateTime();
     qDebug("[JC] Component signed on");
 }
 
-void JabberConnection::stream_error(ComponentStream::ErrorType errType)
+void JabberConnection::slotStreamError()
 {
-    switch (errType) {
-        case ComponentStream::EHandshakeFailed:
-            qCritical("[JC] Handshaking with jabber-server failed!");
-            break;
-        case ComponentStream::EStreamError:
-            qCritical("[JC] Stream error: %s",
-                      qPrintable(d->stream->lastStreamError().conditionString()) );
-            break;
-        case ComponentStream::EConnectorError:
-            qCritical("[JC] Connector error");
-            break;
-        default:
-            qCritical("[JC] Unknown stream error");
-            break;
-    }
+    qCritical("[JC] Stream error: %s",
+            qPrintable(d->stream->lastStreamError().conditionString()) );
     exit(1);
+}
+
+void JabberConnection::slotStreamClosed()
+{
+    qDebug("[JC] Stream closed");
 }
 
 // vim:et:ts=4:sw=4:nowrap

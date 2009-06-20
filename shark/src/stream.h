@@ -72,12 +72,13 @@ class Stream : public QObject
 
         virtual void handleStreamOpen(const Parser::Event& e) = 0;
         virtual bool handleUnknownElement(const Parser::Event& e) = 0;
+
+        void write(const QByteArray& data);
     private:
         void handleStreamError(const Parser::Event& event);
         void processEvent(const Parser::Event& event);
         void processStanza(const Parser::Event& event);
         void recv_stream_open(const Parser::Event& event);
-        void write(const QByteArray& data);
     private slots:
         void bsReadyRead();
         void bsClosing();

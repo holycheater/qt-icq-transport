@@ -113,6 +113,12 @@ void Stream::setRemoteEntity(const Jid& entity)
 }
 
 /**
+ * @fn void Stream::handleStreamOpen(const Parser::Event& e)
+ * This method is called when DocumentOpen event is received from
+ * the remote entity.
+ */
+
+/**
  * This method handles first-level elements which are not
  * defined in RFC-3920.
  *
@@ -141,6 +147,7 @@ void Stream::processEvent(const Parser::Event& event)
         case Parser::Event::DocumentOpen:
             {
                 qDebug("[XMPP::Stream] Remote entity has opened the stream");
+                handleStreamOpen(event);
                 emit streamOpened();
             }
             break;

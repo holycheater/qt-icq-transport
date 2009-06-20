@@ -119,15 +119,13 @@ void Stream::setRemoteEntity(const Jid& entity)
  */
 
 /**
+ * @fn bool Stream::handleUnknownElement(const Parser::Event& e)
+ *
  * This method handles first-level elements which are not
  * defined in RFC-3920.
  *
  * @return Method must return true if element was handled, false otherwise.
  */
-bool Stream::handleUnknownElement(const Parser::Event& e)
-{
-    return false;
-}
 
 /**
  * Handles stream erorrs (\<stream:error/\> element).

@@ -71,7 +71,7 @@ class Stream : public QObject
         void setRemoteEntity(const Jid& entity);
 
         virtual void handleStreamOpen(const Parser::Event& e) = 0;
-        virtual bool handleUnknownElement(const Parser::Event& e);
+        virtual bool handleUnknownElement(const Parser::Event& e) = 0;
     private:
         void handleStreamError(const Parser::Event& event);
         void processEvent(const Parser::Event& event);

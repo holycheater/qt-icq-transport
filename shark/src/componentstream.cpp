@@ -49,7 +49,7 @@ class ComponentStream::Private
  * connection to the server. @a parent will be passed to the QObject constructor.
  */
 ComponentStream::ComponentStream(Connector *connector, QObject *parent)
-    : QObject(parent), d(new Private)
+    : Stream(parent), d(new Private)
 {
     d->connector = connector;
     QObject::connect( d->connector, SIGNAL(connected()),

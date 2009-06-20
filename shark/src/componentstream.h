@@ -35,7 +35,7 @@ namespace XMPP {
 class Connector;
 class Jid;
 
-class ComponentStream : public QObject
+class ComponentStream : public Stream
 {
     Q_OBJECT
 

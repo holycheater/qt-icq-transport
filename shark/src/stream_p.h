@@ -18,6 +18,11 @@
  *
  */
 
+#include "xmpp-core/Jid.h"
+
+namespace XMPP {
+
+
 class Stream::Private
 {
     public:
@@ -31,3 +36,5 @@ class Stream::Private
         Jid remoteEntity;
 };
 
+
+}

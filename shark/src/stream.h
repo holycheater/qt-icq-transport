@@ -64,9 +64,9 @@ class Stream : public QObject
         void streamError();
         void streamReady();
 
-        void stanzaIQ(const IQ&);
-        void stanzaMessage(const Message&);
-        void stanzaPresence(const Presence&);
+        void stanzaIQ(const XMPP::IQ&);
+        void stanzaMessage(const XMPP::Message&);
+        void stanzaPresence(const XMPP::Presence&);
     protected:
         void setByteStream(QIODevice *bs);
         void setRemoteEntity(const Jid& entity);

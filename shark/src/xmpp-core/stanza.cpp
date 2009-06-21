@@ -193,6 +193,15 @@ QString Stanza::toString() const
 }
 
 /**
+ * Deep copies @a other
+ */
+Stanza& Stanza::operator=(const Stanza& other)
+{
+    m_doc = other.m_doc.cloneNode(true).toDocument();
+    return *this;
+}
+
+/**
  * Returns pointer to DOM document containing stanza element.
  */
 QDomDocument* Stanza::doc()

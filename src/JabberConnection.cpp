@@ -93,6 +93,36 @@ void JabberConnection::Private::initCommands()
     commands.insert( "set-options",    DiscoItem(jid, "set-options",    "Set service parameters") );
 }
 
+static XMPP::GatewayTask* init_gateway_task(JabberConnection *jc, XMPP::ComponentStream *stream)
+{
+    XMPP::Registration regform;
+    regform.setField(XMPP::Registration::Instructions, QString("Enter UIN and password"));
+    regform.setField(XMPP::Registration::Username);
+    regform.setField(XMPP::Registration::Password);
+
+    XMPP::GatewayTask *gw_task = new XMPP::GatewayTask(stream);
+    gw_task->setRegistrationForm(regform);
+    QObject::connect( gw_task, SIGNAL(userRegister(XMPP::Jid,QString,QString)),
+                      jc, SIGNAL(userRegistered(XMPP::Jid,QString,QString)) );
+    QObject::connect( gw_task, SIGNAL(userUnregister(XMPP::Jid)),
+                      jc, SIGNAL(userUnregistered(XMPP::Jid)) );
+    QObject::connect( gw_task, SIGNAL(userLogIn(XMPP::Jid,int)),
+                      jc, SIGNAL(userOnline(XMPP::Jid,int)) );
+    QObject::connect( gw_task, SIGNAL(userLogOut(XMPP::Jid)),
+                      jc, SIGNAL(userOffline(XMPP::Jid)) );
+    QObject::connect( gw_task, SIGNAL(addContact(XMPP::Jid,QString)),
+                      jc, SIGNAL(userAdd(XMPP::Jid,QString)) );
+    QObject::connect( gw_task, SIGNAL(deleteContact(XMPP::Jid,QString)),
+                      jc, SIGNAL(userDel(XMPP::Jid,QString)) );
+    QObject::connect( gw_task, SIGNAL(grantAuth(XMPP::Jid,QString)),
+                      jc, SIGNAL(userAuthGrant(XMPP::Jid,QString)) );
+    QObject::connect( gw_task, SIGNAL(denyAuth(XMPP::Jid,QString)),
+                      jc, SIGNAL(userAuthDeny(XMPP::Jid,QString)) );
+    QObject::connect( gw_task, SIGNAL(messageToLegacyNode(XMPP::Jid,QString,QString)),
+                      jc, SIGNAL(outgoingMessage(XMPP::Jid,QString,QString)) );
+    return gw_task;
+}
+
 /**
  * Constructs jabber-connection object.
  */
@@ -125,31 +155,7 @@ JabberConnection::JabberConnection(QObject *parent)
     QObject::connect( d->stream, SIGNAL(streamError()),
             SLOT(slotStreamError()) );
 
-    Registration regform;
-    regform.setField(Registration::Instructions, QString("Enter UIN and password"));
-    regform.setField(Registration::Username);
-    regform.setField(Registration::Password);
-
-    d->gwtask = new XMPP::GatewayTask(d->stream);
-    d->gwtask->setRegistrationForm(regform);
-    QObject::connect( d->gwtask, SIGNAL(userRegister(XMPP::Jid,QString,QString)),
-                      this, SIGNAL(userRegistered(XMPP::Jid,QString,QString)) );
-    QObject::connect( d->gwtask, SIGNAL(userUnregister(XMPP::Jid)),
-                      this, SIGNAL(userUnregistered(XMPP::Jid)) );
-    QObject::connect( d->gwtask, SIGNAL(userLogIn(XMPP::Jid,int)),
-                      this, SIGNAL(userOnline(XMPP::Jid,int)) );
-    QObject::connect( d->gwtask, SIGNAL(userLogOut(XMPP::Jid)),
-                      this, SIGNAL(userOffline(XMPP::Jid)) );
-    QObject::connect( d->gwtask, SIGNAL(addContact(XMPP::Jid,QString)),
-                      this, SIGNAL(userAdd(XMPP::Jid,QString)) );
-    QObject::connect( d->gwtask, SIGNAL(deleteContact(XMPP::Jid,QString)),
-                      this, SIGNAL(userDel(XMPP::Jid,QString)) );
-    QObject::connect( d->gwtask, SIGNAL(grantAuth(XMPP::Jid,QString)),
-                      this, SIGNAL(userAuthGrant(XMPP::Jid,QString)) );
-    QObject::connect( d->gwtask, SIGNAL(denyAuth(XMPP::Jid,QString)),
-                      this, SIGNAL(userAuthDeny(XMPP::Jid,QString)) );
-    QObject::connect( d->gwtask, SIGNAL(messageToLegacyNode(XMPP::Jid,QString,QString)),
-                      this, SIGNAL(outgoingMessage(XMPP::Jid,QString,QString)) );
+    d->gwtask = init_gateway_task(this, d->stream);
 }
 
 /**

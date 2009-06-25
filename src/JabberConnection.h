@@ -71,7 +71,7 @@ class JabberConnection : public QObject
     signals:
         void userUnregistered(const XMPP::Jid& jid);
         void userRegistered(const XMPP::Jid& jid, const QString& uin, const QString& password);
-        void userOnline(const XMPP::Jid& jid, int showStatus, bool first_login);
+        void userOnline(const XMPP::Jid& jid, int showStatus);
         void userOffline(const XMPP::Jid& jid);
         void userOnlineStatusRequest(const XMPP::Jid& jid);
         void userAdd(const XMPP::Jid& jid, const QString& uin);

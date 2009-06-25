@@ -277,8 +277,8 @@ void TransportMain::connect_signals()
                       m_gateway, SLOT(processRegister(XMPP::Jid,QString,QString)) );
     QObject::connect( m_connection, SIGNAL(userUnregistered(XMPP::Jid)),
                       m_gateway, SLOT(processUnregister(XMPP::Jid)) );
-    QObject::connect( m_connection, SIGNAL(userOnline(XMPP::Jid,int,bool)),
-                      m_gateway, SLOT(processUserOnline(XMPP::Jid,int,bool)) );
+    QObject::connect( m_connection, SIGNAL(userOnline(XMPP::Jid,int)),
+                      m_gateway, SLOT(processUserOnline(XMPP::Jid,int)) );
     QObject::connect( m_connection, SIGNAL(userOffline(XMPP::Jid)),
                       m_gateway, SLOT(processUserOffline(XMPP::Jid)) );
     QObject::connect( m_connection, SIGNAL(userOnlineStatusRequest(XMPP::Jid)),

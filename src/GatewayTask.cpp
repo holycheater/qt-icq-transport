@@ -137,6 +137,7 @@ void GatewayTask::processRegister(const XMPP::Jid& user, const QString& uin, con
     }
 
     UserManager::instance()->add(user.bare(), uin, password);
+    UserManager::instance()->setOption(user.bare(), "first_login", QVariant(true));
     emit gatewayMessage( user, tr("You have been successfully registered") );
 }
 
@@ -155,8 +156,10 @@ void GatewayTask::processUnregister(const XMPP::Jid& user)
     UserManager::instance()->del(user);
 }
 
-void GatewayTask::processUserOnline(const XMPP::Jid& user, int showStatus, bool first_login)
+void GatewayTask::processUserOnline(const XMPP::Jid& user, int showStatus)
 {
+    bool first_login = UserManager::instance()->getOption(user.bare(), "first_login").toBool();
+
     if ( d->icqHost.isEmpty() || !d->icqPort ) {
         qCritical("[GT] processLogin: icq host and/or port values are not set. Aborting...");
         return;
@@ -166,7 +169,7 @@ void GatewayTask::processUserOnline(const XMPP::Jid& user, int showStatus, bool 
     if ( d->jidIcqTable.contains( user.bare() ) ) {
         ICQ::Session *conn = d->jidIcqTable.value( user.bare() );
         conn->setOnlineStatus(icqStatus);
-        d->jidResources[user.bare()] = user;
+        d->jidResources.insert(user.bare(), user);
         return;
     }
 
@@ -520,6 +523,7 @@ void GatewayTask::processIcqFirstLogin()
         items << item;
     }
     emit rosterAdd(user, items);
+    UserManager::instance()->setOption(user_bare, "first_login", QVariant(false));
 }
 
 void GatewayTask::processContactOnline(const QString& uin, int status)

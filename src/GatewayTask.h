@@ -45,7 +45,7 @@ class GatewayTask : public QObject
     public slots:
         void processRegister(const XMPP::Jid& user, const QString& uin, const QString& password);
         void processUnregister(const XMPP::Jid& user);
-        void processUserOnline(const XMPP::Jid& user, int showStatus, bool first_login);
+        void processUserOnline(const XMPP::Jid& user, int showStatus);
         void processUserOffline(const XMPP::Jid& user);
         void processUserStatusRequest(const XMPP::Jid& user);
         void processSubscribeRequest(const XMPP::Jid& user, const QString& uin);

@@ -64,6 +64,7 @@ class GatewayTask : public QObject
         void slotSubscription(const XMPP::Presence& p);
         void slotPresence(const XMPP::Presence& p);
     private:
+        Q_DISABLE_COPY(GatewayTask);
         class Private;
         Private *d;
 };

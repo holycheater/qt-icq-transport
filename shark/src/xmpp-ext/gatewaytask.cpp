@@ -41,7 +41,7 @@ class GatewayTask::Private {
 };
 
 GatewayTask::GatewayTask(ComponentStream *stream)
-    : QObject(stream)
+    : QObject(stream), d(new Private)
 {
     d->stream = stream;
     QObject::connect( stream, SIGNAL(stanzaIQ(XMPP::IQ)),

@@ -67,6 +67,18 @@ Presence::Presence(const QDomElement& element)
 {
 }
 
+Presence::Presence(Type t, const Jid& from, const Jid& to, Show s)
+    : Stanza()
+{
+    QDomElement element = doc()->createElement("presence");
+    doc()->appendChild(element);
+
+    setType(t);
+    setFrom(from);
+    setTo(to);
+    setShow(s);
+}
+
 /**
  * Destroys presence stanza.
  */

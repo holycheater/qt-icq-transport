@@ -36,6 +36,7 @@ class Presence : public Stanza
         Presence(const Presence& other);
         Presence(const QDomDocument& document);
         Presence(const QDomElement& element);
+        Presence(Type t, const Jid& from, const Jid& to, Show s = None);
         ~Presence();
 
         int priority() const;

@@ -37,53 +37,49 @@ class GatewayTask : public QObject
 {
     Q_OBJECT
 
-    typedef XMPP::Jid Jid;
-    typedef XMPP::RosterXItem RosterXItem;
-    typedef XMPP::vCard vCard;
-
     public:
         GatewayTask(QObject *parent = 0);
         virtual ~GatewayTask();
 
         void setIcqServer(const QString& host, quint16 port);
     public slots:
-        void processRegister(const Jid& user, const QString& uin, const QString& password);
-        void processUnregister(const Jid& user);
-        void processUserOnline(const Jid& user, int showStatus, bool first_login);
-        void processUserOffline(const Jid& user);
-        void processUserStatusRequest(const Jid& user);
-        void processSubscribeRequest(const Jid& user, const QString& uin);
-        void processUnsubscribeRequest(const Jid& user, const QString& uin);
-        void processAuthGrant(const Jid& user, const QString& uin);
-        void processAuthDeny(const Jid& user, const QString& uin);
-        void processSendMessage(const Jid& user, const QString& uin, const QString& message);
+        void processRegister(const XMPP::Jid& user, const QString& uin, const QString& password);
+        void processUnregister(const XMPP::Jid& user);
+        void processUserOnline(const XMPP::Jid& user, int showStatus, bool first_login);
+        void processUserOffline(const XMPP::Jid& user);
+        void processUserStatusRequest(const XMPP::Jid& user);
+        void processSubscribeRequest(const XMPP::Jid& user, const QString& uin);
+        void processUnsubscribeRequest(const XMPP::Jid& user, const QString& uin);
+        void processAuthGrant(const XMPP::Jid& user, const QString& uin);
+        void processAuthDeny(const XMPP::Jid& user, const QString& uin);
+        void processSendMessage(const XMPP::Jid& user, const QString& uin, const QString& message);
 
-        void processVCardRequest(const Jid& user, const QString& uin, const QString& requestID);
+        void processVCardRequest(const XMPP::Jid& user, const QString& uin, const QString& requestID);
 
-        void processCmd_RosterRequest(const Jid& user);
+        void processCmd_RosterRequest(const XMPP::Jid& user);
 
         void processGatewayOnline();
         void processShutdown();
 
     signals:
-        void subscriptionReceived(const Jid& user, const QString& uin, const QString& nick);
-        void subscriptionRemoved(const Jid& user, const QString& uin);
-        void subscriptionRequest(const Jid& user, const QString& uin);
+        void subscriptionReceived(const XMPP::Jid& user, const QString& uin, const QString& nick);
+        void subscriptionRemoved(const XMPP::Jid& user, const QString& uin);
+        void subscriptionRequest(const XMPP::Jid& user, const QString& uin);
 
-        void contactOnline(const Jid& user, const QString& uin, int status, const QString& nick);
-        void contactOffline(const Jid& user, const QString& uin);
+        void contactOnline(const XMPP::Jid& user, const QString& uin, int status, const QString& nick);
+        void contactOffline(const XMPP::Jid& user, const QString& uin);
 
-        void onlineNotifyFor(const Jid& user, int show);
-        void offlineNotifyFor(const Jid& user);
-        void probeRequest(const Jid& user);
+        void onlineNotifyFor(const XMPP::Jid& user, int show);
+        void offlineNotifyFor(const XMPP::Jid& user);
+        void probeRequest(const XMPP::Jid& user);
 
-        void incomingVCard(const Jid& user, const QString& uin, const QString& requestID, const vCard& vcard);
+        void incomingVCard(const XMPP::Jid& user, const QString& uin, const QString& requestID, const XMPP::vCard& vcard);
 
-        void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick);
-        void incomingMessage(const Jid& user, const QString& uin, const QString& text, const QString& nick, const QDateTime& timestamp);
-        void gatewayMessage(const Jid& user, const QString& text);
+        void incomingMessage(const XMPP::Jid& user, const QString& uin, const QString& text, const QString& nick);
+        void incomingMessage(const XMPP::Jid& user, const QString& uin, const QString& text, const QString& nick, const QDateTime& timestamp);
+        void gatewayMessage(const XMPP::Jid& user, const QString& text);
 
-        void rosterAdd(const Jid& user, const QList<RosterXItem>& items);
+        void rosterAdd(const XMPP::Jid& user, const QList<XMPP::RosterXItem>& items);
     private slots:
         void processIcqError(const QString& desc);
         void processIcqSignOn();

@@ -39,13 +39,6 @@ class JabberConnection : public QObject
 {
     Q_OBJECT
 
-    /* typedefs for slots */
-    typedef XMPP::ComponentStream ComponentStream;
-    typedef XMPP::Registration Registration;
-    typedef XMPP::RosterXItem RosterXItem;
-    typedef XMPP::Jid Jid;
-    typedef XMPP::vCard vCard;
-
     public:
         JabberConnection(QObject *parent = 0);
         ~JabberConnection();
@@ -56,43 +49,43 @@ class JabberConnection : public QObject
         void setServer(const QString& host, quint16 port);
         void setPassword(const QString& password);
     public slots:
-        void sendSubscribe(const Jid& toUser, const QString& fromUin);
-        void sendSubscribed(const Jid& toUser, const QString& fromUin, const QString& nick);
-        void sendUnsubscribe(const Jid& toUser, const QString& fromUin);
-        void sendUnsubscribed(const Jid& toUser, const QString& fromUin);
+        void sendSubscribe(const XMPP::Jid& toUser, const QString& fromUin);
+        void sendSubscribed(const XMPP::Jid& toUser, const QString& fromUin, const QString& nick);
+        void sendUnsubscribe(const XMPP::Jid& toUser, const QString& fromUin);
+        void sendUnsubscribed(const XMPP::Jid& toUser, const QString& fromUin);
 
-        void sendOnlinePresence(const Jid& toUser, const QString& fromUin, int showStatus, const QString& nick);
-        void sendOfflinePresence(const Jid& toUser, const QString& fromUin);
+        void sendOnlinePresence(const XMPP::Jid& toUser, const QString& fromUin, int showStatus, const QString& nick);
+        void sendOfflinePresence(const XMPP::Jid& toUser, const QString& fromUin);
 
-        void sendOnlinePresence(const Jid& recipient, int showStatus);
-        void sendOfflinePresence(const Jid& recipient);
-        void sendPresenceProbe(const Jid& user);
+        void sendOnlinePresence(const XMPP::Jid& recipient, int showStatus);
+        void sendOfflinePresence(const XMPP::Jid& recipient);
+        void sendPresenceProbe(const XMPP::Jid& user);
 
-        void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick, const QDateTime& timestamp);
-        void sendMessage(const Jid& recipient, const QString& uin, const QString& message, const QString& nick);
-        void sendMessage(const Jid& recipient, const QString& message);
+        void sendMessage(const XMPP::Jid& recipient, const QString& uin, const QString& message, const QString& nick, const QDateTime& timestamp);
+        void sendMessage(const XMPP::Jid& recipient, const QString& uin, const QString& message, const QString& nick);
+        void sendMessage(const XMPP::Jid& recipient, const QString& message);
 
-        void sendVCard(const Jid& recipient, const QString& uin, const QString& requestID, const vCard& vcard);
+        void sendVCard(const XMPP::Jid& recipient, const QString& uin, const QString& requestID, const XMPP::vCard& vcard);
 
-        void slotRosterAdd(const Jid& user, const QList<RosterXItem>& items);
+        void slotRosterAdd(const XMPP::Jid& user, const QList<XMPP::RosterXItem>& items);
     signals:
-        void userUnregistered(const Jid& jid);
-        void userRegistered(const Jid& jid, const QString& uin, const QString& password);
-        void userOnline(const Jid& jid, int showStatus, bool first_login);
-        void userOffline(const Jid& jid);
-        void userOnlineStatusRequest(const Jid& jid);
-        void userAdd(const Jid& jid, const QString& uin);
-        void userDel(const Jid& jid, const QString& uin);
-        void userAuthGrant(const Jid& jid, const QString& uin);
-        void userAuthDeny(const Jid& jid, const QString& uin);
+        void userUnregistered(const XMPP::Jid& jid);
+        void userRegistered(const XMPP::Jid& jid, const QString& uin, const QString& password);
+        void userOnline(const XMPP::Jid& jid, int showStatus, bool first_login);
+        void userOffline(const XMPP::Jid& jid);
+        void userOnlineStatusRequest(const XMPP::Jid& jid);
+        void userAdd(const XMPP::Jid& jid, const QString& uin);
+        void userDel(const XMPP::Jid& jid, const QString& uin);
+        void userAuthGrant(const XMPP::Jid& jid, const QString& uin);
+        void userAuthDeny(const XMPP::Jid& jid, const QString& uin);
 
-        void vCardRequest(const Jid& jid, const QString& uin, const QString& requestID);
+        void vCardRequest(const XMPP::Jid& jid, const QString& uin, const QString& requestID);
 
-        void outgoingMessage(const Jid& fromUser, const QString& toUin, const QString& message);
+        void outgoingMessage(const XMPP::Jid& fromUser, const QString& toUin, const QString& message);
 
         void connected();
 
-        void cmd_RosterRequest(const Jid& user);
+        void cmd_RosterRequest(const XMPP::Jid& user);
     private slots:
         void stream_iq(const XMPP::IQ&);
         void stream_message(const XMPP::Message&);

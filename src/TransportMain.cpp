@@ -273,57 +273,57 @@ void TransportMain::connect_signals()
 {
     QObject::connect( m_connection, SIGNAL(connected()),
                       m_gateway, SLOT(processGatewayOnline()) );
-    QObject::connect( m_connection, SIGNAL(userRegistered(Jid,QString,QString)),
-                      m_gateway, SLOT(processRegister(Jid,QString,QString)) );
-    QObject::connect( m_connection, SIGNAL(userUnregistered(Jid)),
-                      m_gateway, SLOT(processUnregister(Jid)) );
-    QObject::connect( m_connection, SIGNAL(userOnline(Jid,int,bool)),
-                      m_gateway, SLOT(processUserOnline(Jid,int,bool)) );
-    QObject::connect( m_connection, SIGNAL(userOffline(Jid)),
-                      m_gateway, SLOT(processUserOffline(Jid)) );
-    QObject::connect( m_connection, SIGNAL(userOnlineStatusRequest(Jid)),
-                      m_gateway, SLOT(processUserStatusRequest(Jid)) );
-    QObject::connect( m_connection, SIGNAL(userAdd(Jid,QString)),
-                      m_gateway, SLOT(processSubscribeRequest(Jid,QString)) );
-    QObject::connect( m_connection, SIGNAL(userDel(Jid,QString)),
-                      m_gateway, SLOT(processUnsubscribeRequest(Jid,QString)) );
-    QObject::connect( m_connection, SIGNAL(userAuthGrant(Jid,QString)),
-                      m_gateway, SLOT(processAuthGrant(Jid,QString)) );
-    QObject::connect( m_connection, SIGNAL(userAuthDeny(Jid,QString)),
-                      m_gateway, SLOT(processAuthDeny(Jid,QString)) );
-    QObject::connect( m_connection, SIGNAL(vCardRequest(Jid,QString,QString)),
-                      m_gateway, SLOT(processVCardRequest(Jid,QString,QString)) );
-    QObject::connect( m_connection, SIGNAL(outgoingMessage(Jid,QString,QString)),
-                      m_gateway, SLOT(processSendMessage(Jid,QString,QString)) );
-    QObject::connect( m_connection, SIGNAL(cmd_RosterRequest(Jid)),
-                      m_gateway, SLOT(processCmd_RosterRequest(Jid)) );
+    QObject::connect( m_connection, SIGNAL(userRegistered(XMPP::Jid,QString,QString)),
+                      m_gateway, SLOT(processRegister(XMPP::Jid,QString,QString)) );
+    QObject::connect( m_connection, SIGNAL(userUnregistered(XMPP::Jid)),
+                      m_gateway, SLOT(processUnregister(XMPP::Jid)) );
+    QObject::connect( m_connection, SIGNAL(userOnline(XMPP::Jid,int,bool)),
+                      m_gateway, SLOT(processUserOnline(XMPP::Jid,int,bool)) );
+    QObject::connect( m_connection, SIGNAL(userOffline(XMPP::Jid)),
+                      m_gateway, SLOT(processUserOffline(XMPP::Jid)) );
+    QObject::connect( m_connection, SIGNAL(userOnlineStatusRequest(XMPP::Jid)),
+                      m_gateway, SLOT(processUserStatusRequest(XMPP::Jid)) );
+    QObject::connect( m_connection, SIGNAL(userAdd(XMPP::Jid,QString)),
+                      m_gateway, SLOT(processSubscribeRequest(XMPP::Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(userDel(XMPP::Jid,QString)),
+                      m_gateway, SLOT(processUnsubscribeRequest(XMPP::Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(userAuthGrant(XMPP::Jid,QString)),
+                      m_gateway, SLOT(processAuthGrant(XMPP::Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(userAuthDeny(XMPP::Jid,QString)),
+                      m_gateway, SLOT(processAuthDeny(XMPP::Jid,QString)) );
+    QObject::connect( m_connection, SIGNAL(vCardRequest(XMPP::Jid,QString,QString)),
+                      m_gateway, SLOT(processVCardRequest(XMPP::Jid,QString,QString)) );
+    QObject::connect( m_connection, SIGNAL(outgoingMessage(XMPP::Jid,QString,QString)),
+                      m_gateway, SLOT(processSendMessage(XMPP::Jid,QString,QString)) );
+    QObject::connect( m_connection, SIGNAL(cmd_RosterRequest(XMPP::Jid)),
+                      m_gateway, SLOT(processCmd_RosterRequest(XMPP::Jid)) );
 
-    QObject::connect( m_gateway, SIGNAL(subscriptionReceived(Jid,QString,QString)),
-                      m_connection, SLOT(sendSubscribed(Jid,QString,QString)) );
-    QObject::connect( m_gateway, SIGNAL(subscriptionRemoved(Jid,QString)),
-                      m_connection, SLOT(sendUnsubscribed(Jid,QString)) );
-    QObject::connect( m_gateway, SIGNAL(subscriptionRequest(Jid,QString)),
-                      m_connection, SLOT(sendSubscribe(Jid,QString)) );
-    QObject::connect( m_gateway, SIGNAL(contactOnline(Jid,QString,int,QString)),
-                      m_connection, SLOT(sendOnlinePresence(Jid,QString, int,QString)) );
-    QObject::connect( m_gateway, SIGNAL(contactOffline(Jid,QString)),
-                      m_connection, SLOT(sendOfflinePresence(Jid,QString)) );
-    QObject::connect( m_gateway, SIGNAL(onlineNotifyFor(Jid,int)),
-                      m_connection, SLOT(sendOnlinePresence(Jid,int)) );
-    QObject::connect( m_gateway, SIGNAL(offlineNotifyFor(Jid)),
-                      m_connection, SLOT(sendOfflinePresence(Jid)) );
-    QObject::connect( m_gateway, SIGNAL(probeRequest(Jid)),
-                      m_connection, SLOT(sendPresenceProbe(Jid) )  );
-    QObject::connect( m_gateway, SIGNAL(incomingVCard(Jid,QString,QString,vCard)),
-                      m_connection, SLOT(sendVCard(Jid,QString,QString,vCard)) );
-    QObject::connect( m_gateway, SIGNAL(incomingMessage(Jid,QString,QString,QString)),
-                          m_connection, SLOT(sendMessage(Jid,QString,QString,QString)) );
-    QObject::connect( m_gateway, SIGNAL(incomingMessage(Jid,QString,QString,QString,QDateTime)),
-                          m_connection, SLOT(sendMessage(Jid,QString,QString,QString,QDateTime)) );
-    QObject::connect( m_gateway, SIGNAL(gatewayMessage(Jid,QString)),
-                      m_connection, SLOT(sendMessage(Jid,QString)) );
-    QObject::connect( m_gateway, SIGNAL(rosterAdd(Jid,QList<RosterXItem>)),
-                      m_connection, SLOT(slotRosterAdd(Jid,QList<RosterXItem>)) );
+    QObject::connect( m_gateway, SIGNAL(subscriptionReceived(XMPP::Jid,QString,QString)),
+                      m_connection, SLOT(sendSubscribed(XMPP::Jid,QString,QString)) );
+    QObject::connect( m_gateway, SIGNAL(subscriptionRemoved(XMPP::Jid,QString)),
+                      m_connection, SLOT(sendUnsubscribed(XMPP::Jid,QString)) );
+    QObject::connect( m_gateway, SIGNAL(subscriptionRequest(XMPP::Jid,QString)),
+                      m_connection, SLOT(sendSubscribe(XMPP::Jid,QString)) );
+    QObject::connect( m_gateway, SIGNAL(contactOnline(XMPP::Jid,QString,int,QString)),
+                      m_connection, SLOT(sendOnlinePresence(XMPP::Jid,QString, int,QString)) );
+    QObject::connect( m_gateway, SIGNAL(contactOffline(XMPP::Jid,QString)),
+                      m_connection, SLOT(sendOfflinePresence(XMPP::Jid,QString)) );
+    QObject::connect( m_gateway, SIGNAL(onlineNotifyFor(XMPP::Jid,int)),
+                      m_connection, SLOT(sendOnlinePresence(XMPP::Jid,int)) );
+    QObject::connect( m_gateway, SIGNAL(offlineNotifyFor(XMPP::Jid)),
+                      m_connection, SLOT(sendOfflinePresence(XMPP::Jid)) );
+    QObject::connect( m_gateway, SIGNAL(probeRequest(XMPP::Jid)),
+                      m_connection, SLOT(sendPresenceProbe(XMPP::Jid) )  );
+    QObject::connect( m_gateway, SIGNAL(incomingVCard(XMPP::Jid,QString,QString,XMPP::vCard)),
+                      m_connection, SLOT(sendVCard(XMPP::Jid,QString,QString,XMPP::vCard)) );
+    QObject::connect( m_gateway, SIGNAL(incomingMessage(XMPP::Jid,QString,QString,QString)),
+                          m_connection, SLOT(sendMessage(XMPP::Jid,QString,QString,QString)) );
+    QObject::connect( m_gateway, SIGNAL(incomingMessage(XMPP::Jid,QString,QString,QString,QDateTime)),
+                          m_connection, SLOT(sendMessage(XMPP::Jid,QString,QString,QString,QDateTime)) );
+    QObject::connect( m_gateway, SIGNAL(gatewayMessage(XMPP::Jid,QString)),
+                      m_connection, SLOT(sendMessage(XMPP::Jid,QString)) );
+    QObject::connect( m_gateway, SIGNAL(rosterAdd(XMPP::Jid,QList<XMPP::RosterXItem>)),
+                      m_connection, SLOT(slotRosterAdd(XMPP::Jid,QList<XMPP::RosterXItem>)) );
 }
 
 void TransportMain::sighandler(int param)

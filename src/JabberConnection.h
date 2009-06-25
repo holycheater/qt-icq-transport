@@ -88,8 +88,6 @@ class JabberConnection : public QObject
         void cmd_RosterRequest(const XMPP::Jid& user);
     private slots:
         void stream_iq(const XMPP::IQ&);
-        void stream_message(const XMPP::Message&);
-        void stream_presence(const XMPP::Presence&);
 
         void slotStreamReady();
         void slotStreamError();

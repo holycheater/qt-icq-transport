@@ -30,8 +30,9 @@
 #include "streamerror.h"
 #include "xmpp-ext/adhoc.h"
 #include "xmpp-ext/dataform.h"
-#include "xmpp-ext/servicediscovery.h"
+#include "xmpp-ext/gatewaytask.h"
 #include "xmpp-ext/registration.h"
+#include "xmpp-ext/servicediscovery.h"
 #include "xmpp-ext/vcard.h"
 #include "xmpp-ext/rosterx.h"
 
@@ -61,8 +62,6 @@ class JabberConnection::Private {
         void processAdHoc(const IQ& iq);
         void processDiscoInfo(const IQ& iq);
         void processDiscoItems(const IQ& iq);
-        void processRegisterRequest(const IQ& iq);
-        void processRegisterForm(const Registration& iq);
         void processPromptRequest(const IQ& iq);
         void processPrompt(const IQ& iq);
 
@@ -81,6 +80,8 @@ class JabberConnection::Private {
 
         /* list of adhoc commands */
         QHash<QString,DiscoItem> commands;
+
+        XMPP::GatewayTask *gwtask;
 };
 
 void JabberConnection::Private::initCommands()
@@ -101,8 +102,8 @@ JabberConnection::JabberConnection(QObject *parent)
     d = new Private;
     d->q = this;
 
-    d->connector = new Connector;
-    d->stream = new ComponentStream(d->connector);
+    d->connector = new XMPP::Connector;
+    d->stream = new XMPP::ComponentStream(d->connector);
 
     d->disco << DiscoInfo::Identity("gateway", "icq", "ICQ Transport");
     d->disco << NS_IQ_REGISTER << NS_QUERY_ADHOC << NS_VCARD_TEMP << NS_IQ_GATEWAY
@@ -114,10 +115,6 @@ JabberConnection::JabberConnection(QObject *parent)
 
     QObject::connect( d->stream, SIGNAL(stanzaIQ(XMPP::IQ)),
             SLOT(stream_iq(XMPP::IQ)) );
-    QObject::connect( d->stream, SIGNAL(stanzaMessage(XMPP::Message)),
-            SLOT(stream_message(XMPP::Message)) );
-    QObject::connect( d->stream, SIGNAL(stanzaPresence(XMPP::Presence)),
-            SLOT(stream_presence(XMPP::Presence)) );
 
     QObject::connect( d->stream, SIGNAL(streamReady()),
             SLOT(slotStreamReady()) );
@@ -127,6 +124,32 @@ JabberConnection::JabberConnection(QObject *parent)
             SLOT(slotStreamClosed()) );
     QObject::connect( d->stream, SIGNAL(streamError()),
             SLOT(slotStreamError()) );
+
+    Registration regform;
+    regform.setField(Registration::Instructions, QString("Enter UIN and password"));
+    regform.setField(Registration::Username);
+    regform.setField(Registration::Password);
+
+    d->gwtask = new XMPP::GatewayTask(d->stream);
+    d->gwtask->setRegistrationForm(regform);
+    QObject::connect( d->gwtask, SIGNAL(userRegister(XMPP::Jid,QString,QString)),
+                      this, SIGNAL(userRegistered(XMPP::Jid,QString,QString)) );
+    QObject::connect( d->gwtask, SIGNAL(userUnregister(XMPP::Jid)),
+                      this, SIGNAL(userUnregistered(XMPP::Jid)) );
+    QObject::connect( d->gwtask, SIGNAL(userLogIn(XMPP::Jid,int)),
+                      this, SIGNAL(userOnline(XMPP::Jid,int)) );
+    QObject::connect( d->gwtask, SIGNAL(userLogOut(XMPP::Jid)),
+                      this, SIGNAL(userOffline(XMPP::Jid)) );
+    QObject::connect( d->gwtask, SIGNAL(addContact(XMPP::Jid,QString)),
+                      this, SIGNAL(userAdd(XMPP::Jid,QString)) );
+    QObject::connect( d->gwtask, SIGNAL(deleteContact(XMPP::Jid,QString)),
+                      this, SIGNAL(userDel(XMPP::Jid,QString)) );
+    QObject::connect( d->gwtask, SIGNAL(grantAuth(XMPP::Jid,QString)),
+                      this, SIGNAL(userAuthGrant(XMPP::Jid,QString)) );
+    QObject::connect( d->gwtask, SIGNAL(denyAuth(XMPP::Jid,QString)),
+                      this, SIGNAL(userAuthDeny(XMPP::Jid,QString)) );
+    QObject::connect( d->gwtask, SIGNAL(messageToLegacyNode(XMPP::Jid,QString,QString)),
+                      this, SIGNAL(outgoingMessage(XMPP::Jid,QString,QString)) );
 }
 
 /**
@@ -566,94 +589,6 @@ void JabberConnection::Private::processDiscoItems(const IQ& iq)
     stream->sendStanza(reply);
 }
 
-void JabberConnection::Private::processRegisterRequest(const IQ& iq)
-{
-    Registration regForm = IQ::createReply(iq);
-
-    regForm.setField(Registration::Instructions, QString("Enter UIN and password"));
-    regForm.setField(Registration::Username);
-    regForm.setField(Registration::Password);
-
-    stream->sendStanza(regForm);
-}
-
-void JabberConnection::Private::processRegisterForm(const Registration& iq)
-{
-    if ( iq.to() != jid ) {
-        Registration err = IQ::createReply(iq);
-        err.setError( Stanza::Error(Stanza::Error::FeatureNotImplemented) );
-        stream->sendStanza(err);
-        return;
-    }
-    if ( iq.hasField(Registration::Remove) ) {
-        if ( iq.fields().size() > 1 ) {
-            /* error, <remove/> is not the only child element */
-            Registration err = IQ::createReply(iq);
-            err.setError( Stanza::Error(Stanza::Error::BadRequest) );
-            stream->sendStanza(err);
-            return;
-        }
-        if ( iq.from().isEmpty() ) {
-            Registration err = IQ::createReply(iq);
-            err.setError( Stanza::Error(Stanza::Error::UnexpectedRequest) );
-            stream->sendStanza(err);
-            return;
-        }
-        Registration reply = IQ::createReply(iq);
-        reply.clearChild();
-        reply.setType(IQ::Result);
-        stream->sendStanza(reply);
-
-        Presence removeSubscription;
-        removeSubscription.setTo( iq.from().bare() );
-        removeSubscription.setType(Presence::Unsubscribe);
-        stream->sendStanza(removeSubscription);
-
-        Presence removeAuth;
-        removeAuth.setTo( iq.from().bare() );
-        removeAuth.setType(Presence::Unsubscribed);
-        stream->sendStanza(removeAuth);
-
-        Presence logout;
-        logout.setTo( iq.from().bare() );
-        logout.setType(Presence::Unavailable);
-        stream->sendStanza(logout);
-
-        /* send unregister signal, slot should remove the user from the database */
-        emit q->userUnregistered( iq.from() );
-        return;
-    }
-    if ( iq.getField(Registration::Username).isEmpty() || iq.getField(Registration::Password).isEmpty() ) {
-        Registration err(iq);
-        err.swapFromTo();
-        err.setError( Stanza::Error(Stanza::Error::NotAcceptable) );
-        stream->sendStanza(err);
-        return;
-    }
-
-    /* registration success */
-    IQ reply = IQ::createReply(iq);
-    reply.clearChild();
-    stream->sendStanza(reply);
-
-    /* subscribe for user presence */
-    Presence subscribe;
-    subscribe.setFrom(jid);
-    subscribe.setTo( iq.from().bare() );
-    subscribe.setType(Presence::Subscribe);
-    stream->sendStanza(subscribe);
-
-    emit q->userRegistered( iq.from(), iq.getField(Registration::Username), iq.getField(Registration::Password) );
-
-    Presence presence;
-    presence.setFrom(jid);
-    presence.setTo( iq.from().bare() );
-    stream->sendStanza(presence);
-
-    /* execute log-in case */
-    emit q->userOnline(iq.from(), Presence::None, true);
-}
-
 void JabberConnection::Private::processPromptRequest(const IQ& iq)
 {
     IQ prompt = IQ::createReply(iq);
@@ -708,10 +643,6 @@ void JabberConnection::stream_iq(const XMPP::IQ& iq)
             d->processDiscoItems(iq);
             return;
         }
-        if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
-            d->processRegisterRequest(iq);
-            return;
-        }
         if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
             d->processPromptRequest(iq);
             return;
@@ -747,10 +678,6 @@ void JabberConnection::stream_iq(const XMPP::IQ& iq)
         return;
     }
     if ( iq.childElement().tagName() == "query" && iq.type() == "set" ) {
-        if ( iq.childElement().namespaceURI() == NS_IQ_REGISTER ) {
-            d->processRegisterForm(iq);
-            return;
-        }
         if ( iq.childElement().namespaceURI() == NS_IQ_GATEWAY ) {
             d->processPrompt(iq);
             return;
@@ -768,60 +695,11 @@ void JabberConnection::stream_iq(const XMPP::IQ& iq)
         /* TODO: Error logging? */
         return;
     }
-    qWarning("[JC] Unhandled IQ from %s type:%s, tag:%s, nsuri:%s", qPrintable(iq.from().full()), qPrintable(iq.type()), qPrintable(iq.childElement().tagName()), qPrintable(iq.childElement().namespaceURI()) );
-}
-
-void JabberConnection::stream_message(const XMPP::Message& msg)
-{
-    /* message for legacy user */
-    if ( !msg.to().node().isEmpty() ) {
-        emit outgoingMessage( msg.from(), msg.to().node(), msg.body() );
-    }
-}
-
-void JabberConnection::stream_presence(const XMPP::Presence& presence)
-{
-    /* approve subscription to gateway */
-    if (presence.type() == Presence::Subscribe && presence.to() == d->jid) {
-        Presence approve;
-        approve.setType(Presence::Subscribed);
-        approve.setTo( presence.from() );
-        approve.setFrom(d->jid);
-
-        d->stream->sendStanza(approve);
-        emit userOnlineStatusRequest( presence.from() );
-        return;
-    }
-
-    /* process presence to icq-user */
-    if ( !presence.to().node().isEmpty() ) {
-        switch ( presence.type() ) {
-            case Presence::Subscribe:
-                emit userAdd( presence.from(), presence.to().node() );
-                break;
-            case Presence::Unsubscribe:
-                emit userDel( presence.from(), presence.to().node() );
-                break;
-            case Presence::Unsubscribed:
-                emit userAuthDeny( presence.from(), presence.to().node() );
-                break;
-            case Presence::Subscribed:
-                emit userAuthGrant( presence.from(), presence.to().node() );
-                break;
-            default:
-                break;
-        }
-        return;
-    }
-
-    if ( presence.type() == Presence::Available ) {
-        emit userOnline(presence.from(), presence.show(), false);
-        return;
-    }
-    if ( presence.type() == Presence::Unavailable ) {
-        emit userOffline( presence.from() );
-        return;
-    }
+    qWarning("[JC] Unhandled IQ from %s type:%s, tag:%s, nsuri:%s",
+             qPrintable(iq.from().full()),
+             qPrintable(iq.type()),
+             qPrintable(iq.childElement().tagName()),
+             qPrintable(iq.childElement().namespaceURI()) );
 }
 
 void JabberConnection::slotStreamReady()
@@ -840,6 +718,7 @@ void JabberConnection::slotStreamError()
 void JabberConnection::slotStreamClosed()
 {
     qDebug("[JC] Stream closed");
+    exit(0);
 }
 
 // vim:et:ts=4:sw=4:nowrap

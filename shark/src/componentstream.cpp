@@ -69,6 +69,11 @@ QString ComponentStream::baseNS() const
     return NS_COMPONENT;
 }
 
+Jid ComponentStream::serviceName() const
+{
+    return d->jid;
+}
+
 /**
  * Connects to the JID domain host to the specified port with secret.
  *

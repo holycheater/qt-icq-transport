@@ -45,6 +45,8 @@ class ComponentStream : public Stream
 
         QString baseNS() const;
 
+        Jid serviceName() const;
+
         void connectToServer(const Jid& jid, const QString& secret);
     private:
         void handleStreamOpen(const Parser::Event& e);

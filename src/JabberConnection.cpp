@@ -163,6 +163,7 @@ JabberConnection::JabberConnection(QObject *parent)
  */
 JabberConnection::~JabberConnection()
 {
+    delete d->gwtask;
     delete d->stream;
     delete d->connector;
 }

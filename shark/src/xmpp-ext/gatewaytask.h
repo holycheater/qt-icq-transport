@@ -42,6 +42,15 @@ class GatewayTask : public QObject
         virtual ~GatewayTask();
 
         void setRegistrationForm(const Registration& reg);
+    public slots:
+        void notifyOnline(const XMPP::Jid& user, const QString& legacyName, int presence_show);
+        void notifyOffline(const XMPP::Jid& user, const QString& legacyName);
+
+        void notifySubscribe(const XMPP::Jid& user, const QString& legacyName);
+        void notifyUnsubscribe(const XMPP::Jid& user, const QString& legacyName);
+
+        void notifySubscribed(const XMPP::Jid& user, const QString& legacyName);
+        void notifyUnsubscribed(const XMPP::Jid& user, const QString& legacyName);
     signals:
         void userRegister(const XMPP::Jid& user, const QString& legacyName, const QString& legacyPassword);
         void userUnregister(const XMPP::Jid& user);

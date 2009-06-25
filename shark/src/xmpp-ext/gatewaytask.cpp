@@ -40,6 +40,13 @@ class GatewayTask::Private {
         ComponentStream *stream;
 };
 
+static void send_presence(ComponentStream *cs, const XMPP::Jid& user, const QString& legacyName, Presence::Type t)
+{
+    Jid from = cs->serviceName().withNode(legacyName);
+    Presence p = Presence(t, from, user);
+    cs->sendStanza(p);
+}
+
 GatewayTask::GatewayTask(ComponentStream *stream)
     : QObject(stream), d(new Private)
 {
@@ -63,6 +70,38 @@ GatewayTask::~GatewayTask()
 void GatewayTask::setRegistrationForm(const Registration& reg)
 {
     d->reg = reg;
+}
+
+void GatewayTask::notifyOnline(const XMPP::Jid& user, const QString& legacyName, int presence_show)
+{
+    Jid from = d->stream->serviceName().withNode(legacyName);
+    Presence p = Presence(Presence::Available, from, user, (Presence::Show)presence_show);
+    d->stream->sendStanza(p);
+}
+
+void GatewayTask::notifyOffline(const XMPP::Jid& user, const QString& legacyName)
+{
+    send_presence(d->stream, user, legacyName, Presence::Unavailable);
+}
+
+void GatewayTask::notifySubscribe(const XMPP::Jid& user, const QString& legacyName)
+{
+    send_presence(d->stream, user, legacyName, Presence::Subscribe);
+}
+
+void GatewayTask::notifyUnsubscribe(const XMPP::Jid& user, const QString& legacyName)
+{
+    send_presence(d->stream, user, legacyName, Presence::Unsubscribe);
+}
+
+void GatewayTask::notifySubscribed(const XMPP::Jid& user, const QString& legacyName)
+{
+    send_presence(d->stream, user, legacyName, Presence::Subscribed);
+}
+
+void GatewayTask::notifyUnsubscribed(const XMPP::Jid& user, const QString& legacyName)
+{
+    send_presence(d->stream, user, legacyName, Presence::Unsubscribed);
 }
 
 void GatewayTask::slotMessage(const XMPP::Message& msg)

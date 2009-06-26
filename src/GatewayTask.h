@@ -31,7 +31,6 @@ namespace XMPP {
 }
 
 class QDateTime;
-class QSqlDatabase;
 
 class GatewayTask : public QObject
 {

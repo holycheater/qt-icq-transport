@@ -270,6 +270,11 @@ void Socket::processIncomingData()
             snac.seekEnd();
         }
 
+        /* ignore SNAC(01,15) : somewhat named "well-known urls" */
+        if ( snac.family() == 0x01 && snac.subtype() == 0x15 ) {
+            snac.seekEnd();
+        }
+
         emit incomingSnac(snac);
         if ( !d->socket ) {
             qDebug() << "[ICQ:Socket] Socket was closed after emitting incomingSnac signal";

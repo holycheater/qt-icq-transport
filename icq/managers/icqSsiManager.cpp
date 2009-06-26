@@ -121,13 +121,10 @@ void SSIManager::Private::processSsiParameters(SnacBuffer& reply)
 /* << SNAC(13,06) - SRV_SSIxREPLY */
 void SSIManager::Private::processSsiContact(SnacBuffer& reply)
 {
+
     reply.getByte(); // ssi version - 0x00
 
     Word listSize = reply.getWord();
-
-    existingGroups.clear();
-    existingItems.clear();
-    ssiList.clear();
 
     for ( Word i = 0; i < listSize; i++ ) {
         Word nameLen = reply.getWord();
@@ -157,9 +154,13 @@ void SSIManager::Private::processSsiContact(SnacBuffer& reply)
     DWord lastChangeTime = reply.getDWord();
     lastUpdate = lastChangeTime;
 
-    /* SNAC(13,07) - SSI Activate */
-    socket->snacRequest(0x13, 0x07);
-    emit q->ssiActivated();
+    /* check if roster is splitted into several snacs */
+    bool last_snac = !(reply.flags() & 0x0001);
+    if ( last_snac ) {
+        /* SNAC(13,07) - SSI Activate */
+        socket->snacRequest(0x13, 0x07);
+        emit q->ssiActivated();
+    }
 }
 
 void SSIManager::Private::processSsiAdd(SnacBuffer& reply)
@@ -629,6 +630,9 @@ void SSIManager::checkContactList()
  */
 void SSIManager::requestContactList()
 {
+    d->existingGroups.clear();
+    d->existingItems.clear();
+    d->ssiList.clear();
     d->socket->snacRequest(0x13, 0x04);
 }
 

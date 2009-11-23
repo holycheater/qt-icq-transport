@@ -460,6 +460,7 @@ void MessageManager::handle_offline_message(Buffer& data)
     msg.setSender(senderUin);
     msg.setReceiver( d->uin );
     msg.setTimestamp(timestamp);
+    msg.setOffline(true);
 
     emit incomingMessage(msg);
 }

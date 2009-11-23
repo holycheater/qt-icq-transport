@@ -336,6 +336,7 @@ void JabberConnection::sendMessage(const Jid& recipient, const QString& uin, con
     msg.setTo(recipient);
     msg.setBody(message);
     msg.setNick(nick);
+    msg.setType(Message::Chat);
     msg.setTimestamp(timestamp);
 
     d->stream->sendStanza(msg);

@@ -449,7 +449,7 @@ void MessageManager::handle_offline_message(Buffer& data)
     Byte msgType = data.getByte();
     Byte msgFlags = data.getByte();
 
-    Word msgLen = data.getWord();
+    Word msgLen = data.getLEWord();
     QByteArray message = data.read(msgLen - 1);
 
     Message msg;

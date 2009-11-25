@@ -19,6 +19,8 @@
  */
 
 #include "xmpp-core/jid.h"
+#include <QPair>
+#include <QHash>
 
 namespace XMPP {
 
@@ -32,6 +34,10 @@ class Stream::Private
 
         StreamError lastStreamError;
         QIODevice *bytestream;
+
+        typedef QPair<QObject*,QString> StanzaCallback;
+        typedef QHash<QString,StanzaCallback> SCBHash; /* stanza callback hash */
+        SCBHash scb;
 
         Jid remoteEntity;
 };

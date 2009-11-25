@@ -23,6 +23,7 @@
 
 #include <QDomDocument>
 #include <QSharedDataPointer>
+#include <QMetaType>
 
 #define NS_STANZAS "urn:ietf:params:xml:ns:xmpp-stanzas"
 #define NS_PROTOCOL_NICK "http://jabber.org/protocol/nick"
@@ -30,7 +31,6 @@
 namespace XMPP {
 
 class Jid;
-
 
 class Stanza
 {
@@ -114,7 +114,8 @@ class Stanza::Error {
 };
 
 
-}
+} /* end of namespace XMPP */
+Q_DECLARE_METATYPE(XMPP::Stanza);
 
 // vim:ts=4:sw=4:et:nowrap
 #endif /* XMPP_CORE_STANZA_H_ */

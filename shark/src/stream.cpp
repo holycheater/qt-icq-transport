@@ -21,6 +21,7 @@
 #include <QDomDocument>
 #include <QIODevice>
 #include <QXmlAttributes>
+#include <QMetaObject>
 
 #include "stream.h"
 #include "stream_p.h"
@@ -68,6 +69,53 @@ StreamError Stream::lastStreamError() const
 void Stream::sendStanza(const Stanza& stanza)
 {
     write ( stanza.toString().toUtf8() );
+}
+
+/**
+ * Sends @a stanza to the outgoing stream, and calls @a method of @a obj
+ * when there's an incoming stanza with the same id attribute (a reply).
+ * The method signature should be: method_name(XMPP::Stanza).
+ *
+ * Example:
+ * @code
+ * class SomeObj: public Object {
+ *     Q_OBJECT
+ *     Q_INVOKABLE my_callback(const XMPP::Stanza& s);
+ * };
+ * @endcode
+ * @code
+ * Stream *stream = new Stream;
+ * SomeObj *obj = new SomeObj;
+ * Stanza ss;
+ * // ...
+ * stream->sendStanza(s, obj, "my_callback");
+ * @endcode
+ *
+ * @note If stanza doesn't have an id attribute, it will just send it to the stream.
+ * @note This method uses QMetaObject::invokeMethod to call the object, so the method
+ * should be defined with Q_INVOKABLE. If the method can't be invoked through Qt
+ * meta-object system, this function will just send stanza to stream.
+ * @note If there's already stanza with the same id within the queue, it will be replaced
+ */
+void Stream::sendStanza(const Stanza& stanza, QObject *obj, const QString& method)
+{
+    if (d->state != Open) {
+        return;
+    }
+    if (!obj) {
+        goto ssEnd;
+    }
+    if (obj->metaObject()->indexOfMethod(QString("%1(XMPP::Stanza)").arg(method).toLocal8Bit().constData()) == -1) {
+        qDebug("[XMPP::Stream] no invokable method %s::%s",
+               obj->metaObject()->className(), qPrintable(method));
+        goto ssEnd;
+    }
+    if (stanza.id().isEmpty()) {
+        goto ssEnd;
+    }
+    d->scb.insert(stanza.id(), Private::StanzaCallback(obj,method));
+    ssEnd:
+    write( stanza.toString().toUtf8() );
 }
 
 void Stream::sendStreamOpen()
@@ -169,6 +217,15 @@ void Stream::processEvent(const Parser::Event& event)
  */
 void Stream::processStanza(const Parser::Event& event)
 {
+    QString id = event.element().attribute("id");
+    if (!id.isEmpty() && d->scb.contains(id)) {
+        Private::StanzaCallback cb = d->scb.value(id);
+        QObject *obj = cb.first;
+        qDebug("[XMPP::Stream] Invoke %s::%s for stanza with id %s",
+               obj->metaObject()->className(), qPrintable(cb.second), qPrintable(id));
+        QMetaObject::invokeMethod(obj, cb.second.toLocal8Bit().constData(), Q_ARG(XMPP::Stanza, event.element()));
+        d->scb.remove(id);
+    }
     if ( event.qualifiedName() == "stream:error" ) {
         handleStreamError(event);
     } else if ( event.qualifiedName() == "message" ) {

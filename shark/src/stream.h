@@ -54,7 +54,7 @@ class Stream : public QObject
         virtual QString baseNS() const = 0;
 
         void sendStanza(const Stanza& stanza);
-
+        void sendStanza(const Stanza& stanza, QObject *obj, const QString& method);
     public slots:
         void sendStreamOpen();
         void sendStreamClose();

@@ -65,6 +65,7 @@ class GatewayTask : public QObject
         void denyAuth(const XMPP::Jid& user, const QString& legacyNode);
 
         void messageToLegacyNode(const XMPP::Jid& user, const QString& legacyNode, const QString& text);
+        void messageToService(const XMPP::Jid& user, const QString& msg);
     private slots:
         void slotMessage(const XMPP::Message& msg);
         void slotRegister(const XMPP::IQ& iq);

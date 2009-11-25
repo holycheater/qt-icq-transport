@@ -110,8 +110,11 @@ void GatewayTask::slotMessage(const XMPP::Message& msg)
     QString legacyNode = msg.to().node();
     QString text = msg.body();
 
-    if ( !legacyNode.isEmpty() )
+    if ( !legacyNode.isEmpty() ) {
         emit messageToLegacyNode(user, legacyNode, text);
+    } else {
+        emit messageToService(user, text);
+    }
 }
 
 void GatewayTask::slotRegister(const XMPP::IQ& iq)

@@ -214,9 +214,9 @@ QDomDocument* Stanza::doc()
  *
  * @overload
  */
-QDomDocument* Stanza::doc() const
+const QDomDocument* Stanza::doc() const
 {
-    return const_cast<QDomDocument*>(&m_doc);
+    return &m_doc;
 }
 
 /**

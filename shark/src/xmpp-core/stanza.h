@@ -69,7 +69,7 @@ class Stanza
         void setNick(const QString& nick);
 
         QDomDocument* doc();
-        QDomDocument* doc() const;
+        const QDomDocument* doc() const;
     protected:
         void setProperty(const QString& name, const QString& value);
     private:

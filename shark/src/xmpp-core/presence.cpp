@@ -108,7 +108,7 @@ Presence::Show Presence::show() const
  */
 QString Presence::status() const
 {
-    return doc()->documentElement().firstChildElement("show").text();
+    return doc()->documentElement().firstChildElement("status").text();
 }
 
 Presence::Type Presence::type() const

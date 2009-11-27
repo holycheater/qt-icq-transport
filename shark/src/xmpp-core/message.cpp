@@ -175,11 +175,6 @@ void Message::setType(Type type)
     setType( typeToString(type) );
 }
 
-/**
- * Returns string representation of @a type.
- *
- * @sa Type
- */
 QString Message::typeToString(Type type)
 {
     switch (type) {

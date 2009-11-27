@@ -24,12 +24,13 @@ namespace XMPP {
 
 /**
  * @class IQ
- * @brief Represents XMPP info/query stanza object.
+ * @brief Represents XMPP info/query stanza element.
  */
 
 
 /**
  * Default constructor for info/query stanza
+ * It constructs an iq with \<query/\> child element.
  */
 IQ::IQ()
     : Stanza()
@@ -53,7 +54,8 @@ IQ::IQ(const IQ& other)
 }
 
 /**
- * Constructs info/query stanza from a DOM document. Constructor makes a deep copy of QDomDocument.
+ * Constructs info/query stanza from a DOM document.
+ * Constructor makes a deep copy of QDomDocument.
  *
  * @param document  DOM document
  */
@@ -82,6 +84,7 @@ IQ::~IQ()
 
 /**
  * Create a reply to @a iq with specified @a type.
+ * It swaps from/to iq attributes.
  */
 IQ IQ::createReply(const IQ& iq, Type type)
 {
@@ -114,7 +117,7 @@ const QDomElement& IQ::childElement() const
 }
 
 /**
- * Clears IQ query child elements, making it an empty element.
+ * Clears IQ query child element of descendants.
  */
 void IQ::clearChild()
 {
@@ -124,7 +127,8 @@ void IQ::clearChild()
 }
 
 /**
- * Sets info/query child element to @a name with xmlns @a ns
+ * Sets info/query child element to @a name with xmlns @a ns.
+ * Element's content is cleared if any.
  * @param name  element name
  * @param ns    element namespace
  */
@@ -136,7 +140,8 @@ void IQ::setChildElement(const QString& name, const QString& ns)
 }
 
 /**
- * Sets IQ stanza 'type' field to @a type string.
+ * Sets IQ stanza 'type' field to @a type.
+ * @sa IQ::Type
  */
 void IQ::setType(Type type)
 {

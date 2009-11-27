@@ -183,11 +183,6 @@ void Presence::setType(Type type)
     setType( typeToString(type) );
 }
 
-/**
- * Returns string representation of @a type.
- *
- * @sa Type
- */
 QString Presence::typeToString(Type type)
 {
     switch (type) {

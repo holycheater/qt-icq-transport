@@ -87,7 +87,8 @@ Presence::~Presence()
 }
 
 /**
- * Returns priority. Valid range is from -128 to 128. If no priority is set it returns 0.
+ * Returns priority. Valid range is from -127 to 128.
+ * If no priority is set it returns 0.
  */
 int Presence::priority() const
 {
@@ -111,18 +112,22 @@ QString Presence::status() const
     return doc()->documentElement().firstChildElement("status").text();
 }
 
+/**
+ * Returns presence type
+ * @sa Type, setType
+ */
 Presence::Type Presence::type() const
 {
     return stringToType( doc()->documentElement().attribute("type") );
 }
 
 /**
- * Sets presence priority to @a priority. Valid range is from -128 to 128
+ * Sets presence priority to @a priority. Valid range is from -127 to 128
  */
 void Presence::setPriority(int priority)
 {
-    if (priority < -128) {
-        priority = -128;
+    if (priority < -127) {
+        priority = -127;
     } else if (priority > 128) {
         priority = 128;
     }

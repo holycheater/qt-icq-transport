@@ -1,7 +1,7 @@
 Project: Qt ICQ Transport
 Desc: Jabber gateway service to icq written in C++ using Qt toolkit.
 Author: Alexander Saltykov <holy.cheater@gmail.com>
-Version: 0.2.1
+Version: 0.3~dev
 
 --- Install ---
 You need: libqt4-dev (>= 4.4.0), libidn-dev.

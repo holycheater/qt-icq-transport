@@ -91,15 +91,6 @@ void Stanza::setError(const Error& error)
 }
 
 /**
- * Returns true if this stanza is valid.
- */
-bool Stanza::isValid() const
-{
-    /* TODO: Some stanzas can have no type set.. Some stanzas require other attributes, like IQ requires ID to be set */
-    return !m_doc.documentElement().attribute("type").isEmpty();
-}
-
-/**
  * Returns recipient's jabber-id.
  */
 Jid Stanza::to() const

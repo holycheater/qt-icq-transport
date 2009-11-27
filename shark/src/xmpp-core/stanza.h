@@ -42,12 +42,9 @@ class Stanza
         virtual ~Stanza();
 
         class Error;
-
         Error error() const;
         bool hasError() const;
         void setError(const Error& error);
-
-        bool isValid() const;
 
         Jid to() const;
         Jid from() const;

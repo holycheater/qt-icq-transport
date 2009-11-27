@@ -1,6 +1,6 @@
 /*
  * vcard.cpp - vcard-temp (XEP-0054)
- * Copyright (C) 2008  Alexander Saltykov
+ * Copyright (C) 2008,2009  Alexander Saltykov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -385,7 +385,63 @@ vCard::~vCard()
 
 vCard vCard::fromIQ(const IQ& iq)
 {
-    /* TODO: Creating vCard from info-query */
+    const QDomElement *e = &iq.childElement();
+    if (e->tagName() != "vCard" || e->namespaceURI() != NS_VCARD_TEMP) {
+        return vCard();
+    }
+
+    vCard v;
+
+    v.setFullName(e->firstChildElement("FN").text());
+
+    QDomElement eName = e->firstChildElement("N");
+    if (!eName.isNull()) {
+        v.setFamilyName(eName.firstChildElement("FAMILY").text());
+        v.setGivenName(eName.firstChildElement("GIVEN").text());
+        v.setMiddleName(eName.firstChildElement("MIDDLE").text());
+        v.setNamePrefix(eName.firstChildElement("PREFIX").text());
+        v.setNameSuffix(eName.firstChildElement("SUFFIX").text());
+    }
+
+    v.setNickname(e->firstChildElement("NICKNAME").text());
+
+    QString bd = e->firstChildElement("BDAY").text();
+    if (!bd.isEmpty()) {
+        v.setBirthday(QDate::fromString(bd,"yyyy-MM-dd"));
+    }
+
+    QDomElement eAdr = e->firstChildElement("ADR");
+    if (!eAdr.isNull()) {
+        v.setAddrCountry(eAdr.firstChildElement("CTRY").text());
+        v.setAddrRegion(eAdr.firstChildElement("REGION").text());
+        v.setAddrPostal(eAdr.firstChildElement("PCODE").text());
+        v.setAddrCity(eAdr.firstChildElement("CITY").text());
+        v.setAddrStreet(eAdr.firstChildElement("STREET").text());
+    }
+
+    v.setPhone(e->firstChildElement("TEL").firstChildElement("NUMBER").text());
+    v.setEmail(e->firstChildElement("EMAIL").firstChildElement("USERID").text());
+
+    v.setTimezone(e->firstChildElement("TZ").text());
+
+    v.setGeo(e->firstChildElement("GEO").firstChildElement("LAT").text(),
+             e->firstChildElement("GEO").firstChildElement("LON").text());
+
+    v.setTitle(e->firstChildElement("TITLE").text());
+    v.setRole(e->firstChildElement("ROLE").text());
+    v.setOrgName(e->firstChildElement("ORG").firstChildElement("ORGNAME").text());
+    v.setOrgUnit(e->firstChildElement("ORG").firstChildElement("ORGUNIT").text());
+
+    v.setUrl(e->firstChildElement("URL").text());
+
+    v.setDescription(e->firstChildElement("DESC").text());
+
+    QString jid = e->firstChildElement("JABBERID").text();
+    if (!jid.isEmpty()) {
+        v.setJid(Jid(jid));
+    }
+
+    return v;
 }
 
 IQ vCard::toIQ() const
@@ -400,7 +456,6 @@ IQ vCard::toIQ() const
 void vCard::toIQ(IQ& iq) const
 {
     iq.setChildElement("vCard", NS_VCARD_TEMP);
-
     d->toDomElement( iq.childElement() );
 }
 

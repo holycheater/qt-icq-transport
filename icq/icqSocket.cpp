@@ -275,6 +275,11 @@ void Socket::processIncomingData()
             snac.seekEnd();
         }
 
+        /* ignore SNAC(03,0A) - SRV_NOTIFICATION_REJECTED */
+        if ( snac.family() == 0x03 && snac.subtype() == 0x0A ) {
+            snac.seekEnd();
+        }
+
         emit incomingSnac(snac);
         if ( !d->socket ) {
             qDebug() << "[ICQ:Socket] Socket was closed after emitting incomingSnac signal";

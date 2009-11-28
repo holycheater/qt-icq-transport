@@ -829,7 +829,7 @@ void Session::processIncomingMessage(const Message& msg)
 void Session::processFlap(FlapBuffer& flap)
 {
     if ( flap.channel() == FlapBuffer::CloseChannel ) {
-        qDebug() << "[ICQ:Session]" << "Flap stream was by server.";
+        qDebug() << "[ICQ:Session]" << "Flap stream was closed by server.";
         disconnect();
     }
 

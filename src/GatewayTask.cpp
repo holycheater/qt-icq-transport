@@ -40,6 +40,12 @@
 
 #include <stdlib.h>
 
+
+#define GET_JID_BY_SENDER(_str_bare, _jid_user) \
+    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() ); \
+    QString _str_bare = d->icqJidTable[session]; \
+    XMPP::Jid _jid_user = d->jidResources[user_bare];
+
 class GatewayTask::Private
 {
     public:
@@ -429,22 +435,15 @@ void GatewayTask::processShutdown()
 
 void GatewayTask::processIcqError(const QString& desc)
 {
-    ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(conn);
-    XMPP::Jid user = d->jidResources.value(user_bare);
-
+    GET_JID_BY_SENDER(user_bare,user);
     emit gatewayMessage(user, desc);
 }
 
 void GatewayTask::processIcqSignOn()
 {
-    ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(conn);
-    XMPP::Jid user = d->jidResources.value(user_bare);
-
+    GET_JID_BY_SENDER(user_bare,user);
     emit onlineNotifyFor(user, XMPP::Presence::None);
-
-    d->reconnects.remove( user.bare() );
+    d->reconnects.remove(user_bare);
 }
 
 void GatewayTask::processIcqSignOff()
@@ -458,8 +457,8 @@ void GatewayTask::processIcqSignOff()
         return;
     }
 
-    QString user_bare = d->icqJidTable.value(conn);
-    XMPP::Jid user = d->jidResources.value(user_bare);
+    QString user_bare = d->icqJidTable[conn];
+    XMPP::Jid user = d->jidResources[user_bare];
     emit offlineNotifyFor(user);
 
     d->icqJidTable.remove(conn);
@@ -482,9 +481,7 @@ void GatewayTask::processIcqSignOff()
 
 void GatewayTask::processIcqStatus(int status)
 {
-    ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(conn);
-    XMPP::Jid user = d->jidResources.value(user_bare);
+    GET_JID_BY_SENDER(user_bare,user);
 
     int show;
     switch ( status ) {
@@ -509,9 +506,7 @@ void GatewayTask::processIcqStatus(int status)
 
 void GatewayTask::processIcqFirstLogin()
 {
-    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(session);
-    XMPP::Jid user = d->jidResources.value(user_bare);
+    GET_JID_BY_SENDER(user_bare,user);
 
     QStringList contacts = session->contactList();
     QStringListIterator i(contacts);
@@ -528,9 +523,7 @@ void GatewayTask::processIcqFirstLogin()
 
 void GatewayTask::processContactOnline(const QString& uin, int status)
 {
-    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(session);
-    XMPP::Jid user = d->jidResources.value(user_bare);
+    GET_JID_BY_SENDER(user_bare,user);
 
     int showStatus;
     switch ( status ) {
@@ -560,25 +553,21 @@ void GatewayTask::processContactOffline(const QString& uin)
     if ( !conn || !d->icqJidTable.contains(conn) ) {
         return;
     }
-    QString user_bare = d->icqJidTable.value(conn);
-    XMPP::Jid user = d->jidResources.value(user_bare);
+    QString user_bare = d->icqJidTable[conn];
+    XMPP::Jid user = d->jidResources[user_bare];
     emit contactOffline(user, uin);
 }
 
 void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message)
 {
-    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(session);
-    XMPP::Jid user = d->jidResources.value(user_bare);
+    GET_JID_BY_SENDER(user_bare,user);
     QString msg = QString(message).replace('\r', "");
     emit incomingMessage(user, senderUin, msg, session->contactName(senderUin));
 }
 
 void GatewayTask::processIncomingMessage(const QString& senderUin, const QString& message, const QDateTime& timestamp)
 {
-    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(session);
-    XMPP::Jid user = d->jidResources.value(user_bare);
+    GET_JID_BY_SENDER(user_bare,user);
     QString msg = QString(message).replace('\r', "");
     emit incomingMessage(user, senderUin, msg, session->contactName(senderUin), timestamp.toUTC());
 }
@@ -589,7 +578,7 @@ void GatewayTask::processIncomingMessage(const QString& senderUin, const QString
 void GatewayTask::processAuthGranted(const QString& uin)
 {
     ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    XMPP::Jid user = d->icqJidTable.value(session);
+    XMPP::Jid user = d->icqJidTable[session];
 
     // qDebug() << "[GT]" << user << "granted auth to" << uin << "nick" << session->contactName(uin);
     emit subscriptionReceived( user, uin, session->contactName(uin) );
@@ -600,8 +589,8 @@ void GatewayTask::processAuthGranted(const QString& uin)
  */
 void GatewayTask::processAuthDenied(const QString& uin)
 {
-    ICQ::Session *conn = qobject_cast<ICQ::Session*>( sender() );
-    XMPP::Jid user = d->icqJidTable.value(conn);
+    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
+    XMPP::Jid user = d->icqJidTable[session];
 
     // qDebug() << "[GT]" << user << "denied auth to" << uin;
     emit subscriptionRemoved(user, uin);
@@ -613,17 +602,14 @@ void GatewayTask::processAuthDenied(const QString& uin)
 void GatewayTask::processAuthRequest(const QString& uin)
 {
     ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    XMPP::Jid user = d->icqJidTable.value(session);
+    XMPP::Jid user = d->icqJidTable[session];
 
     emit subscriptionRequest(user, uin);
 }
 
 void GatewayTask::processShortUserDetails(const QString& uin)
 {
-    ICQ::Session *session = qobject_cast<ICQ::Session*>( sender() );
-    QString user_bare = d->icqJidTable.value(session);
-    XMPP::Jid user = d->jidResources.value(user_bare);
-
+    GET_JID_BY_SENDER(user_bare,user);
     QString key = QString(user_bare)+"-"+uin;
 
     if ( !d->vCardRequests.contains(key) ) {

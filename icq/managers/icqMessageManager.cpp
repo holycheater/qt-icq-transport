@@ -260,14 +260,8 @@ Message MessageManager::handle_channel_1_msg(TlvChain& chain)
             msg.setEncoding(Message::Ucs2);
             break;
         case 0x0003:
-        {
-            if ( offlineMsg ) {
-                msg.setEncoding(Message::UserDefined);
-            } else {
-                msg.setEncoding(Message::Latin1);
-            }
+            msg.setEncoding(Message::UserDefined);
             break;
-        }
         default:
             msg.setEncoding(Message::UserDefined);
             break;

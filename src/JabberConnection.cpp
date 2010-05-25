@@ -473,23 +473,12 @@ void JabberConnection::Private::processAdHoc(const IQ& iq)
         if ( iq.childElement().firstChildElement("x").attribute("type") == "submit" ) {
             DataForm form = DataForm::fromDomElement( iq.childElement().firstChildElement("x") );
 
-            DataForm::Field fai = form.fieldByName("auto-invite");
-            QString auto_invite = fai.values().at(0);
-            bool o_auto_invite;
-            if ( auto_invite == "true" || auto_invite == "1" ) {
-                o_auto_invite = true;
-            } else {
-                o_auto_invite = false;
-            }
+            QString auto_invite = form.fieldByName("auto-invite").values().at(0);
+            bool o_auto_invite = ( auto_invite == "true" || auto_invite == "1" ) ? true : false;
             UserManager::instance()->setOption(iq.from().bare(), "auto-invite", QVariant(o_auto_invite));
 
             QString auto_reconnect = form.fieldByName("auto-reconnect").values().at(0);
-            bool o_auto_reconnect;
-            if ( auto_reconnect == "true" || auto_invite == "1" ) {
-                o_auto_reconnect = true;
-            } else {
-                o_auto_reconnect = false;
-            }
+            bool o_auto_reconnect = (auto_reconnect == "true" || auto_reconnect == "1") ? true : false;
             UserManager::instance()->setOption(iq.from().bare(),
                                                "auto-reconnect", QVariant(o_auto_reconnect));
             QString encoding = form.fieldByName("encoding").values().at(0);
